@@ -103,7 +103,7 @@ body { background: var(--gray-50); }
       <div class="legend-item"><div class="legend-swatch" style="background:var(--gray-100);border:1.5px solid var(--gray-200);"></div>Booked</div>
     </div>
     <div class="bus-visual">
-      <div class="bus-front"><span>🚌 DRIVER</span><span id="busRouteLabel">Kampala → Gulu</span><span id="busTimeLabel">8:00 AM</span></div>
+      <div class="bus-front" style="justify-content:space-between;"><span style="opacity:.6;font-size:.65rem;">← FRONT</span><span id="busRouteLabel">Kampala → Gulu</span><span style="background:#040E2A;color:rgba(255,255,255,.85);padding:.2rem .6rem;border-radius:6px;font-size:.65rem;">DRVR →</span></div>
       <div id="seatMap" style="display:flex;flex-direction:column;align-items:center;gap:5px;min-width:220px;"></div>
     </div>
     <div style="margin-top:1.25rem;background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);padding:1rem;display:flex;align-items:center;justify-content:space-between;">
@@ -400,29 +400,122 @@ function renderMap(t){
   if(t.bus==='coach') buildCoach(c);
   else buildTaxi(c);
 }
+/* 
+ * UGANDA BUS SEAT LAYOUTS — RIGHT-HAND DRIVE (RHD)
+ * Driver sits on the RIGHT side. Columns from left: A B [aisle] C D E
+ * Row 1: Seat 1 (left of driver) + GDE (conductor/guide) near driver on right
+ * Rows 2-13: 2 seats left (A,B) + aisle + 3 seats right (C,D,E) = 5/row
+ * Back row: 6 seats across full width
+ * Total: 1 + 12×5 + 6 = 67 seats
+ */
 function buildCoach(c){
-  addRow(c,[1,null,2]);
-  let n=3;
-  for(let r=0;r<12;r++){ addRow(c,[n,n+1,null,n+2,n+3,n+4]); n+=5; }
-  addRow(c,[n,n+1,null,n+2,n+3,n+4,n+5]);
-}
-function buildTaxi(c){
-  addRow(c,[1,null,2]);
-  for(let r=0;r<4;r++){ const s=3+r*3; addRow(c,[s,s+1,s+2]); }
-}
-function addRow(c,nums){
-  const row=document.createElement('div'); row.style.cssText='display:flex;gap:4px;align-items:center;';
-  nums.forEach(n=>{
-    if(n===null){ const sp=document.createElement('div'); sp.style.width='24px'; row.appendChild(sp); return; }
-    const s=document.createElement('div');
-    const isBooked=bookedSet.has(n), isSel=state.seats.includes(n);
-    s.className=`seat ${isBooked?'booked':isSel?'selected':'available'}`;
-    s.textContent=n; s.style.width='32px'; s.style.height='32px'; s.style.fontSize='.6rem';
-    if(!isBooked){ s.onclick=()=>toggleSeat(n); s.setAttribute('tabindex','0'); s.setAttribute('role','button'); }
-    row.appendChild(s);
+  // Header row labels
+  const hdr=document.createElement('div');
+  hdr.style.cssText='display:flex;gap:4px;align-items:center;margin-bottom:4px;';
+  ['A','B','','C','D','E'].forEach(lbl=>{
+    const l=document.createElement('div');
+    l.style.cssText='width:32px;text-align:center;font-family:var(--font-display);font-size:.6rem;font-weight:700;color:var(--gray-400);';
+    if(lbl==='') l.style.width='24px';
+    l.textContent=lbl;
+    hdr.appendChild(l);
   });
-  c.appendChild(row);
+  c.appendChild(hdr);
+
+  // Row 1: Seat 1 on LEFT | [aisle] | GDE label on right (conductor near driver)
+  const r1=document.createElement('div');
+  r1.style.cssText='display:flex;gap:4px;align-items:center;margin-bottom:2px;';
+  // Seat 1 (left side, col A position)
+  r1.appendChild(makeSeat(1));
+  // spacer for col B
+  const spB=document.createElement('div'); spB.style.cssText='width:32px;'; r1.appendChild(spB);
+  // aisle
+  const aisle=document.createElement('div'); aisle.style.cssText='width:24px;'; r1.appendChild(aisle);
+  // GDE conductor block (right side, near driver)
+  const gde=document.createElement('div');
+  gde.style.cssText='width:32px;height:32px;border-radius:6px 6px 10px 10px;background:#1E3A8A;color:rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:.5rem;font-weight:700;letter-spacing:.02em;';
+  gde.textContent='GDE'; gde.title='Guide/Conductor seat';
+  r1.appendChild(gde);
+  // DRVR block at far right (driver is RIGHT side = last)
+  const drv=document.createElement('div');
+  drv.style.cssText='width:32px;height:32px;border-radius:6px;background:#040E2A;color:rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:.5rem;font-weight:700;writing-mode:vertical-rl;letter-spacing:.04em;margin-left:8px;';
+  drv.textContent='DRV'; drv.title='Driver (Right-Hand Drive)';
+  r1.appendChild(drv);
+  c.appendChild(r1);
+
+  // Rows 2-13: [A, B] | aisle | [C, D, E]
+  let n=2;
+  for(let r=0;r<12;r++){
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;gap:4px;align-items:center;';
+    // Left side: A and B
+    row.appendChild(makeSeat(n));   // A
+    row.appendChild(makeSeat(n+1)); // B
+    // Aisle
+    const aisle=document.createElement('div'); aisle.style.cssText='width:24px;'; row.appendChild(aisle);
+    // Right side: C, D, E
+    row.appendChild(makeSeat(n+2)); // C
+    row.appendChild(makeSeat(n+3)); // D
+    row.appendChild(makeSeat(n+4)); // E
+    c.appendChild(row);
+    n+=5;
+  }
+  // Back row: 6 seats across (n to n+5)
+  const backLbl=document.createElement('div');
+  backLbl.style.cssText='text-align:center;font-family:var(--font-display);font-size:.6rem;color:var(--gray-400);margin:4px 0 2px;letter-spacing:.06em;';
+  backLbl.textContent='— REAR ROW —';
+  c.appendChild(backLbl);
+  const backRow=document.createElement('div');
+  backRow.style.cssText='display:flex;gap:4px;justify-content:center;';
+  for(let i=0;i<6;i++) backRow.appendChild(makeSeat(n+i));
+  c.appendChild(backRow);
 }
+
+/*
+ * 14-SEATER MINIVAN — RHD
+ * Driver on RIGHT (front-right). 
+ * Row 1: Seat 1 (left of driver area) | Seat 2 (middle-front)
+ * Then 4 rows of 3 seats each (seats 3-14)
+ */
+function buildTaxi(c){
+  const hdr=document.createElement('div');
+  hdr.style.cssText='display:flex;gap:6px;align-items:center;margin-bottom:4px;';
+  // DRV label on far right
+  const drv=document.createElement('div');
+  drv.style.cssText='width:44px;height:44px;border-radius:8px;background:#040E2A;color:rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:.7rem;font-weight:700;margin-left:auto;';
+  drv.textContent='DRV'; drv.title='Driver (Right-hand drive)';
+
+  // Row 1: seats 1 and 2 on left, then DRV on far right
+  const r1=document.createElement('div');
+  r1.style.cssText='display:flex;gap:6px;align-items:center;margin-bottom:4px;';
+  r1.appendChild(makeSeat(1,44));
+  r1.appendChild(makeSeat(2,44));
+  r1.appendChild(drv);
+  c.appendChild(r1);
+
+  // Rows 2-5: 3 seats each
+  let n=3;
+  for(let r=0;r<4;r++){
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;gap:6px;margin-bottom:4px;';
+    row.appendChild(makeSeat(n,44));
+    row.appendChild(makeSeat(n+1,44));
+    row.appendChild(makeSeat(n+2,44));
+    c.appendChild(row);
+    n+=3;
+  }
+}
+
+function makeSeat(n, size=32){
+  const isBooked=bookedSet.has(n), isSel=state.seats.includes(n);
+  const s=document.createElement('div');
+  s.className=`seat ${isBooked?'booked':isSel?'selected':'available'}`;
+  s.textContent=n;
+  s.style.width=size+'px'; s.style.height=size+'px'; s.style.fontSize=size>36?'.7rem':'.6rem';
+  s.setAttribute('aria-label',`Seat ${n} ${isBooked?'(booked)':'(available)'}`);
+  if(!isBooked){ s.onclick=()=>toggleSeat(n); s.setAttribute('tabindex','0'); s.setAttribute('role','button'); }
+  return s;
+}
+function addRow(c,nums){ /* legacy compat */ }
 function toggleSeat(n){
   const idx=state.seats.indexOf(n);
   if(idx>-1) state.seats.splice(idx,1);

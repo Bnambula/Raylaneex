@@ -336,8 +336,9 @@ footer {
 ═══════════════════════════════════════════ -->
 <nav class="navbar" role="navigation" aria-label="Main navigation">
   <div class="navbar-inner">
-    <a href="index.html" class="navbar-logo" aria-label="Raylane Express Home">
-      <img src="Raylane_express.png" alt="Raylane Express" height="40">
+    <a href="index.html" class="navbar-logo" aria-label="Raylane Express Home" style="display:flex;align-items:center;gap:.625rem;">
+      <img src="Raylane_express.png" alt="Raylane Express" height="40" onerror="this.style.display='none'">
+      <span style="font-family:var(--font-display);font-weight:800;font-size:1.125rem;color:var(--gold-500);">Raylane<span style="color:white;">Express</span></span>
     </a>
 
     <div class="navbar-links">
@@ -369,13 +370,16 @@ footer {
     <nav class="mobile-drawer-links" aria-label="Mobile navigation">
       <a href="index.html">🏠 Home</a>
       <a href="book.html">🎫 Book a Trip</a>
+      <a href="advance.html">📅 Advance Booking</a>
+      <a href="parcel.html">📦 Send Parcel</a>
+      <a href="track.html">📍 Track Parcel</a>
       <a href="#routes">🗺 Routes</a>
-      <a href="#parcels">📦 Send Parcel</a>
-      <a href="#services">⭐ Services</a>
+      <a href="lostandfound.html">🔍 Lost &amp; Found</a>
+      <a href="lostandfound.html#safety">🛡️ Safety Tips</a>
+      <a href="about.html">ℹ️ About Us</a>
+      <a href="about.html#careers">💼 Careers</a>
       <a href="apply.html">🚌 Join as Operator</a>
-      <a href="operator.html">💼 Operator Portal</a>
-      <a href="admin.html">⚙️ Admin Console</a>
-      <a href="#about">ℹ️ About</a>
+      <a href="operator.html">📊 Operator Portal</a>
     </nav>
     <div style="margin-top:2rem;">
       <a href="book.html" class="btn btn-gold w-full" style="width:100%;justify-content:center;">Book a Trip Now →</a>
@@ -566,10 +570,10 @@ footer {
         <!-- Quick actions -->
         <div class="quick-actions" style="margin-top:1.25rem;" role="navigation" aria-label="Quick actions">
           <a href="book.html" class="quick-pill">🎫 Book Seat</a>
-          <a href="book.html?type=parcel" class="quick-pill">📦 Send Parcel</a>
-          <a href="book.html?type=track" class="quick-pill">📍 Track Parcel</a>
+          <a href="parcel.html" class="quick-pill">📦 Send Parcel</a>
+          <a href="track.html" class="quick-pill">📍 Track Parcel</a>
           <a href="book.html?type=group" class="quick-pill">👥 Group Booking</a>
-          <a href="book.html?advance=true" class="quick-pill">📅 Advance Book</a>
+          <a href="advance.html" class="quick-pill">📅 Advance Book</a>
           <a href="book.html?type=corporate" class="quick-pill">🏢 Corporate</a>
           <a href="apply.html" class="quick-pill">🚌 Join as Operator</a>
         </div>
@@ -666,7 +670,7 @@ footer {
         <div class="feature-icon">📦</div>
         <h3 class="heading-md" style="margin-bottom:0.5rem;">Parcel Delivery</h3>
         <p class="body-sm text-muted" style="margin-bottom:1rem;">Send packages on every Raylane bus. Envelope to heavy cargo. Real-time tracking, OTP delivery confirmation, and insurance available.</p>
-        <a href="book.html?type=parcel" class="btn btn-blue btn-sm">Send Parcel</a>
+        <a href="parcel.html" class="btn btn-blue btn-sm">Send Parcel</a>
       </div>
       <div class="card p-3 reveal">
         <div class="feature-icon blue">📊</div>
@@ -956,8 +960,8 @@ footer {
         </div>
 
         <div style="margin-top:1.5rem;display:flex;gap:0.75rem;flex-wrap:wrap;">
-          <a href="book.html?type=parcel" class="btn btn-gold">Send a Parcel</a>
-          <a href="book.html?type=track" class="btn btn-outline">Track Your Parcel</a>
+          <a href="parcel.html" class="btn btn-gold">Send a Parcel</a>
+          <a href="track.html" class="btn btn-outline">Track Your Parcel</a>
         </div>
       </div>
 
@@ -1219,27 +1223,28 @@ footer {
         <div class="footer-heading">Passengers</div>
         <a href="book.html" class="footer-link">Book a Trip</a>
         <a href="book.html?type=return" class="footer-link">Return Journey</a>
-        <a href="book.html?type=parcel" class="footer-link">Send Parcel</a>
-        <a href="book.html?type=track" class="footer-link">Track Parcel</a>
+        <a href="parcel.html" class="footer-link">Send Parcel</a>
+        <a href="track.html" class="footer-link">Track Parcel</a>
         <a href="book.html?type=charter" class="footer-link">Charter a Bus</a>
+        <a href="advance.html" class="footer-link">Advance Booking</a>
         <a href="#loyalty" class="footer-link">Loyalty Programme</a>
       </div>
       <div>
         <div class="footer-heading">Operators</div>
         <a href="apply.html" class="footer-link">Apply to Join</a>
         <a href="operator.html" class="footer-link">Operator Portal</a>
-        <a href="#" class="footer-link">Subscription Plans</a>
-        <a href="#" class="footer-link">API & Webhooks</a>
-        <a href="#" class="footer-link">White-Label Licensing</a>
+        <a href="apply.html#plans" class="footer-link">Subscription Plans</a>
+        <a href="about.html" class="footer-link">Partnership Enquiries</a>
+        <a href="about.html" class="footer-link">White-Label Licensing</a>
       </div>
       <div>
         <div class="footer-heading">Company</div>
-        <a href="#about" class="footer-link">About Raylane</a>
-        <a href="#" class="footer-link">Safety Standards</a>
-        <a href="#" class="footer-link">Privacy Policy</a>
-        <a href="#" class="footer-link">Terms of Service</a>
+        <a href="about.html" class="footer-link">About Raylane</a>
+        <a href="lostandfound.html#safety" class="footer-link">Safety Standards</a>
+        <a href="lostandfound.html" class="footer-link">Lost &amp; Found</a>
+        <a href="about.html#careers" class="footer-link">Careers &amp; Internships</a>
         <a href="admin.html" class="footer-link">Admin Console</a>
-        <a href="#" class="footer-link">Careers</a>
+        <a href="track.html" class="footer-link">Track a Parcel</a>
       </div>
     </div>
 
@@ -1263,20 +1268,20 @@ footer {
     Home
   </a>
   <a href="book.html" class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V6a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6m16 0H4"/><path d="M10 2v4M14 2v4"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     Book
   </a>
-  <a href="book.html?type=parcel" class="bottom-nav-item">
+  <a href="parcel.html" class="bottom-nav-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
     Parcels
   </a>
-  <a href="#routes" class="bottom-nav-item">
+  <a href="track.html" class="bottom-nav-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-    Routes
+    Track
   </a>
-  <a href="apply.html" class="bottom-nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17h18M5 17V8a2 2 0 012-2h10a2 2 0 012 2v9"/></svg>
-    Operators
+  <a href="about.html" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>
+    About
   </a>
 </nav>
 
