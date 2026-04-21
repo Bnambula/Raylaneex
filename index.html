@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#071530">
+<meta name="description" content="Raylane Express — Uganda's premium transport platform. Book bus seats, send parcels, and manage fleet operations across East Africa. Tusimbudde!">
+<meta property="og:title" content="Raylane Express — Tusimbudde">
+<meta property="og:description" content="Uganda's first vertically integrated transport technology platform.">
+<meta property="og:image" content="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=1200">
+<link rel="icon" type="image/png" href="Raylane_express.png">
+<link rel="apple-touch-icon" href="Raylane_express.png">
+<title>Raylane Express — Tusimbudde</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+/* ── PAGE-SPECIFIC OVERRIDES ── */
+
+/* Hero slides */
+.hero {
+  min-height: 100svh;
+  position: relative;
+}
+.hero-slides {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+.hero-slide.active { opacity: 1; }
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right, rgba(7,21,48,0.90) 0%, rgba(7,21,48,0.50) 100%),
+    linear-gradient(to top, rgba(7,21,48,0.70) 0%, transparent 50%);
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 100px 0 120px;
+}
+
+@media (min-width: 768px) {
+  .hero-content { padding: 120px 0 80px; }
+}
+
+/* Slide indicators */
+.slide-indicators {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 3;
+}
+.slide-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.slide-dot.active {
+  width: 24px;
+  border-radius: 4px;
+  background: var(--gold-500);
+}
+
+/* Map section */
+.map-section {
+  background: var(--blue-950);
+  padding: 5rem 0;
+  position: relative;
+  overflow: hidden;
+}
+.map-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(at 30% 50%, rgba(37,83,199,0.2) 0%, transparent 60%);
+}
+
+.uganda-map-container {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.map-city-panel {
+  background: rgba(255,255,255,0.07);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem;
+  color: var(--white);
+  transition: all 0.3s ease;
+}
+
+/* Route cards strip */
+.routes-strip {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: none;
+}
+.routes-strip::-webkit-scrollbar { display: none; }
+
+.route-card {
+  flex-shrink: 0;
+  width: 200px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.route-card:hover { transform: translateY(-4px); }
+.route-card-img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+}
+.route-card-info {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, rgba(7,21,48,0.92), transparent);
+  padding: 1.25rem 0.875rem 0.875rem;
+  color: var(--white);
+}
+
+/* Operators section */
+.operator-card {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: all 0.25s ease;
+}
+.operator-card:hover {
+  border-color: var(--gold-500);
+  box-shadow: 0 8px 30px rgba(255,199,44,0.12);
+  transform: translateY(-2px);
+}
+
+/* How it works steps */
+.how-step {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+.step-num {
+  width: 44px; height: 44px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--blue-800), var(--blue-600));
+  color: var(--white);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 800;
+  box-shadow: 0 4px 16px rgba(11,29,69,0.35);
+}
+
+/* Testimonials */
+.testimonial-card {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.2s ease;
+}
+.testimonial-card:hover { transform: translateY(-3px); }
+
+/* Parcel pricing */
+.parcel-tier {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.2s ease;
+}
+.parcel-tier:hover {
+  border-color: var(--blue-400);
+  box-shadow: var(--shadow-md);
+}
+.parcel-icon {
+  width: 52px; height: 52px;
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+/* Trust cards */
+.trust-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--white);
+  transition: all 0.25s ease;
+}
+.trust-card:hover {
+  background: rgba(255,255,255,0.10);
+  transform: translateY(-2px);
+}
+.trust-card .icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+/* Departures live strip */
+.departures-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.departure-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1rem;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.departure-row:hover {
+  border-color: var(--blue-400);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Footer */
+footer {
+  background: var(--blue-950);
+  color: rgba(255,255,255,0.70);
+  padding: 4rem 0 2rem;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+}
+@media (min-width: 640px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1024px) { .footer-grid { grid-template-columns: 2fr 1fr 1fr 1fr; } }
+.footer-heading {
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 1rem;
+}
+.footer-link {
+  display: block;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.65);
+  padding: 0.3rem 0;
+  transition: color 0.2s ease;
+  text-decoration: none;
+}
+.footer-link:hover { color: var(--gold-400); }
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 1.5rem;
+  margin-top: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+  text-align: center;
+  font-size: 0.8125rem;
+}
+@media (min-width: 768px) {
+  .footer-bottom { flex-direction: row; justify-content: space-between; text-align: left; }
+}
+
+/* Loyalty tiers */
+.loyalty-tier {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.25s ease;
+}
+.loyalty-tier:hover { transform: translateY(-4px); }
+.loyalty-tier-header {
+  padding: 1.5rem;
+  color: var(--white);
+  text-align: center;
+}
+.loyalty-tier-body {
+  padding: 1.5rem;
+}
+
+/* Nearby terminal */
+#nearbyTerminalCard {
+  display: none;
+}
+#nearbyTerminalCard.visible {
+  display: flex;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     NAVBAR
+═══════════════════════════════════════════ -->
+<nav class="navbar" role="navigation" aria-label="Main navigation">
+  <div class="navbar-inner">
+    <a href="index.html" class="navbar-logo" aria-label="Raylane Express Home">
+      <img src="Raylane_express.png" alt="Raylane Express" height="40">
+    </a>
+
+    <div class="navbar-links">
+      <a href="#routes">Routes</a>
+      <a href="#parcels">Parcels</a>
+      <a href="#services">Services</a>
+      <a href="apply.html">For Operators</a>
+      <a href="#about">About</a>
+    </div>
+
+    <div class="navbar-actions">
+      <a href="book.html" class="btn btn-gold btn-sm">Book Now</a>
+      <a href="operator.html" class="btn btn-ghost btn-sm" style="display:none;" id="navOperatorBtn">Operator Portal</a>
+      <button class="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Drawer -->
+<div class="mobile-drawer" id="mobileDrawer" role="dialog" aria-modal="true" aria-label="Navigation menu">
+  <div class="mobile-drawer-overlay"></div>
+  <div class="mobile-drawer-panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <img src="Raylane_express.png" alt="Raylane Express" style="height:32px;">
+      <button class="mobile-drawer-close" aria-label="Close menu" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:1.5rem;cursor:pointer;">&times;</button>
+    </div>
+    <nav class="mobile-drawer-links" aria-label="Mobile navigation">
+      <a href="index.html">🏠 Home</a>
+      <a href="book.html">🎫 Book a Trip</a>
+      <a href="#routes">🗺 Routes</a>
+      <a href="#parcels">📦 Send Parcel</a>
+      <a href="#services">⭐ Services</a>
+      <a href="apply.html">🚌 Join as Operator</a>
+      <a href="operator.html">💼 Operator Portal</a>
+      <a href="admin.html">⚙️ Admin Console</a>
+      <a href="#about">ℹ️ About</a>
+    </nav>
+    <div style="margin-top:2rem;">
+      <a href="book.html" class="btn btn-gold w-full" style="width:100%;justify-content:center;">Book a Trip Now →</a>
+    </div>
+    <div style="margin-top:1rem;padding:1rem;background:rgba(255,199,44,0.08);border-radius:12px;border:1px solid rgba(255,199,44,0.15);">
+      <div style="font-family:var(--font-display);font-size:0.75rem;font-weight:700;color:var(--gold-500);margin-bottom:0.5rem;">NEED HELP?</div>
+      <div style="font-size:0.875rem;color:rgba(255,255,255,0.7);">WhatsApp: <strong style="color:white;">+256 700 000 001</strong></div>
+      <div style="font-size:0.875rem;color:rgba(255,255,255,0.7);">SMS / Call: <strong style="color:white;">+256 800 RAYLANE</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     HERO SECTION
+═══════════════════════════════════════════ -->
+<section class="hero" aria-label="Book your journey">
+  <div class="hero-slides" id="heroSlides" aria-hidden="true">
+    <div class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1400&q=80')"></div>
+    <div class="hero-slide"        style="background-image:url('https://images.unsplash.com/photo-1484503793037-5c9644d6a36a?auto=format&fit=crop&w=1400&q=80')"></div>
+    <div class="hero-slide"        style="background-image:url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1400&q=80')"></div>
+  </div>
+  <div class="hero-overlay" aria-hidden="true"></div>
+
+  <div class="hero-content">
+    <div class="container">
+      <div style="max-width:700px;margin-bottom:2rem;">
+        <div class="section-label" style="background:rgba(255,199,44,0.15);color:var(--gold-400);margin-bottom:1.25rem;">
+          <span>🇺🇬</span> Uganda's First Integrated Transport Platform
+        </div>
+        <h1 class="display-xl text-white" style="margin-bottom:1.25rem;text-shadow:0 2px 20px rgba(0,0,0,0.3);">
+          Travel Smarter.<br><span style="color:var(--gold-400);">Tusimbudde.</span>
+        </h1>
+        <p class="body-lg" style="color:rgba(255,255,255,0.80);max-width:520px;margin-bottom:1.75rem;">
+          Book verified bus seats, send parcels, and track journeys across Uganda and East Africa — in under 60 seconds, via MoMo, Airtel Money, or card. No app needed.
+        </p>
+
+        <!-- Search Widget -->
+        <div class="search-widget" style="max-width:680px;">
+          <div class="search-tabs" role="tablist">
+            <button class="search-tab active" data-tab="seat" role="tab" aria-selected="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 17h18M5 17V8a2 2 0 012-2h10a2 2 0 012 2v9"/><path d="M8 17v-5M16 17v-5"/></svg>
+              Bus Seat
+            </button>
+            <button class="search-tab" data-tab="return" role="tab" aria-selected="false">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+              Return Trip
+            </button>
+            <button class="search-tab" data-tab="parcel" role="tab" aria-selected="false">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+              Parcel
+            </button>
+            <button class="search-tab" data-tab="charter" role="tab" aria-selected="false">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+              Group / Charter
+            </button>
+          </div>
+
+          <div class="search-body">
+            <!-- Seat / Return panel -->
+            <div class="search-panel" id="seatPanel" data-panel="seat">
+              <form action="book.html" method="GET" onsubmit="return handleSearch(event, 'seat')">
+                <div class="search-fields">
+                  <div class="search-field-wrapper" style="position:relative;">
+                    <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+                    <button type="button" class="swap-btn" aria-label="Swap origin and destination">⇅</button>
+                    <input type="text" name="from" id="from" class="form-input" placeholder="Departure city" required autocomplete="off" list="cityList">
+                  </div>
+                  <div class="search-field-wrapper">
+                    <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <input type="text" name="to" id="to" class="form-input" placeholder="Destination city" required autocomplete="off" list="cityList">
+                  </div>
+                  <div class="search-field-wrapper">
+                    <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <input type="date" name="date" id="travelDate" class="form-input" required>
+                  </div>
+                  <div class="search-field-wrapper">
+                    <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                    <select name="passengers" class="form-input form-select" aria-label="Number of passengers">
+                      <option value="1">1 Passenger</option>
+                      <option value="2">2 Passengers</option>
+                      <option value="3">3 Passengers</option>
+                      <option value="4">4 Passengers</option>
+                      <option value="5">5 Passengers</option>
+                      <option value="6+">6+ (Group)</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-gold" style="width:100%;justify-content:center;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Search
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Return panel -->
+            <div class="search-panel" id="returnPanel" data-panel="return" style="display:none;">
+              <form action="book.html" method="GET" onsubmit="return handleSearch(event, 'return')">
+                <div class="search-fields">
+                  <div class="search-field-wrapper" style="position:relative;">
+                    <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3"/></svg>
+                    <button type="button" class="swap-btn" aria-label="Swap">⇅</button>
+                    <input type="text" name="from" class="form-input" placeholder="Departure city" required autocomplete="off" list="cityList">
+                  </div>
+                  <div class="search-field-wrapper">
+                    <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <input type="text" name="to" class="form-input" placeholder="Destination city" required autocomplete="off" list="cityList">
+                  </div>
+                  <div class="search-field-wrapper">
+                    <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+                    <input type="date" name="date" class="form-input" placeholder="Departure" required>
+                  </div>
+                  <div class="search-field-wrapper">
+                    <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    <input type="date" name="returnDate" class="form-input" placeholder="Return date" required>
+                  </div>
+                  <button type="submit" class="btn btn-gold" style="width:100%;justify-content:center;">Search Return →</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Parcel panel -->
+            <div class="search-panel" id="parcelPanel" data-panel="parcel" style="display:none;">
+              <form action="book.html" method="GET" onsubmit="return handleSearch(event, 'parcel')">
+                <input type="hidden" name="type" value="parcel">
+                <div class="search-fields">
+                  <div class="search-field-wrapper">
+                    <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/></svg>
+                    <input type="text" name="from" class="form-input" placeholder="Sending from" required autocomplete="off" list="cityList">
+                  </div>
+                  <div class="search-field-wrapper">
+                    <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/></svg>
+                    <input type="text" name="to" class="form-input" placeholder="Delivering to" required autocomplete="off" list="cityList">
+                  </div>
+                  <div class="search-field-wrapper">
+                    <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4"/></svg>
+                    <select name="weight" class="form-input form-select" aria-label="Parcel weight">
+                      <option value="0.5">Envelope / Docs (≤0.5kg) — UGX 5,000</option>
+                      <option value="2">Small Parcel (≤2kg) — UGX 12,000</option>
+                      <option value="10">Large Parcel (≤10kg) — UGX 20,000</option>
+                      <option value="50">Heavy Cargo (≤50kg) — From UGX 30,000</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-gold" style="width:100%;justify-content:center;">Send Parcel →</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Charter panel -->
+            <div class="search-panel" data-panel="charter" style="display:none;padding-bottom:0.25rem;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                <div class="search-field-wrapper">
+                  <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/></svg>
+                  <input type="text" class="form-input" placeholder="Departure" autocomplete="off" list="cityList">
+                </div>
+                <div class="search-field-wrapper">
+                  <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13"/></svg>
+                  <input type="text" class="form-input" placeholder="Destination" autocomplete="off" list="cityList">
+                </div>
+                <div class="search-field-wrapper">
+                  <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>
+                  <input type="date" class="form-input">
+                </div>
+                <div class="search-field-wrapper">
+                  <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/></svg>
+                  <select class="form-input form-select"><option>10–20 People</option><option>20–40 People</option><option>40–67 People</option><option>Multiple Buses</option></select>
+                </div>
+              </div>
+              <button class="btn btn-gold" style="width:100%;justify-content:center;" onclick="Modal.open('charterModal')">Request Charter Quote →</button>
+            </div>
+
+            <!-- Nearby terminal button -->
+            <div style="margin-top:0.875rem;padding-top:0.875rem;border-top:1px solid var(--gray-100);">
+              <button type="button" onclick="detectNearbyTerminal()" style="display:flex;align-items:center;gap:0.5rem;background:none;border:none;cursor:pointer;color:var(--blue-700);font-family:var(--font-display);font-size:0.8125rem;font-weight:600;padding:0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Find nearest terminal with live departures
+              </button>
+              <div id="nearbyTerminalCard" class="nearbyTerminalCard" style="margin-top:0.75rem;padding:0.875rem;background:var(--blue-50);border:1.5px solid var(--blue-200);border-radius:var(--radius-md);align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap;">
+                <div>
+                  <div id="nearbyName" style="font-family:var(--font-display);font-size:0.875rem;font-weight:700;color:var(--blue-900);"></div>
+                  <div id="nearbyDist" style="font-size:0.8125rem;color:var(--gray-500);"></div>
+                </div>
+                <a id="nearbyMapsLink" href="#" target="_blank" class="btn btn-blue btn-sm">View on Maps →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="quick-actions" style="margin-top:1.25rem;" role="navigation" aria-label="Quick actions">
+          <a href="book.html" class="quick-pill">🎫 Book Seat</a>
+          <a href="book.html?type=parcel" class="quick-pill">📦 Send Parcel</a>
+          <a href="book.html?type=track" class="quick-pill">📍 Track Parcel</a>
+          <a href="book.html?type=group" class="quick-pill">👥 Group Booking</a>
+          <a href="book.html?advance=true" class="quick-pill">📅 Advance Book</a>
+          <a href="book.html?type=corporate" class="quick-pill">🏢 Corporate</a>
+          <a href="apply.html" class="quick-pill">🚌 Join as Operator</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide indicators -->
+  <div class="slide-indicators" aria-hidden="true">
+    <div class="slide-dot active" onclick="setSlide(0)"></div>
+    <div class="slide-dot" onclick="setSlide(1)"></div>
+    <div class="slide-dot" onclick="setSlide(2)"></div>
+  </div>
+</section>
+
+<!-- Datalist for autocomplete -->
+<datalist id="cityList">
+  <option value="Kampala"><option value="Entebbe"><option value="Jinja"><option value="Mbale">
+  <option value="Tororo"><option value="Soroti"><option value="Lira"><option value="Gulu">
+  <option value="Arua"><option value="Fort Portal"><option value="Kasese"><option value="Mbarara">
+  <option value="Masaka"><option value="Kabale"><option value="Kisoro"><option value="Hoima">
+  <option value="Masindi"><option value="Kotido"><option value="Moroto">
+  <option value="Nairobi (Kenya)"><option value="Kigali (Rwanda)">
+</datalist>
+
+<!-- ═══════════════════════════════════════════
+     STATS TICKER
+═══════════════════════════════════════════ -->
+<div class="stats-ticker" role="marquee" aria-label="Platform statistics">
+  <div class="ticker-track" id="tickerTrack">
+    <div class="ticker-item"><span>🚌</span> 800,000+ Registered Transport Operators <span class="dot"></span></div>
+    <div class="ticker-item"><span>💰</span> UGX 2.4 Trillion Annual Transport Sector <span class="dot"></span></div>
+    <div class="ticker-item"><span>📱</span> 70% Mobile Money Penetration <span class="dot"></span></div>
+    <div class="ticker-item"><span>🛣</span> 92% of Freight Moves by Road <span class="dot"></span></div>
+    <div class="ticker-item"><span>⚡</span> 60-Second Booking. Zero App Download. <span class="dot"></span></div>
+    <div class="ticker-item"><span>🌍</span> Expanding: Kenya · Rwanda · South Sudan <span class="dot"></span></div>
+    <div class="ticker-item"><span>🔒</span> 5-Minute Seat Lock. Instant MoMo Refunds. <span class="dot"></span></div>
+    <!-- Duplicate for seamless loop -->
+    <div class="ticker-item"><span>🚌</span> 800,000+ Registered Transport Operators <span class="dot"></span></div>
+    <div class="ticker-item"><span>💰</span> UGX 2.4 Trillion Annual Transport Sector <span class="dot"></span></div>
+    <div class="ticker-item"><span>📱</span> 70% Mobile Money Penetration <span class="dot"></span></div>
+    <div class="ticker-item"><span>🛣</span> 92% of Freight Moves by Road <span class="dot"></span></div>
+    <div class="ticker-item"><span>⚡</span> 60-Second Booking. Zero App Download. <span class="dot"></span></div>
+    <div class="ticker-item"><span>🌍</span> Expanding: Kenya · Rwanda · South Sudan <span class="dot"></span></div>
+    <div class="ticker-item"><span>🔒</span> 5-Minute Seat Lock. Instant MoMo Refunds. <span class="dot"></span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     LIVE DEPARTURES
+═══════════════════════════════════════════ -->
+<section class="section" id="departures">
+  <div class="container">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <div class="section-label">Live Departures Today</div>
+        <h2 class="display-md">Buses Loading Now</h2>
+      </div>
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <div class="live-dot">Live availability</div>
+        <a href="book.html" class="btn btn-outline btn-sm">View All Routes</a>
+      </div>
+    </div>
+
+    <div class="departures-strip" id="departuresList">
+      <!-- Populated by JS -->
+    </div>
+
+    <div style="margin-top:1.5rem;text-align:center;">
+      <a href="book.html" class="btn btn-gold btn-lg">Search All Departures →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SERVICES GRID
+═══════════════════════════════════════════ -->
+<section class="section bg-gray-50" id="services">
+  <div class="container">
+    <div class="text-center" style="margin-bottom:3rem;">
+      <div class="section-label" style="justify-content:center;">What We Offer</div>
+      <h2 class="display-md" style="margin-bottom:0.75rem;">Everything Your Journey Needs</h2>
+      <p class="body-lg text-muted" style="max-width:560px;margin:0 auto;">From a single seat to full fleet management — Raylane Express powers transport across East Africa.</p>
+    </div>
+
+    <div class="grid-3">
+      <div class="card p-3 reveal">
+        <div class="feature-icon">🎫</div>
+        <h3 class="heading-md" style="margin-bottom:0.5rem;">Passenger Booking</h3>
+        <p class="body-sm text-muted" style="margin-bottom:1rem;">Search verified trips, choose your numbered seat, and pay via MTN MoMo, Airtel Money, or card. Works on 2G. No app needed.</p>
+        <a href="book.html" class="btn btn-blue btn-sm">Book a Trip</a>
+      </div>
+      <div class="card p-3 reveal">
+        <div class="feature-icon">📦</div>
+        <h3 class="heading-md" style="margin-bottom:0.5rem;">Parcel Delivery</h3>
+        <p class="body-sm text-muted" style="margin-bottom:1rem;">Send packages on every Raylane bus. Envelope to heavy cargo. Real-time tracking, OTP delivery confirmation, and insurance available.</p>
+        <a href="book.html?type=parcel" class="btn btn-blue btn-sm">Send Parcel</a>
+      </div>
+      <div class="card p-3 reveal">
+        <div class="feature-icon blue">📊</div>
+        <h3 class="heading-md" style="margin-bottom:0.5rem;">Operator SaaS</h3>
+        <p class="body-sm text-muted" style="margin-bottom:1rem;">Full business management for transport operators: trips, fleet, drivers, payroll, NSSF, insurance, compliance, and IFRS financials.</p>
+        <a href="apply.html" class="btn btn-outline btn-sm">Join as Operator</a>
+      </div>
+      <div class="card p-3 reveal">
+        <div class="feature-icon blue">👥</div>
+        <h3 class="heading-md" style="margin-bottom:0.5rem;">Group & Charter</h3>
+        <p class="body-sm text-muted" style="margin-bottom:1rem;">Book the full bus for weddings, school trips, team away days, tourist groups, or institutional travel. One quote, one contract.</p>
+        <a href="book.html?type=charter" class="btn btn-blue btn-sm">Request Quote</a>
+      </div>
+      <div class="card p-3 reveal">
+        <div class="feature-icon">🏢</div>
+        <h3 class="heading-md" style="margin-bottom:0.5rem;">Corporate Accounts</h3>
+        <p class="body-sm text-muted" style="margin-bottom:1rem;">Monthly invoicing for NGOs, UN agencies, embassies, and businesses. No per-trip payment friction. Dedicated account manager.</p>
+        <a href="#" class="btn btn-blue btn-sm" onclick="Modal.open('corporateModal')">Open Account</a>
+      </div>
+      <div class="card p-3 reveal">
+        <div class="feature-icon">⭐</div>
+        <h3 class="heading-md" style="margin-bottom:0.5rem;">Loyalty Programme</h3>
+        <p class="body-sm text-muted" style="margin-bottom:1rem;">Earn points on every journey. Unlock Bronze, Silver, and Gold tiers with priority boarding, discounts, and free upgrades.</p>
+        <a href="#loyalty" class="btn btn-outline btn-sm">View Benefits</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     HOW IT WORKS
+═══════════════════════════════════════════ -->
+<section class="section bg-dark-pattern" id="how">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:3rem;">
+      <div class="section-label" style="justify-content:center;background:rgba(255,199,44,0.12);color:var(--gold-400);">Simple Process</div>
+      <h2 class="display-md text-white" style="margin-bottom:0.75rem;">Book in Under 60 Seconds</h2>
+      <p class="body-lg" style="color:rgba(255,255,255,0.65);max-width:520px;margin:0 auto;">No account. No app download. Works on 2G. Just your phone number and a MoMo PIN.</p>
+    </div>
+
+    <div class="grid-3" style="gap:2rem;">
+      <div class="how-step reveal">
+        <div class="step-num">1</div>
+        <div>
+          <h3 class="heading-md text-white" style="margin-bottom:0.5rem;">Search Your Route</h3>
+          <p class="body-sm" style="color:rgba(255,255,255,0.60);">Enter origin, destination, and travel date. See all approved trips with real-time seat availability, operator ratings, and pricing.</p>
+        </div>
+      </div>
+      <div class="how-step reveal">
+        <div class="step-num">2</div>
+        <div>
+          <h3 class="heading-md text-white" style="margin-bottom:0.5rem;">Choose Your Seat</h3>
+          <p class="body-sm" style="color:rgba(255,255,255,0.60);">Select your exact seat from an interactive map of the bus. Your seat is locked for 5 minutes while you pay.</p>
+        </div>
+      </div>
+      <div class="how-step reveal">
+        <div class="step-num">3</div>
+        <div>
+          <h3 class="heading-md text-white" style="margin-bottom:0.5rem;">Pay via MoMo</h3>
+          <p class="body-sm" style="color:rgba(255,255,255,0.60);">Confirm with your MTN or Airtel MoMo PIN. Payment confirmed in ~8 seconds. QR e-ticket sent to your phone via SMS instantly.</p>
+        </div>
+      </div>
+      <div class="how-step reveal">
+        <div class="step-num">4</div>
+        <div>
+          <h3 class="heading-md text-white" style="margin-bottom:0.5rem;">Show Your QR Code</h3>
+          <p class="body-sm" style="color:rgba(255,255,255,0.60);">At boarding, show the QR code. Driver scans and confirms — green screen means you're cleared. Red screen shows the reason for any issue.</p>
+        </div>
+      </div>
+      <div class="how-step reveal">
+        <div class="step-num">5</div>
+        <div>
+          <h3 class="heading-md text-white" style="margin-bottom:0.5rem;">Earn Loyalty Points</h3>
+          <p class="body-sm" style="color:rgba(255,255,255,0.60);">Earn 1 point per UGX 100 spent. Accumulate to Silver and Gold for priority boarding, discounts, and free upgrades.</p>
+        </div>
+      </div>
+      <div class="how-step reveal">
+        <div class="step-num">✓</div>
+        <div>
+          <h3 class="heading-md text-white" style="margin-bottom:0.5rem;">No App Required</h3>
+          <p class="body-sm" style="color:rgba(255,255,255,0.60);">The entire flow works on WhatsApp, 2G SMS, or this website. We designed for Uganda's reality — your phone is all you need.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:3rem;">
+      <a href="book.html" class="btn btn-gold btn-lg">Start Your Journey →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     UGANDA ROUTE MAP
+═══════════════════════════════════════════ -->
+<section class="map-section" id="routes">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr;gap:3rem;align-items:start;" id="mapGrid">
+      <div>
+        <div class="section-label" style="background:rgba(255,199,44,0.12);color:var(--gold-400);">Our Network</div>
+        <h2 class="display-md text-white" style="margin-bottom:0.75rem;">Where We Go</h2>
+        <p class="body-md" style="color:rgba(255,255,255,0.65);margin-bottom:2rem;">Daily routes across all 4 regions of Uganda, plus international connections to Nairobi and Kigali. Hover any city to see live departures.</p>
+
+        <!-- Map SVG -->
+        <div class="uganda-map-container">
+          <svg viewBox="0 0 360 420" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:380px;" role="img" aria-label="Raylane Express route network across Uganda and East Africa">
+            <!-- Uganda landmass -->
+            <defs>
+              <radialGradient id="mapGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="rgba(37,83,199,0.15)"/>
+                <stop offset="100%" stop-color="transparent"/>
+              </radialGradient>
+            </defs>
+            <rect width="360" height="420" fill="url(#mapGlow)"/>
+
+            <!-- Water bodies -->
+            <ellipse cx="230" cy="370" rx="60" ry="45" fill="rgba(37,99,235,0.25)" stroke="rgba(37,99,235,0.40)" stroke-width="1"/>
+            <text x="224" y="374" fill="rgba(147,197,253,0.6)" font-size="7" text-anchor="middle" font-family="DM Sans">Lake Victoria</text>
+            <ellipse cx="52" cy="195" rx="14" ry="32" fill="rgba(37,99,235,0.2)" stroke="rgba(37,99,235,0.35)" stroke-width="1"/>
+            <text x="52" y="197" fill="rgba(147,197,253,0.5)" font-size="5.5" text-anchor="middle" font-family="DM Sans">L. Albert</text>
+            <ellipse cx="42" cy="310" rx="11" ry="18" fill="rgba(37,99,235,0.2)" stroke="rgba(37,99,235,0.3)" stroke-width="1"/>
+            <text x="42" y="312" fill="rgba(147,197,253,0.5)" font-size="5" text-anchor="middle" font-family="DM Sans">L. Edward</text>
+
+            <!-- Route lines from Kampala (190, 290) -->
+            <line class="route-line" x1="190" y1="290" x2="100" y2="95"/>  <!-- Gulu -->
+            <line class="route-line" x1="190" y1="290" x2="295" y2="195"/> <!-- Mbale -->
+            <line class="route-line" x1="190" y1="290" x2="75" y2="295"/>  <!-- Fort Portal -->
+            <line class="route-line" x1="190" y1="290" x2="165" y2="370"/> <!-- Mbarara -->
+            <line class="route-line" x1="190" y1="290" x2="208" y2="312"/> <!-- Entebbe -->
+            <line class="route-line" x1="190" y1="290" x2="240" y2="278"/> <!-- Jinja -->
+            <line class="route-line" x1="190" y1="290" x2="230" y2="200"/> <!-- Lira -->
+            <line class="route-line" x1="190" y1="290" x2="55" y2="165"/>  <!-- Arua -->
+            <line class="route-line international" x1="240" y1="278" x2="320" y2="280"/> <!-- Nairobi -->
+            <line class="route-line international" x1="165" y1="370" x2="110" y2="418"/> <!-- Kigali -->
+
+            <!-- Hub cities (larger gold pins) -->
+            <g class="map-pin hub" onclick="showCity('Kampala')" style="cursor:pointer;">
+              <circle cx="190" cy="290" r="8" fill="var(--gold-500)" opacity="0.2"/>
+              <circle cx="190" cy="290" r="5" fill="var(--gold-500)"/>
+              <text x="190" y="280" fill="white" font-size="8.5" text-anchor="middle" font-family="Sora" font-weight="700">Kampala</text>
+            </g>
+            <g class="map-pin hub" onclick="showCity('Gulu')" style="cursor:pointer;">
+              <circle cx="100" cy="95" r="6" fill="var(--gold-500)" opacity="0.2"/>
+              <circle cx="100" cy="95" r="4" fill="var(--gold-500)"/>
+              <text x="100" y="86" fill="rgba(255,255,255,0.9)" font-size="7.5" text-anchor="middle" font-family="Sora" font-weight="700">Gulu</text>
+            </g>
+            <g class="map-pin hub" onclick="showCity('Mbale')" style="cursor:pointer;">
+              <circle cx="295" cy="195" r="6" fill="var(--gold-500)" opacity="0.2"/>
+              <circle cx="295" cy="195" r="4" fill="var(--gold-500)"/>
+              <text x="295" y="186" fill="rgba(255,255,255,0.9)" font-size="7.5" text-anchor="middle" font-family="Sora" font-weight="700">Mbale</text>
+            </g>
+            <g class="map-pin hub" onclick="showCity('Mbarara')" style="cursor:pointer;">
+              <circle cx="165" cy="370" r="6" fill="var(--gold-500)" opacity="0.2"/>
+              <circle cx="165" cy="370" r="4" fill="var(--gold-500)"/>
+              <text x="165" y="361" fill="rgba(255,255,255,0.9)" font-size="7.5" text-anchor="middle" font-family="Sora" font-weight="700">Mbarara</text>
+            </g>
+            <g class="map-pin hub" onclick="showCity('Fort Portal')" style="cursor:pointer;">
+              <circle cx="75" cy="295" r="6" fill="var(--gold-500)" opacity="0.2"/>
+              <circle cx="75" cy="295" r="4" fill="var(--gold-500)"/>
+              <text x="75" y="286" fill="rgba(255,255,255,0.9)" font-size="7.5" text-anchor="middle" font-family="Sora" font-weight="700">Ft Portal</text>
+            </g>
+
+            <!-- Regular cities -->
+            <g class="map-pin city" onclick="showCity('Jinja')" style="cursor:pointer;">
+              <circle cx="240" cy="278" r="3.5" fill="rgba(255,255,255,0.85)"/>
+              <text x="247" y="282" fill="rgba(255,255,255,0.75)" font-size="7" font-family="DM Sans">Jinja</text>
+            </g>
+            <g class="map-pin city" onclick="showCity('Entebbe')" style="cursor:pointer;">
+              <circle cx="208" cy="312" r="3.5" fill="rgba(255,255,255,0.85)"/>
+              <text x="215" y="316" fill="rgba(255,255,255,0.75)" font-size="7" font-family="DM Sans">Entebbe</text>
+            </g>
+            <g class="map-pin city" onclick="showCity('Lira')" style="cursor:pointer;">
+              <circle cx="230" cy="200" r="3.5" fill="rgba(255,255,255,0.85)"/>
+              <text x="237" y="204" fill="rgba(255,255,255,0.75)" font-size="7" font-family="DM Sans">Lira</text>
+            </g>
+            <g class="map-pin city" onclick="showCity('Arua')" style="cursor:pointer;">
+              <circle cx="55" cy="165" r="3.5" fill="rgba(255,255,255,0.85)"/>
+              <text x="62" y="169" fill="rgba(255,255,255,0.75)" font-size="7" font-family="DM Sans">Arua</text>
+            </g>
+            <g class="map-pin city" onclick="showCity('Soroti')" style="cursor:pointer;">
+              <circle cx="265" cy="165" r="3.5" fill="rgba(255,255,255,0.85)"/>
+              <text x="272" y="169" fill="rgba(255,255,255,0.75)" font-size="7" font-family="DM Sans">Soroti</text>
+            </g>
+            <g class="map-pin city" onclick="showCity('Kabale')" style="cursor:pointer;">
+              <circle cx="135" cy="395" r="3.5" fill="rgba(255,255,255,0.85)"/>
+              <text x="142" y="399" fill="rgba(255,255,255,0.75)" font-size="7" font-family="DM Sans">Kabale</text>
+            </g>
+            <g class="map-pin city" onclick="showCity('Kasese')" style="cursor:pointer;">
+              <circle cx="75" cy="335" r="3.5" fill="rgba(255,255,255,0.85)"/>
+              <text x="82" y="339" fill="rgba(255,255,255,0.75)" font-size="7" font-family="DM Sans">Kasese</text>
+            </g>
+            <g class="map-pin city" onclick="showCity('Masaka')" style="cursor:pointer;">
+              <circle cx="175" cy="330" r="3.5" fill="rgba(255,255,255,0.85)"/>
+              <text x="182" y="334" fill="rgba(255,255,255,0.75)" font-size="7" font-family="DM Sans">Masaka</text>
+            </g>
+            <g class="map-pin city" onclick="showCity('Tororo')" style="cursor:pointer;">
+              <circle cx="305" cy="240" r="3.5" fill="rgba(255,255,255,0.85)"/>
+              <text x="312" y="244" fill="rgba(255,255,255,0.75)" font-size="7" font-family="DM Sans">Tororo</text>
+            </g>
+            <g class="map-pin city" onclick="showCity('Hoima')" style="cursor:pointer;">
+              <circle cx="120" cy="210" r="3.5" fill="rgba(255,255,255,0.85)"/>
+              <text x="127" y="214" fill="rgba(255,255,255,0.75)" font-size="7" font-family="DM Sans">Hoima</text>
+            </g>
+
+            <!-- International -->
+            <g class="map-pin" onclick="showCity('Nairobi')" style="cursor:pointer;">
+              <circle cx="320" cy="280" r="3.5" fill="rgba(255,199,44,0.6)"/>
+              <text x="327" y="284" fill="rgba(255,199,44,0.8)" font-size="7" font-family="DM Sans">Nairobi</text>
+            </g>
+            <g class="map-pin" onclick="showCity('Kigali')" style="cursor:pointer;">
+              <circle cx="110" cy="418" r="3.5" fill="rgba(255,199,44,0.6)"/>
+              <text x="117" y="418" fill="rgba(255,199,44,0.8)" font-size="7" font-family="DM Sans">Kigali</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- City detail panel -->
+      <div id="cityPanel" class="map-city-panel" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;">
+          <div>
+            <h3 id="cityName" class="heading-lg text-white"></h3>
+            <p id="cityCountry" class="text-sm" style="color:rgba(255,255,255,0.6);"></p>
+          </div>
+          <button onclick="document.getElementById('cityPanel').style.display='none'" style="background:rgba(255,255,255,0.1);border:none;color:white;border-radius:50%;width:28px;height:28px;cursor:pointer;">×</button>
+        </div>
+        <p id="cityDesc" class="body-sm" style="color:rgba(255,255,255,0.70);margin-bottom:1rem;"></p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.25rem;">
+          <div style="background:rgba(255,255,255,0.07);border-radius:10px;padding:0.75rem;text-align:center;">
+            <div id="cityTrips" style="font-family:var(--font-display);font-size:1.25rem;font-weight:800;color:var(--gold-500);"></div>
+            <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);">Daily Trips</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.07);border-radius:10px;padding:0.75rem;text-align:center;">
+            <div id="cityPrice" style="font-family:var(--font-display);font-size:0.875rem;font-weight:700;color:var(--gold-500);"></div>
+            <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);">Starting Price</div>
+          </div>
+        </div>
+        <a id="cityBookBtn" href="book.html" class="btn btn-gold" style="width:100%;justify-content:center;">Book to <span id="cityBookName"></span> →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PARCEL SECTION
+═══════════════════════════════════════════ -->
+<section class="section" id="parcels">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr;gap:3rem;align-items:center;">
+      <div>
+        <div class="section-label">Parcel Delivery</div>
+        <h2 class="display-md" style="margin-bottom:1rem;">Every Bus Carries Your Packages</h2>
+        <p class="body-lg text-muted" style="margin-bottom:2rem;">Send parcels across Uganda on every Raylane route. Real-time GPS tracking, OTP delivery confirmation, and UAP Old Mutual insurance for valuable items.</p>
+
+        <div style="display:flex;flex-direction:column;gap:0.75rem;">
+          <div class="parcel-tier reveal">
+            <div class="parcel-icon" style="background:#EEF2FF;">✉️</div>
+            <div style="flex:1;">
+              <div style="font-family:var(--font-display);font-weight:700;font-size:0.9rem;">Envelope / Documents</div>
+              <div style="font-size:0.8125rem;color:var(--gray-500);">Letters, IDs, certificates — up to 0.5kg</div>
+            </div>
+            <div style="font-family:var(--font-display);font-weight:800;color:var(--blue-800);white-space:nowrap;">UGX 5,000</div>
+          </div>
+          <div class="parcel-tier reveal">
+            <div class="parcel-icon" style="background:#FEF3C7;">📦</div>
+            <div style="flex:1;">
+              <div style="font-family:var(--font-display);font-weight:700;font-size:0.9rem;">Small Parcel</div>
+              <div style="font-size:0.8125rem;color:var(--gray-500);">Clothes, books, small electronics — up to 2kg</div>
+            </div>
+            <div style="font-family:var(--font-display);font-weight:800;color:var(--blue-800);white-space:nowrap;">UGX 12,000</div>
+          </div>
+          <div class="parcel-tier reveal">
+            <div class="parcel-icon" style="background:#F0FDF4;">🏠</div>
+            <div style="flex:1;">
+              <div style="font-family:var(--font-display);font-weight:700;font-size:0.9rem;">Large Parcel</div>
+              <div style="font-size:0.8125rem;color:var(--gray-500);">Household items, appliances — up to 10kg</div>
+            </div>
+            <div style="font-family:var(--font-display);font-weight:800;color:var(--blue-800);white-space:nowrap;">UGX 20,000</div>
+          </div>
+          <div class="parcel-tier reveal">
+            <div class="parcel-icon" style="background:#FFF1F2;">🚛</div>
+            <div style="flex:1;">
+              <div style="font-family:var(--font-display);font-weight:700;font-size:0.9rem;">Heavy Cargo</div>
+              <div style="font-size:0.8125rem;color:var(--gray-500);">Commercial freight, large goods — up to 50kg</div>
+            </div>
+            <div style="font-family:var(--font-display);font-weight:800;color:var(--blue-800);white-space:nowrap;">From UGX 30,000</div>
+          </div>
+        </div>
+
+        <div style="margin-top:1.5rem;display:flex;gap:0.75rem;flex-wrap:wrap;">
+          <a href="book.html?type=parcel" class="btn btn-gold">Send a Parcel</a>
+          <a href="book.html?type=track" class="btn btn-outline">Track Your Parcel</a>
+        </div>
+      </div>
+
+      <div style="background:var(--gray-50);border-radius:var(--radius-xl);padding:2rem;">
+        <h3 class="heading-md" style="margin-bottom:1.25rem;">Real-Time Tracking</h3>
+        <div style="display:flex;flex-direction:column;gap:0;position:relative;">
+          <div style="position:absolute;left:15px;top:20px;bottom:20px;width:2px;background:var(--gray-200);"></div>
+          <div id="trackStep1" style="display:flex;align-items:flex-start;gap:1rem;padding:0.875rem 0;position:relative;">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--green-500);display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1;">✓</div>
+            <div>
+              <div style="font-family:var(--font-display);font-weight:700;font-size:0.875rem;color:var(--green-700);">Picked Up</div>
+              <div style="font-size:0.8rem;color:var(--gray-500);">Collected, weighed, QR-coded at origin.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:1rem;padding:0.875rem 0;position:relative;">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--green-500);display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1;">✓</div>
+            <div>
+              <div style="font-family:var(--font-display);font-weight:700;font-size:0.875rem;color:var(--green-700);">Verified &amp; Loaded</div>
+              <div style="font-size:0.8rem;color:var(--gray-500);">Weight confirmed. Driver signed acceptance.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:1rem;padding:0.875rem 0;position:relative;">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--gold-500);display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1;animation:livePulse 1.5s infinite;">🚌</div>
+            <div>
+              <div style="font-family:var(--font-display);font-weight:700;font-size:0.875rem;color:var(--gold-700);">In Transit — Live</div>
+              <div style="font-size:0.8rem;color:var(--gray-500);">GPS tracking active. ETA updated every 15 min.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:1rem;padding:0.875rem 0;position:relative;opacity:0.45;">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--gray-200);display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1;">📍</div>
+            <div>
+              <div style="font-family:var(--font-display);font-weight:700;font-size:0.875rem;">Delivered</div>
+              <div style="font-size:0.8rem;color:var(--gray-500);">Recipient confirms via SMS OTP. You're notified.</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:1.5rem;padding:1rem;background:var(--blue-50);border-radius:var(--radius-md);border:1px solid var(--blue-100);">
+          <div style="font-family:var(--font-display);font-size:0.8125rem;font-weight:700;color:var(--blue-700);margin-bottom:0.25rem;">Add-ons Available</div>
+          <div style="font-size:0.8125rem;color:var(--gray-600);">🏍 Pickup Rider (+UGX 5,000) &nbsp; 🛡 UAP Insurance (3% of value) &nbsp; ⚡ Express Priority (+UGX 8,000)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     LOYALTY PROGRAMME
+═══════════════════════════════════════════ -->
+<section class="section bg-gray-50" id="loyalty">
+  <div class="container">
+    <div class="text-center" style="margin-bottom:3rem;">
+      <div class="section-label" style="justify-content:center;">Loyalty Programme</div>
+      <h2 class="display-md" style="margin-bottom:0.75rem;">The More You Travel, The More You Earn</h2>
+      <p class="body-lg text-muted" style="max-width:520px;margin:0 auto;">Optional. No account required to book. Create a free account at checkout to start earning on every trip.</p>
+    </div>
+
+    <div class="grid-3">
+      <div class="loyalty-tier reveal">
+        <div class="loyalty-tier-header" style="background:linear-gradient(135deg,#CD7F32,#8B4513);">
+          <div style="font-size:2.5rem;margin-bottom:0.5rem;">🥉</div>
+          <div style="font-family:var(--font-display);font-size:1.25rem;font-weight:800;">Bronze</div>
+          <div style="font-size:0.875rem;opacity:0.8;">0 – 1,999 points</div>
+        </div>
+        <div class="loyalty-tier-body">
+          <ul style="display:flex;flex-direction:column;gap:0.625rem;">
+            <li style="display:flex;gap:0.5rem;font-size:0.875rem;"><span style="color:var(--green-500);">✓</span> Digital QR e-tickets</li>
+            <li style="display:flex;gap:0.5rem;font-size:0.875rem;"><span style="color:var(--green-500);">✓</span> 30-day booking history</li>
+            <li style="display:flex;gap:0.5rem;font-size:0.875rem;"><span style="color:var(--green-500);">✓</span> 1 point per UGX 100 spent</li>
+          </ul>
+        </div>
+      </div>
+      <div class="loyalty-tier reveal" style="transform:scale(1.02);box-shadow:var(--shadow-lg);">
+        <div class="loyalty-tier-header" style="background:linear-gradient(135deg,#9CA3AF,#4B5563);">
+          <div style="font-size:2.5rem;margin-bottom:0.5rem;">🥈</div>
+          <div style="font-family:var(--font-display);font-size:1.25rem;font-weight:800;">Silver</div>
+          <div style="font-size:0.875rem;opacity:0.8;">2,000 – 9,999 points</div>
+        </div>
+        <div class="loyalty-tier-body">
+          <div class="badge badge-blue" style="margin-bottom:0.75rem;">Most Popular</div>
+          <ul style="display:flex;flex-direction:column;gap:0.625rem;">
+            <li style="display:flex;gap:0.5rem;font-size:0.875rem;"><span style="color:var(--green-500);">✓</span> All Bronze benefits</li>
+            <li style="display:flex;gap:0.5rem;font-size:0.875rem;"><span style="color:var(--green-500);">✓</span> Priority boarding</li>
+            <li style="display:flex;gap:0.5rem;font-size:0.875rem;"><span style="color:var(--green-500);">✓</span> 1 free upgrade per quarter</li>
+            <li style="display:flex;gap:0.5rem;font-size:0.875rem;"><span style="color:var(--green-500);">✓</span> 5% discount on all bookings</li>
+            <li style="display:flex;gap:0.5rem;font-size:0.875rem;"><span style="color:var(--green-500);">✓</span> 1.5× points earn rate</li>
+          </ul>
+        </div>
+      </div>
+      <div class="loyalty-tier reveal">
+        <div class="loyalty-tier-header" style="background:linear-gradient(135deg,var(--gold-500),var(--gold-700));">
+          <div style="font-size:2.5rem;margin-bottom:0.5rem;">🏆</div>
+          <div style="font-family:var(--font-display);font-size:1.25rem;font-weight:800;color:var(--blue-900);">Gold</div>
+          <div style="font-size:0.875rem;color:rgba(7,21,48,0.7);">10,000+ points</div>
+        </div>
+        <div class="loyalty-tier-body">
+          <ul style="display:flex;flex-direction:column;gap:0.625rem;">
+            <li style="display:flex;gap:0.5rem;font-size:0.875rem;"><span style="color:var(--green-500);">✓</span> All Silver benefits</li>
+            <li style="display:flex;gap:0.5rem;font-size:0.875rem;"><span style="color:var(--green-500);">✓</span> 10% off all bookings</li>
+            <li style="display:flex;gap:0.5rem;font-size:0.875rem;"><span style="color:var(--green-500);">✓</span> Free parcel delivery monthly</li>
+            <li style="display:flex;gap:0.5rem;font-size:0.875rem;"><span style="color:var(--green-500);">✓</span> 2× points earn rate</li>
+            <li style="display:flex;gap:0.5rem;font-size:0.875rem;"><span style="color:var(--green-500);">✓</span> Dedicated WhatsApp support</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     TRUST & SAFETY
+═══════════════════════════════════════════ -->
+<section class="section bg-dark-pattern">
+  <div class="container">
+    <div class="text-center" style="margin-bottom:3rem;">
+      <div class="section-label" style="justify-content:center;background:rgba(255,199,44,0.12);color:var(--gold-400);">Trust &amp; Safety</div>
+      <h2 class="display-md text-white" style="margin-bottom:0.75rem;">Built for Uganda's Reality</h2>
+      <p class="body-lg" style="color:rgba(255,255,255,0.65);max-width:520px;margin:0 auto;">Every feature is designed around how Ugandans actually travel — with real-world constraints, not Silicon Valley assumptions.</p>
+    </div>
+
+    <div class="grid-3">
+      <div class="trust-card reveal">
+        <span class="icon">🔒</span>
+        <h3 class="heading-md" style="margin-bottom:0.5rem;">Server-Locked Seats</h3>
+        <p class="body-sm" style="opacity:0.70;">Seat locks are enforced server-side with a 5-minute Redis timer. Zero overbooking. Your seat is secured the moment payment is confirmed.</p>
+      </div>
+      <div class="trust-card reveal">
+        <span class="icon">📶</span>
+        <h3 class="heading-md" style="margin-bottom:0.5rem;">2G Compatible</h3>
+        <p class="body-sm" style="opacity:0.70;">The full booking flow — search, seat selection, MoMo payment, QR ticket — is optimised for 2G networks and low-end Android devices.</p>
+      </div>
+      <div class="trust-card reveal">
+        <span class="icon">✅</span>
+        <h3 class="heading-md" style="margin-bottom:0.5rem;">Verified Operators Only</h3>
+        <p class="body-sm" style="opacity:0.70;">Every operator submits TIN, PSV licence, fleet insurance, and fitness certificates before being approved. Compliance is monitored continuously.</p>
+      </div>
+      <div class="trust-card reveal">
+        <span class="icon">💸</span>
+        <h3 class="heading-md" style="margin-bottom:0.5rem;">Instant MoMo Refunds</h3>
+        <p class="body-sm" style="opacity:0.70;">Cancelled trips trigger automatic MoMo refunds to your original payment number — no forms, no waiting, no hassle.</p>
+      </div>
+      <div class="trust-card reveal">
+        <span class="icon">👩</span>
+        <h3 class="heading-md" style="margin-bottom:0.5rem;">Women's Safety</h3>
+        <p class="body-sm" style="opacity:0.70;">Seat preferences include women-only sections where available. Every booking includes operator contact details and a safety report shortcode.</p>
+      </div>
+      <div class="trust-card reveal">
+        <span class="icon">📦</span>
+        <h3 class="heading-md" style="margin-bottom:0.5rem;">Parcel OTP Delivery</h3>
+        <p class="body-sm" style="opacity:0.70;">Recipients confirm delivery with a unique OTP sent to their phone. Sender is notified immediately. Insurance claims processed within 5 business days.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     TESTIMONIALS
+═══════════════════════════════════════════ -->
+<section class="section" id="about">
+  <div class="container">
+    <div class="text-center" style="margin-bottom:3rem;">
+      <div class="section-label" style="justify-content:center;">Testimonials</div>
+      <h2 class="display-md" style="margin-bottom:0.75rem;">What Travellers Are Saying</h2>
+    </div>
+
+    <div class="grid-3">
+      <div class="testimonial-card reveal">
+        <div style="display:flex;gap:0.25rem;margin-bottom:0.75rem;">
+          <span style="color:var(--gold-500);">★★★★★</span>
+        </div>
+        <p class="body-sm text-muted" style="margin-bottom:1.25rem;">"I booked Kampala to Gulu in under a minute on my techno phone. The MoMo push came through immediately. The bus departed exactly as shown. Never going back to manual booking."</p>
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--blue-800);color:white;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;">AO</div>
+          <div>
+            <div style="font-family:var(--font-display);font-weight:700;font-size:0.875rem;">Akello Olivia</div>
+            <div style="font-size:0.75rem;color:var(--gray-500);">Gulu, Northern Uganda</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal">
+        <div style="display:flex;gap:0.25rem;margin-bottom:0.75rem;">
+          <span style="color:var(--gold-500);">★★★★★</span>
+        </div>
+        <p class="body-sm text-muted" style="margin-bottom:1.25rem;">"As an operator with 8 buses, the Raylane dashboard replaced three different spreadsheets, two WhatsApp groups, and a notebook. The P&L alone is worth every shilling."</p>
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--gold-500);color:var(--blue-900);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;">JM</div>
+          <div>
+            <div style="font-family:var(--font-display);font-weight:700;font-size:0.875rem;">James Mwesiga</div>
+            <div style="font-size:0.75rem;color:var(--gray-500);">Operations Manager, Link Bus</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal">
+        <div style="display:flex;gap:0.25rem;margin-bottom:0.75rem;">
+          <span style="color:var(--gold-500);">★★★★★</span>
+        </div>
+        <p class="body-sm text-muted" style="margin-bottom:1.25rem;">"Our NGO sends staff upcountry weekly. The corporate account with monthly invoicing completely removed the per-trip payment friction. The WhatsApp booking confirmation is perfect for our team."</p>
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--green-500);color:white;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;">SK</div>
+          <div>
+            <div style="font-family:var(--font-display);font-weight:700;font-size:0.875rem;">Sarah Kamali</div>
+            <div style="font-size:0.75rem;color:var(--gray-500);">Operations Lead, CARE Uganda</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     CTA SECTION
+═══════════════════════════════════════════ -->
+<section style="background:linear-gradient(135deg,var(--blue-900),var(--blue-800));padding:5rem 0;position:relative;overflow:hidden;">
+  <div style="position:absolute;inset:0;background-image:radial-gradient(at 70% 30%,rgba(255,199,44,0.10) 0%,transparent 60%);pointer-events:none;"></div>
+  <div class="container" style="text-align:center;position:relative;z-index:1;">
+    <div class="section-label" style="justify-content:center;background:rgba(255,199,44,0.12);color:var(--gold-400);margin-bottom:1.5rem;">Ready to travel?</div>
+    <h2 class="display-lg text-white" style="margin-bottom:1rem;">Tusimbudde — Off We Go!</h2>
+    <p class="body-lg" style="color:rgba(255,255,255,0.70);max-width:520px;margin:0 auto 2rem;">Book your seat in 60 seconds. No app. No account required. Just your phone and a MoMo PIN.</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+      <a href="book.html" class="btn btn-gold btn-lg">Book a Trip Now</a>
+      <a href="apply.html" class="btn btn-ghost btn-lg">Join as Operator</a>
+    </div>
+    <div style="margin-top:2rem;display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;">
+      <div style="text-align:center;">
+        <div style="font-family:var(--font-display);font-size:2.5rem;font-weight:800;color:var(--gold-500);" class="count-up" data-target="800" data-suffix="K+">0</div>
+        <div style="font-size:0.8125rem;color:rgba(255,255,255,0.55);">Registered Operators</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:var(--font-display);font-size:2.5rem;font-weight:800;color:var(--gold-500);">2.4T</div>
+        <div style="font-size:0.8125rem;color:rgba(255,255,255,0.55);">UGX Annual Sector</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:var(--font-display);font-size:2.5rem;font-weight:800;color:var(--gold-500);">60s</div>
+        <div style="font-size:0.8125rem;color:rgba(255,255,255,0.55);">Average Booking Time</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:var(--font-display);font-size:2.5rem;font-weight:800;color:var(--gold-500);" class="count-up" data-target="21" data-suffix="">0</div>
+        <div style="font-size:0.8125rem;color:rgba(255,255,255,0.55);">Cities Covered</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <img src="Raylane_express.png" alt="Raylane Express" style="height:44px;margin-bottom:1.25rem;">
+        <p style="font-size:0.9rem;line-height:1.65;max-width:280px;">Uganda's first vertically integrated transport technology platform. Tusimbudde — off we go.</p>
+        <div style="margin-top:1.25rem;display:flex;flex-direction:column;gap:0.375rem;">
+          <div style="font-size:0.875rem;"><strong style="color:rgba(255,255,255,0.8);">WhatsApp:</strong> +256 700 000 001</div>
+          <div style="font-size:0.875rem;"><strong style="color:rgba(255,255,255,0.8);">Helpline:</strong> +256 800 RAYLANE</div>
+          <div style="font-size:0.875rem;"><strong style="color:rgba(255,255,255,0.8);">Email:</strong> hello@raylaneexpress.com</div>
+        </div>
+      </div>
+      <div>
+        <div class="footer-heading">Passengers</div>
+        <a href="book.html" class="footer-link">Book a Trip</a>
+        <a href="book.html?type=return" class="footer-link">Return Journey</a>
+        <a href="book.html?type=parcel" class="footer-link">Send Parcel</a>
+        <a href="book.html?type=track" class="footer-link">Track Parcel</a>
+        <a href="book.html?type=charter" class="footer-link">Charter a Bus</a>
+        <a href="#loyalty" class="footer-link">Loyalty Programme</a>
+      </div>
+      <div>
+        <div class="footer-heading">Operators</div>
+        <a href="apply.html" class="footer-link">Apply to Join</a>
+        <a href="operator.html" class="footer-link">Operator Portal</a>
+        <a href="#" class="footer-link">Subscription Plans</a>
+        <a href="#" class="footer-link">API & Webhooks</a>
+        <a href="#" class="footer-link">White-Label Licensing</a>
+      </div>
+      <div>
+        <div class="footer-heading">Company</div>
+        <a href="#about" class="footer-link">About Raylane</a>
+        <a href="#" class="footer-link">Safety Standards</a>
+        <a href="#" class="footer-link">Privacy Policy</a>
+        <a href="#" class="footer-link">Terms of Service</a>
+        <a href="admin.html" class="footer-link">Admin Console</a>
+        <a href="#" class="footer-link">Careers</a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>© 2026 Raylane Express Ltd. Registered in Uganda. All rights reserved.</div>
+      <div style="display:flex;align-items:center;gap:0.5rem;">
+        <span>🇺🇬 Kampala, Uganda</span>
+        <span style="opacity:0.3;">·</span>
+        <span>Partners: 🇰🇪 SwiftRide Kenya · 🇷🇼 KigaliRide Rwanda</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════
+     MOBILE BOTTOM NAV
+═══════════════════════════════════════════ -->
+<nav class="bottom-nav" role="navigation" aria-label="Mobile navigation">
+  <a href="index.html" class="bottom-nav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </a>
+  <a href="book.html" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V6a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6m16 0H4"/><path d="M10 2v4M14 2v4"/></svg>
+    Book
+  </a>
+  <a href="book.html?type=parcel" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+    Parcels
+  </a>
+  <a href="#routes" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    Routes
+  </a>
+  <a href="apply.html" class="bottom-nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17h18M5 17V8a2 2 0 012-2h10a2 2 0 012 2v9"/></svg>
+    Operators
+  </a>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     CHARTER MODAL
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="charterModal" role="dialog" aria-modal="true" aria-labelledby="charterTitle">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="heading-md" id="charterTitle">Request Charter Quote</h2>
+      <button onclick="Modal.close('charterModal')" aria-label="Close" style="background:var(--gray-100);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1.125rem;">×</button>
+    </div>
+    <form onsubmit="submitCharter(event)">
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <div class="form-group">
+          <label class="form-label">Contact Name *</label>
+          <input type="text" class="form-input" placeholder="Your full name" required>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+          <div class="form-group">
+            <label class="form-label">Phone *</label>
+            <input type="tel" class="form-input" placeholder="07XX XXX XXX" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date *</label>
+            <input type="date" class="form-input" required>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+          <div class="form-group">
+            <label class="form-label">From *</label>
+            <input type="text" class="form-input" list="cityList" placeholder="Departure" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">To *</label>
+            <input type="text" class="form-input" list="cityList" placeholder="Destination" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Group Size *</label>
+          <select class="form-input form-select" required>
+            <option value="">Select group size</option>
+            <option>10–20 people</option>
+            <option>20–40 people</option>
+            <option>40–67 people</option>
+            <option>Multiple buses needed</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Purpose</label>
+          <select class="form-input form-select">
+            <option>Corporate / Team Travel</option>
+            <option>Wedding / Celebration</option>
+            <option>School / Education Trip</option>
+            <option>NGO / Humanitarian</option>
+            <option>Tourist / Safari</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea class="form-input" rows="3" placeholder="Any special requirements..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-gold" style="width:100%;justify-content:center;">Submit Charter Request →</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Corporate modal -->
+<div class="modal-overlay" id="corporateModal" role="dialog" aria-modal="true" aria-labelledby="corpTitle">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="heading-md" id="corpTitle">Open a Corporate Account</h2>
+      <button onclick="Modal.close('corporateModal')" aria-label="Close" style="background:var(--gray-100);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1.125rem;">×</button>
+    </div>
+    <form onsubmit="submitCorporate(event)">
+      <div style="background:var(--blue-50);border-radius:var(--radius-md);padding:1rem;margin-bottom:1.25rem;font-size:0.875rem;color:var(--blue-800);">
+        <strong>Corporate accounts</strong> give your team monthly invoicing, dedicated support, and no per-trip payment friction. UGX 50,000/month account fee.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <div class="form-group">
+          <label class="form-label">Organisation Name *</label>
+          <input type="text" class="form-input" placeholder="Your organisation" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact Person *</label>
+          <input type="text" class="form-input" placeholder="Full name" required>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+          <div class="form-group">
+            <label class="form-label">Email *</label>
+            <input type="email" class="form-input" placeholder="Email" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone *</label>
+            <input type="tel" class="form-input" placeholder="07XX XXX XXX" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Monthly Trip Volume (estimate)</label>
+          <select class="form-input form-select">
+            <option>5–20 trips/month</option>
+            <option>20–50 trips/month</option>
+            <option>50–100 trips/month</option>
+            <option>100+ trips/month</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-blue" style="width:100%;justify-content:center;">Apply for Corporate Account →</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+// ── HERO SLIDESHOW ────────────────────────────────────────────
+let currentSlide = 0;
+const slides = document.querySelectorAll('.hero-slide');
+const dots   = document.querySelectorAll('.slide-dot');
+
+function setSlide(n) {
+  slides[currentSlide].classList.remove('active');
+  dots[currentSlide].classList.remove('active');
+  currentSlide = (n + slides.length) % slides.length;
+  slides[currentSlide].classList.add('active');
+  dots[currentSlide].classList.add('active');
+}
+
+setInterval(() => setSlide(currentSlide + 1), 5000);
+
+// ── SEARCH TABS ───────────────────────────────────────────────
+document.querySelectorAll('.search-tab').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.search-tab').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    document.querySelectorAll('.search-panel').forEach(p => p.style.display = 'none');
+    const panel = document.querySelector(`[data-panel="${this.dataset.tab}"]`);
+    if (panel) panel.style.display = '';
+  });
+});
+
+// Show first panel
+document.querySelector('[data-panel="seat"]').style.display = '';
+
+// ── HANDLE SEARCH ─────────────────────────────────────────────
+function handleSearch(e, type) {
+  e.preventDefault();
+  const form = e.target;
+  const params = new URLSearchParams(new FormData(form));
+  params.set('type', type);
+  window.location.href = `book.html?${params.toString()}`;
+  return false;
+}
+
+// ── NEARBY TERMINAL ───────────────────────────────────────────
+function detectNearbyTerminal() {
+  const btn = event.target.closest('button');
+  btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Detecting location...`;
+  btn.disabled = true;
+
+  findNearbyTerminal((nearest, top3) => {
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg> Find nearest terminal with live departures`;
+    btn.disabled = false;
+    
+    const card = document.getElementById('nearbyTerminalCard');
+    document.getElementById('nearbyName').textContent = `📍 ${nearest.name}`;
+    document.getElementById('nearbyDist').textContent = `${nearest.distance < 1 ? (nearest.distance * 1000).toFixed(0) + 'm' : nearest.distance.toFixed(1) + 'km'} from your location`;
+    document.getElementById('nearbyMapsLink').href = `https://www.google.com/maps/search/?api=1&query=${nearest.lat},${nearest.lng}`;
+    document.getElementById('nearbyMapsLink').setAttribute('aria-label', `View ${nearest.name} on Google Maps`);
+    card.style.display = 'flex';
+    card.classList.add('visible');
+    Toast.success(`Nearest terminal: ${nearest.name}`);
+  });
+}
+
+// ── LIVE DEPARTURES ───────────────────────────────────────────
+const liveDepartures = [
+  { route:'Kampala → Gulu',      operator:'Raylane Express Fleet', time:'07:00 AM', seats:12, total:67, price:'UGX 45,000', urgency:'low' },
+  { route:'Kampala → Mbale',     operator:'Link Bus',               time:'07:30 AM', seats:5,  total:67, price:'UGX 30,000', urgency:'high' },
+  { route:'Kampala → Mbarara',   operator:'YY Coaches',             time:'08:00 AM', seats:8,  total:14, price:'UGX 35,000', urgency:'med' },
+  { route:'Kampala → Fort Portal',operator:'Global Coaches',        time:'08:30 AM', seats:22, total:67, price:'UGX 50,000', urgency:'low' },
+  { route:'Kampala → Kabale',    operator:'Raylane Express Fleet',  time:'09:00 AM', seats:3,  total:14, price:'UGX 55,000', urgency:'high' },
+];
+
+function renderDepartures() {
+  const container = document.getElementById('departuresList');
+  container.innerHTML = liveDepartures.map((d, i) => {
+    const pct = Math.round((1 - d.seats / d.total) * 100);
+    const urgencyText = d.urgency === 'high' ? 'Almost Full' : d.urgency === 'med' ? 'Filling Fast' : 'Available';
+    const urgencyColor = d.urgency === 'high' ? 'badge-red' : d.urgency === 'med' ? 'badge-amber' : 'badge-green';
+    return `
+      <div class="departure-row" onclick="window.location.href='book.html?route=${encodeURIComponent(d.route)}'" role="button" tabindex="0" aria-label="Book ${d.route} at ${d.time}">
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:var(--font-display);font-weight:700;font-size:0.9375rem;margin-bottom:0.125rem;">${d.route}</div>
+          <div style="font-size:0.8125rem;color:var(--gray-500);">${d.operator} · Departs ${d.time}</div>
+          <div class="urgency-bar urgency-${d.urgency}" style="max-width:160px;margin-top:0.5rem;"><div class="urgency-fill" style="width:${pct}%"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.375rem;flex-shrink:0;">
+          <span class="badge ${urgencyColor}">${urgencyText}</span>
+          <span style="font-family:var(--font-display);font-weight:800;font-size:0.875rem;color:var(--blue-900);">${d.price}</span>
+          <a href="book.html?route=${encodeURIComponent(d.route)}" class="btn btn-gold btn-sm" style="font-size:0.8125rem;padding:0.4rem 1rem;">Book →</a>
+        </div>
+      </div>`;
+  }).join('');
+}
+renderDepartures();
+
+// Simulate real-time: reduce a seat count every 30s
+setInterval(() => {
+  const randomTrip = liveDepartures[Math.floor(Math.random() * liveDepartures.length)];
+  if (randomTrip.seats > 1) {
+    randomTrip.seats--;
+    if (randomTrip.seats <= 5) randomTrip.urgency = 'high';
+    else if (randomTrip.seats <= 15) randomTrip.urgency = 'med';
+    renderDepartures();
+  }
+}, 30000);
+
+// ── MAP CITY DATA ─────────────────────────────────────────────
+const cityData = {
+  'Kampala':    { country:'Uganda (Capital)',  desc:'The commercial and travel hub of Uganda. All major routes depart from Kampala Coach Park and Kisenyi Bus Park.', trips:48, price:'UGX 25,000+' },
+  'Gulu':       { country:'Northern Uganda',   desc:'Uganda\'s largest northern city and gateway to South Sudan. Home to a vibrant market and the iconic Kamdini junction.', trips:14, price:'UGX 45,000' },
+  'Mbale':      { country:'Eastern Uganda',    desc:'Gateway to Mount Elgon and the rolling tea plantations of Sipi Falls. Direct routes from Kampala in 3.5 hours.', trips:10, price:'UGX 30,000' },
+  'Mbarara':    { country:'Western Uganda',    desc:'The economic capital of western Uganda. Gateway to the pristine crater lakes and Queen Elizabeth National Park.', trips:12, price:'UGX 35,000' },
+  'Fort Portal': { country:'Western Uganda',  desc:'The highland gem near Rwenzori Mountains. Surrounded by tea estates, crater lakes, and Kibale Forest.', trips:8,  price:'UGX 50,000' },
+  'Jinja':      { country:'Eastern Uganda',    desc:'Source of the Nile and Uganda\'s adventure capital. Bungee jumping, white-water rafting, and the iconic Owen Falls.', trips:16, price:'UGX 25,000' },
+  'Entebbe':    { country:'Central Uganda',    desc:'International airport city on Lake Victoria. Essential connection for international travellers arriving in Uganda.', trips:20, price:'UGX 20,000' },
+  'Lira':       { country:'Northern Uganda',   desc:'Fast-growing city in northern Uganda. Agricultural hub and junction to Kotido and the Karamoja sub-region.', trips:6,  price:'UGX 40,000' },
+  'Arua':       { country:'West Nile, Uganda', desc:'Gateway city to West Nile and the DRC border. Important regional hub for trade and cross-border travel.', trips:5,  price:'UGX 60,000' },
+  'Soroti':     { country:'Eastern Uganda',    desc:'Teso sub-region capital known for cattle and the Soroti Rock. Junction for northeastern routes.', trips:6,  price:'UGX 35,000' },
+  'Kabale':     { country:'Southwestern Uganda',desc:'Gateway to Bwindi Impenetrable Forest and mountain gorilla tracking. On the border with Rwanda and DRC.', trips:6,  price:'UGX 55,000' },
+  'Kasese':     { country:'Western Uganda',    desc:'Foot of the Rwenzori Mountains. Copper mining town and gateway to Queen Elizabeth and Kibale national parks.', trips:5,  price:'UGX 50,000' },
+  'Masaka':     { country:'Central Uganda',    desc:'Commercial hub on the Entebbe-Mbarara highway. Key junction for routes to southern and western Uganda.', trips:10, price:'UGX 28,000' },
+  'Tororo':     { country:'Eastern Uganda',    desc:'Border town with Kenya at Malaba crossing. Rock-dominated skyline and key transit point for East African trade.', trips:8,  price:'UGX 32,000' },
+  'Hoima':      { country:'Western Uganda',    desc:'Oil discovery capital of Uganda. Rapid growth city and gateway to Murchison Falls National Park.', trips:5,  price:'UGX 45,000' },
+  'Nairobi':    { country:'Kenya',             desc:'East African economic capital. International connections via the Malaba border. Journey time approximately 9 hours.', trips:4,  price:'UGX 120,000' },
+  'Kigali':     { country:'Rwanda',            desc:'Rwanda\'s clean, modern capital. Via Kabale and the Katuna border. Journey time approximately 7 hours.', trips:3,  price:'UGX 110,000' },
+};
+
+function showCity(name) {
+  const data = cityData[name];
+  if (!data) return;
+  document.getElementById('cityName').textContent = name;
+  document.getElementById('cityCountry').textContent = data.country;
+  document.getElementById('cityDesc').textContent = data.desc;
+  document.getElementById('cityTrips').textContent = data.trips;
+  document.getElementById('cityPrice').textContent = data.price;
+  document.getElementById('cityBookName').textContent = name;
+  document.getElementById('cityBookBtn').href = `book.html?to=${encodeURIComponent(name)}`;
+  document.getElementById('cityPanel').style.display = 'block';
+}
+
+// ── FORM SUBMISSIONS ──────────────────────────────────────────
+function submitCharter(e) {
+  e.preventDefault();
+  Modal.close('charterModal');
+  Toast.success('Charter request submitted! We\'ll contact you within 2 hours.');
+}
+
+function submitCorporate(e) {
+  e.preventDefault();
+  Modal.close('corporateModal');
+  Toast.success('Corporate account application received! Our team will reach out within 24 hours.');
+}
+
+// ── KEYBOARD NAV FOR DEPARTURE ROWS ──────────────────────────
+document.querySelectorAll('.departure-row').forEach(row => {
+  row.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') row.click();
+  });
+});
+</script>
+</body>
+</html>
