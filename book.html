@@ -85,19 +85,6 @@ body { background: var(--gray-50); }
 
     <div id="tripResults"></div>
     
-    <!-- Selected trip sticky bar - shown when a trip is selected -->
-    <div id="selectedTripBar" style="display:none;position:sticky;bottom:80px;left:0;right:0;z-index:30;background:var(--white);border:2px solid var(--gold-500);border-radius:var(--radius-xl);padding:1rem 1.25rem;margin-top:1rem;box-shadow:0 8px 32px rgba(11,29,69,0.20);animation:slideUp .3s ease;">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;">
-        <div>
-          <div style="font-family:var(--font-display);font-weight:700;font-size:.9375rem;" id="selTripLabel">—</div>
-          <div style="font-size:.8125rem;color:var(--gray-500);" id="selTripSub">—</div>
-        </div>
-        <button class="btn btn-gold" onclick="goStep(2)" style="flex-shrink:0;">
-          Select Seats →
-        </button>
-      </div>
-    </div>
-    <style>@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}</style>
     
     <div id="noTripsCard" style="display:none;background:var(--blue-50);border:1.5px solid var(--blue-200);border-radius:var(--radius-xl);padding:2rem;text-align:center;margin-top:2rem;">
       <div style="font-size:2.5rem;margin-bottom:.75rem;">🔔</div>
@@ -376,42 +363,70 @@ function renderTrips(){
   const pct=t=>Math.round((1-t.seats/t.total)*100);
   const urg=t=>t.seats<=5?'high':t.seats<=15?'med':'low';
   c.innerHTML=list.map(t=>`
-    <div class="trip-result${t.type==='raylane'?' raylane-own':''}" id="tr-${t.id}" onclick="pickTrip(${t.id})" tabindex="0" role="button">
+    <div class="trip-result${t.type==='raylane'?' raylane-own':''}" id="tr-${t.id}" tabindex="0" role="listitem">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.75rem;">
-        <div>${t.type==='raylane'?'<span class="badge badge-gold" style="margin-bottom:.375rem;">⭐ Raylane Fleet</span><br>':''}<div style="font-family:var(--font-display);font-weight:800;font-size:1.0625rem;">${t.time}</div><div style="font-size:.8125rem;color:var(--gray-500);">${t.op} · ${t.bus==='coach'?'67-Seater':'14-Seater'}</div></div>
-        <div style="text-align:right;"><div style="font-family:var(--font-display);font-size:1.25rem;font-weight:800;color:var(--blue-900);">${formatUGX(t.price)}</div><div style="font-size:.75rem;color:var(--gray-400);">per seat</div></div>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
-          <span style="color:var(--gold-500);">★</span><span style="font-family:var(--font-display);font-weight:700;font-size:.875rem;">${t.rating}</span><span style="font-size:.75rem;color:var(--gray-400);">(${t.rc})</span>
-          <span style="color:var(--gray-300);">·</span><span style="font-size:.8125rem;color:var(--gray-500);">${t.seats} seats left</span>
-          <span style="color:var(--gray-300);">·</span><span style="font-size:.8125rem;">${urgLabel(t)}</span>
+        <div>
+          ${t.type==='raylane'?'<span class="badge badge-gold" style="margin-bottom:.5rem;display:inline-flex;">⭐ Raylane Fleet</span><br>':''}
+          <div style="font-family:var(--font-display);font-weight:800;font-size:1.125rem;color:var(--blue-900);">${t.time}</div>
+          <div style="font-size:.8125rem;color:var(--gray-500);margin-top:.125rem;">${t.op} · ${t.bus==='coach'?'67-Seater Coach':'14-Seater Minivan'}</div>
         </div>
-        <div style="display:flex;gap:.25rem;">${t.amenities.map(a=>`<span class="badge badge-gray">${a}</span>`).join('')}</div>
+        <div style="text-align:right;">
+          <div style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;color:var(--blue-900);">${formatUGX(t.price)}</div>
+          <div style="font-size:.75rem;color:var(--gray-400);">per seat</div>
+        </div>
       </div>
-      <div class="urgency-bar urgency-${urg(t)}" style="margin-top:.625rem;"><div class="urgency-fill" style="width:${pct(t)}%"></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;">
+        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+          <span style="color:var(--gold-500);font-size:.875rem;">★</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:.875rem;">${t.rating}</span>
+          <span style="font-size:.75rem;color:var(--gray-400);">(${t.rc})</span>
+          <span style="color:var(--gray-200);">·</span>
+          <span style="font-size:.8125rem;color:var(--gray-600);">${t.seats} seats left</span>
+          <span style="color:var(--gray-200);">·</span>
+          <span style="font-size:.8125rem;">${urgLabel(t)}</span>
+        </div>
+        <div style="display:flex;gap:.375rem;">${t.amenities.map(a=>`<span class="badge badge-gray" style="font-size:.7rem;">${a}</span>`).join('')}</div>
+      </div>
+      <div class="urgency-bar urgency-${urg(t)}" style="margin-bottom:.875rem;"><div class="urgency-fill" style="width:${pct(t)}%"></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding-top:.875rem;border-top:1.5px solid var(--gray-100);">
+        <div style="font-size:.75rem;color:var(--gray-500);">Earn <strong style="color:var(--gold-600);">${Math.floor(t.price/100)} pts</strong></div>
+        <button
+          class="btn btn-gold btn-sm"
+          style="flex-shrink:0;padding:.6875rem 1.5rem;font-size:.875rem;font-weight:700;"
+          onclick="selectAndProceed(${t.id})"
+          aria-label="Select seats for ${t.op}">
+          Select Seats →
+        </button>
+      </div>
     </div>`).join('');
 }
 renderTrips();
 
-function pickTrip(id){
+// selectAndProceed — called directly by the "Select Seats →" button on each trip card
+function selectAndProceed(id){
   state.trip=trips.find(t=>t.id===id);
-  document.querySelectorAll('.trip-result').forEach(e=>e.classList.remove('selected'));
-  document.getElementById('tr-'+id).classList.add('selected');
   const t=state.trip;
-  // Update downstream labels
-  document.getElementById('busLabel').textContent=`${t.bus==='coach'?'67-Seater Coach':'14-Seater Minivan'} · ${t.op} · Departs ${t.time}`;
-  document.getElementById('busTimeLabel').textContent=t.time;
-  document.getElementById('grandTotal').textContent=formatUGX(t.price);
-  document.getElementById('payAmt').textContent=formatUGX(t.price);
-  // Show sticky bar with trip summary
-  document.getElementById('selTripLabel').textContent=`${t.op} · ${t.time} · ${t.bus==='coach'?'67-Seater':'14-Seater'}`;
-  document.getElementById('selTripSub').textContent=`${formatUGX(t.price)} per seat · ${t.seats} seats remaining · ★ ${t.rating}`;
-  document.getElementById('selectedTripBar').style.display='block';
-  // Scroll to show the bar
-  setTimeout(()=>document.getElementById('selectedTripBar').scrollIntoView({behavior:'smooth',block:'nearest'}),100);
-  Toast.show(`${t.op} selected. Tap "Select Seats" to continue.`,'success',3000);
+  // Highlight selected card
+  document.querySelectorAll('.trip-result').forEach(e=>e.classList.remove('selected'));
+  const card=document.getElementById('tr-'+id);
+  if(card) card.classList.add('selected');
+  // Pre-fill downstream step labels
+  const busDesc=t.bus==='coach'?'67-Seater Coach':'14-Seater Minivan';
+  const busLbl=document.getElementById('busLabel');
+  const busTimeLbl=document.getElementById('busTimeLabel');
+  const busRouteLbl=document.getElementById('busRouteLabel');
+  if(busLbl) busLbl.textContent=`${busDesc} · ${t.op} · Departs ${t.time}`;
+  if(busTimeLbl) busTimeLbl.textContent=t.time;
+  if(busRouteLbl) busRouteLbl.textContent=`${fromCity} → ${toCity}`;
+  const grandTotal=document.getElementById('grandTotal');
+  const payAmt=document.getElementById('payAmt');
+  if(grandTotal) grandTotal.textContent=formatUGX(t.price);
+  if(payAmt) payAmt.textContent=formatUGX(t.price);
+  // Navigate immediately to seat map (step 2)
+  goStep(2);
 }
+// Legacy alias
+function pickTrip(id){ selectAndProceed(id); }
 
 // ── SEAT MAP ──────────────────────────────────────────────────
 let bookedSet=new Set();
