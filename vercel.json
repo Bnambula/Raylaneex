@@ -1,0 +1,15 @@
+{
+  "rewrites": [
+    { "source": "/book", "destination": "/book.html" },
+    { "source": "/parcel", "destination": "/parcel.html" },
+    { "source": "/track", "destination": "/track.html" },
+    { "source": "/advance", "destination": "/advance.html" },
+    { "source": "/charter", "destination": "/charter.html" },
+    { "source": "/about", "destination": "/about.html" },
+    { "source": "/lostandfound", "destination": "/lostandfound.html" },
+    { "source": "/safety", "destination": "/lostandfound.html" },
+    { "source": "/apply", "destination": "/apply.html" },
+    { "source": "/operator", "destination": "/operator.html" },
+    { "source": "/admin", "destination": "/admin.html" }
+  ]
+}

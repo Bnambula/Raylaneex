@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#071530">
+<title>Operator Portal — Raylane Express</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+body { overflow-x: hidden; }
+.sidebar-overlay { position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49;display:none; }
+.sidebar-overlay.show { display:block; }
+@media(min-width:1024px){ .sidebar{ transform:translateX(0)!important; } }
+.view { display:none; }
+.view.active { display:block; }
+.kpi-row { display:grid; grid-template-columns:repeat(2,1fr); gap:1rem; margin-bottom:1.5rem; }
+@media(min-width:768px){ .kpi-row{ grid-template-columns:repeat(4,1fr); } }
+.stat-val { font-family:var(--font-display); font-size:1.75rem; font-weight:800; line-height:1; }
+.stat-lbl { font-size:.75rem; font-weight:600; font-family:var(--font-display); text-transform:uppercase; letter-spacing:.05em; color:var(--gray-500); margin-bottom:.375rem; }
+.stat-sub { font-size:.75rem; color:var(--gray-500); margin-top:.25rem; }
+.act-feed { display:flex; flex-direction:column; gap:.625rem; }
+.act-item { display:flex; align-items:center; gap:.75rem; padding:.75rem; background:var(--gray-50); border-radius:var(--radius-md); animation:fadeIn .4s ease; }
+@keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.act-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+.trip-row:hover { background:var(--gray-50); cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div class="dashboard-layout">
+  <!-- Sidebar overlay for mobile -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img src="Raylane_express.png" alt="Raylane Express">
+      <div style="margin-top:.5rem;font-size:.75rem;color:rgba(255,255,255,.4);font-family:var(--font-display);font-weight:600;">OPERATOR PORTAL</div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebarNav">
+      <div class="sidebar-section-label">Overview</div>
+      <a class="sidebar-link active" onclick="showView('dashboard')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+
+      <div class="sidebar-section-label">Operations</div>
+      <a class="sidebar-link" onclick="showView('mytrips')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17h18M5 17V8a2 2 0 012-2h10a2 2 0 012 2v9"/></svg>
+        My Trips
+        <span class="sidebar-badge" id="tripsBadge">3</span>
+      </a>
+      <a class="sidebar-link" onclick="showView('createtrip')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Create Trip
+      </a>
+      <a class="sidebar-link" onclick="showView('bookings')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V6a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6"/></svg>
+        Bookings
+      </a>
+      <a class="sidebar-link" onclick="showView('seatmgr')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17h18M5 17V8a2 2 0 012-2h10a2 2 0 012 2v9"/></svg>
+        Seat Manager
+      </a>
+      <a class="sidebar-link" onclick="showView('parcels')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8"/></svg>
+        Parcels
+      </a>
+
+      <div class="sidebar-section-label">Business</div>
+      <a class="sidebar-link" onclick="showView('financials')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        Financials &amp; P&amp;L
+      </a>
+      <a class="sidebar-link" onclick="showView('fleet')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Fleet &amp; Drivers
+      </a>
+      <a class="sidebar-link" onclick="showView('payroll')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Payroll
+      </a>
+      <a class="sidebar-link" onclick="showView('compliance')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Compliance
+      </a>
+
+      <div class="sidebar-section-label">Growth</div>
+      <a class="sidebar-link" onclick="showView('analytics')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Analytics
+      </a>
+      <a class="sidebar-link" onclick="showView('sms')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        SMS Alerts
+      </a>
+      <a class="sidebar-link" onclick="showView('loyalty')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Loyalty
+      </a>
+      <a class="sidebar-link" onclick="showView('settings')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Settings
+      </a>
+    </nav>
+
+    <div style="padding:1rem;border-top:1px solid rgba(255,255,255,.08);">
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--gold-500);color:var(--blue-900);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:.875rem;">GC</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;color:var(--white);truncate;">Global Coaches</div>
+          <div style="font-size:.75rem;color:rgba(255,255,255,.45);">Operator Pro Plan</div>
+        </div>
+        <a href="index.html" style="color:rgba(255,255,255,.45);font-size:.75rem;">← Exit</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="dashboard-main">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <button onclick="openSidebar()" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;flex-direction:column;gap:4px;" aria-label="Open menu">
+        <span style="display:block;width:20px;height:2px;background:var(--gray-600);border-radius:2px;"></span>
+        <span style="display:block;width:20px;height:2px;background:var(--gray-600);border-radius:2px;"></span>
+        <span style="display:block;width:20px;height:2px;background:var(--gray-600);border-radius:2px;"></span>
+      </button>
+      <div style="flex:1;display:flex;align-items:center;gap:.75rem;">
+        <div style="display:none;" id="headerBreadcrumb" class="d-flex items-center gap-1">
+          <span style="font-size:.8125rem;color:var(--gray-400);">Operator Portal</span>
+          <span style="color:var(--gray-300);">/</span>
+          <span style="font-size:.8125rem;font-family:var(--font-display);font-weight:600;color:var(--gray-700);" id="currentViewLabel">Dashboard</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <div class="live-dot">Live</div>
+        <div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;color:var(--gray-700);" id="liveClock"></div>
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--gold-500);color:var(--blue-900);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:.875rem;">GC</div>
+      </div>
+    </header>
+
+    <div class="dashboard-content">
+
+      <!-- ══ DASHBOARD ══ -->
+      <div class="view active" id="view-dashboard">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;">
+          <div>
+            <h1 style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;">Good morning, Global Coaches 👋</h1>
+            <p style="font-size:.875rem;color:var(--gray-500);margin-top:.125rem;" id="dashDateLine">Loading...</p>
+          </div>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+            <button class="btn btn-gold btn-sm" onclick="showView('createtrip')">+ Create Trip</button>
+            <button class="btn btn-outline btn-sm" onclick="showView('financials')">Withdraw Funds</button>
+          </div>
+        </div>
+
+        <div class="kpi-row">
+          <div class="card-stat accent-blue"><div class="stat-lbl">Trips Today</div><div class="stat-val">6</div><div class="stat-sub">2 active · 4 completed</div></div>
+          <div class="card-stat accent-gold"><div class="stat-lbl">Monthly Revenue</div><div class="stat-val">UGX 12.4M</div><div class="stat-sub">↑ 18% vs last month</div></div>
+          <div class="card-stat accent-green"><div class="stat-lbl">Pending Payout</div><div class="stat-val">UGX 2.1M</div><div class="stat-sub">Next: Friday 25 Apr</div></div>
+          <div class="card-stat accent-purple"><div class="stat-lbl">Driver Rating</div><div class="stat-val">4.8 ★</div><div class="stat-sub">Based on 94 reviews</div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr;gap:1.5rem;" id="dashGrid">
+          <!-- Live Feed -->
+          <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.25rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+              <h3 style="font-family:var(--font-display);font-weight:700;">Live Activity</h3>
+              <div class="live-dot">Live</div>
+            </div>
+            <div class="act-feed" id="actFeed"></div>
+          </div>
+
+          <!-- Today at a glance -->
+          <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.25rem;">
+            <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:1rem;">Today at a Glance</h3>
+            <div style="display:flex;flex-direction:column;gap:.625rem;">
+              <div style="display:flex;justify-content:space-between;padding:.75rem;background:var(--blue-50);border-radius:var(--radius-md);">
+                <span style="font-size:.875rem;">07:00 AM · Kampala → Gulu</span>
+                <span class="badge badge-green">Full</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:.75rem;background:var(--gold-100);border-radius:var(--radius-md);">
+                <span style="font-size:.875rem;">09:00 AM · Kampala → Mbale</span>
+                <span class="badge badge-amber">48/67</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:.75rem;background:var(--gray-50);border-radius:var(--radius-md);">
+                <span style="font-size:.875rem;">11:00 AM · Kampala → Jinja</span>
+                <span class="badge badge-blue">32/67</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:.75rem;background:var(--gray-50);border-radius:var(--radius-md);">
+                <span style="font-size:.875rem;">02:00 PM · Kampala → Mbarara</span>
+                <span class="badge badge-blue">21/67</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ MY TRIPS ══ -->
+      <div class="view" id="view-mytrips">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+          <h1 style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;">My Trips</h1>
+          <div style="display:flex;gap:.75rem;">
+            <input type="text" class="form-input" placeholder="Search trips..." style="max-width:200px;" oninput="filterTable('tripsTbl',this.value)">
+            <button class="btn btn-gold btn-sm" onclick="showView('createtrip')">+ New Trip</button>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="tripsTbl">
+            <thead><tr><th>Route</th><th>Date</th><th>Departs</th><th>Seats</th><th>Revenue</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr class="trip-row"><td><strong>Kampala → Gulu</strong></td><td>21 Apr 2026</td><td>07:00 AM</td><td>67/67</td><td>UGX 3.015M</td><td><span class="badge badge-green">Active</span></td><td><button class="btn btn-sm btn-icon" onclick="Toast.show('SMS sent to all 67 passengers.','success')">SMS</button></td></tr>
+              <tr class="trip-row"><td><strong>Kampala → Mbale</strong></td><td>21 Apr 2026</td><td>09:00 AM</td><td>48/67</td><td>UGX 1.44M</td><td><span class="badge badge-amber">Filling</span></td><td><button class="btn btn-sm btn-icon">Edit</button></td></tr>
+              <tr class="trip-row"><td><strong>Kampala → Jinja</strong></td><td>21 Apr 2026</td><td>11:00 AM</td><td>32/67</td><td>UGX 800K</td><td><span class="badge badge-blue">Open</span></td><td><button class="btn btn-sm btn-icon">Edit</button></td></tr>
+              <tr class="trip-row"><td><strong>Kampala → Mbarara</strong></td><td>22 Apr 2026</td><td>08:00 AM</td><td>5/67</td><td>UGX 175K</td><td><span class="badge badge-blue">Open</span></td><td><button class="btn btn-sm btn-icon">Edit</button></td></tr>
+              <tr class="trip-row"><td><strong>Kampala → Fort Portal</strong></td><td>22 Apr 2026</td><td>09:30 AM</td><td>0/67</td><td>—</td><td><span class="badge badge-gray">Scheduled</span></td><td><button class="btn btn-sm btn-danger" onclick="Toast.error('Trip cancelled.')">Cancel</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ CREATE TRIP ══ -->
+      <div class="view" id="view-createtrip">
+        <h1 style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;margin-bottom:1.5rem;">Create New Trip</h1>
+        <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;max-width:600px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div class="form-group"><label class="form-label">From *</label><input type="text" class="form-input" list="cityList" value="Kampala" required></div>
+            <div class="form-group"><label class="form-label">To *</label><input type="text" class="form-input" list="cityList" placeholder="Destination" required></div>
+            <div class="form-group"><label class="form-label">Date *</label><input type="date" class="form-input" required></div>
+            <div class="form-group"><label class="form-label">Departure Time *</label><input type="time" class="form-input" value="07:00" required></div>
+            <div class="form-group"><label class="form-label">Vehicle *</label>
+              <select class="form-input form-select">
+                <option>UBF 001K — 67-Seater Coach</option>
+                <option>UBF 002K — 67-Seater Coach</option>
+                <option>UBG 100K — 14-Seater Minivan</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Driver *</label>
+              <select class="form-input form-select">
+                <option>James Okello</option>
+                <option>Sarah Nakato</option>
+                <option>Peter Mwesiga</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Price per Seat (UGX) *</label><input type="number" class="form-input" placeholder="e.g. 45000" id="tripPrice" oninput="updateEarnings(this.value)"></div>
+            <div class="form-group"><label class="form-label">Booking Advance Days</label><input type="number" class="form-input" value="30" min="1" max="90"></div>
+          </div>
+          <!-- Earnings preview -->
+          <div style="margin-top:1.25rem;background:var(--gold-100);border-radius:var(--radius-md);padding:1rem;" id="earningsPreview">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;color:var(--gold-700);margin-bottom:.5rem;">Earnings Preview (67 seats full)</div>
+            <div style="display:flex;justify-content:space-between;font-size:.875rem;margin-bottom:.25rem;"><span>Gross revenue:</span><span id="epGross">—</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.875rem;margin-bottom:.25rem;color:var(--gray-500);"><span>Raylane commission (8%):</span><span id="epComm">—</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:.9375rem;font-family:var(--font-display);font-weight:800;border-top:1px solid var(--gold-200);padding-top:.5rem;"><span>Your net earnings:</span><span id="epNet" style="color:var(--blue-900);">—</span></div>
+          </div>
+          <div style="margin-top:1.25rem;display:flex;gap:.75rem;">
+            <button class="btn btn-outline" onclick="showView('mytrips')">Cancel</button>
+            <button class="btn btn-gold" style="flex:1;justify-content:center;" onclick="submitTrip()">Submit for Approval →</button>
+          </div>
+        </div>
+        <datalist id="cityList">
+          <option value="Kampala"><option value="Gulu"><option value="Mbale"><option value="Mbarara"><option value="Fort Portal">
+          <option value="Jinja"><option value="Entebbe"><option value="Arua"><option value="Lira"><option value="Kabale">
+        </datalist>
+      </div>
+
+      <!-- ══ BOOKINGS ══ -->
+      <div class="view" id="view-bookings">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+          <h1 style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;">Bookings</h1>
+          <input type="text" class="form-input" placeholder="Search by name, ref..." style="max-width:240px;" oninput="filterTable('bkgTbl',this.value)">
+        </div>
+        <div class="kpi-row" style="grid-template-columns:repeat(2,1fr);margin-bottom:1.5rem;">
+          <div class="card-stat accent-blue"><div class="stat-lbl">Total Bookings</div><div class="stat-val">247</div></div>
+          <div class="card-stat accent-gold"><div class="stat-lbl">Today's Revenue</div><div class="stat-val">UGX 1.2M</div></div>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="bkgTbl">
+            <thead><tr><th>Ref</th><th>Passenger</th><th>Route</th><th>Seat</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="bkgBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ SEAT MANAGER ══ -->
+      <div class="view" id="view-seatmgr">
+        <h1 style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;margin-bottom:1.5rem;">Seat Manager</h1>
+        <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;">
+          <div style="margin-bottom:1rem;display:flex;gap:.75rem;flex-wrap:wrap;">
+            <select class="form-input form-select" style="max-width:240px;">
+              <option>07:00 AM · Kampala → Gulu · UBF 001K</option>
+              <option>09:00 AM · Kampala → Mbale · UBF 002K</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="Toast.success('Manual assignment modal opened.')">Manual Assign</button>
+          </div>
+          <div style="font-family:var(--font-display);font-size:.875rem;font-weight:600;color:var(--gray-600);margin-bottom:.75rem;">67-Seater Coach — 48 booked / 19 available</div>
+          <div id="smapContainer" style="overflow-x:auto;"></div>
+        </div>
+      </div>
+
+      <!-- ══ PARCELS ══ -->
+      <div class="view" id="view-parcels">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+          <h1 style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;">Parcels</h1>
+          <button class="btn btn-gold btn-sm" onclick="Toast.show('Add parcel modal opened.','success')">+ Add Parcel</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>Tracking ID</th><th>Sender</th><th>Recipient</th><th>Route</th><th>Weight</th><th>Fee</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td style="font-family:var(--font-display);font-weight:700;color:var(--blue-700);">PKL-A1B2C3</td><td>Sarah K.</td><td>John O.</td><td>Kampala → Gulu</td><td>2kg</td><td>UGX 12,000</td><td><span class="badge badge-amber">In Transit</span></td></tr>
+              <tr><td style="font-family:var(--font-display);font-weight:700;color:var(--blue-700);">PKL-D4E5F6</td><td>Moses T.</td><td>Grace N.</td><td>Kampala → Mbale</td><td>0.3kg</td><td>UGX 5,000</td><td><span class="badge badge-green">Delivered</span></td></tr>
+              <tr><td style="font-family:var(--font-display);font-weight:700;color:var(--blue-700);">PKL-G7H8I9</td><td>Paul W.</td><td>Agnes B.</td><td>Kampala → Jinja</td><td>8kg</td><td>UGX 20,000</td><td><span class="badge badge-blue">Awaiting Pickup</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ FINANCIALS ══ -->
+      <div class="view" id="view-financials">
+        <h1 style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;margin-bottom:1.5rem;">Financials &amp; P&amp;L</h1>
+        <div class="kpi-row">
+          <div class="card-stat accent-gold"><div class="stat-lbl">Total Revenue (Apr)</div><div class="stat-val">UGX 12.4M</div><div class="stat-sub">↑ 18% vs March</div></div>
+          <div class="card-stat accent-blue"><div class="stat-lbl">Commission Paid</div><div class="stat-val">UGX 992K</div><div class="stat-sub">8% of gross</div></div>
+          <div class="card-stat accent-green"><div class="stat-lbl">Net Earnings</div><div class="stat-val">UGX 11.4M</div><div class="stat-sub">After Raylane fees</div></div>
+          <div class="card-stat accent-red"><div class="stat-lbl">Operating Costs</div><div class="stat-val">UGX 4.2M</div><div class="stat-sub">Fuel, salaries, maint.</div></div>
+        </div>
+        <!-- Simple bar chart -->
+        <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1.5rem;">
+          <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:1.25rem;">6-Month Revenue Trend</h3>
+          <div style="display:flex;align-items:flex-end;gap:.75rem;height:140px;padding-bottom:.5rem;">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.375rem;"><div style="flex:1;width:100%;background:var(--blue-100);border-radius:4px 4px 0 0;display:flex;align-items:flex-end;"><div style="width:100%;background:var(--blue-700);border-radius:4px 4px 0 0;height:60%;"></div></div><span style="font-size:.7rem;color:var(--gray-500);">Nov</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.375rem;"><div style="flex:1;width:100%;background:var(--blue-100);border-radius:4px 4px 0 0;display:flex;align-items:flex-end;"><div style="width:100%;background:var(--blue-700);border-radius:4px 4px 0 0;height:70%;"></div></div><span style="font-size:.7rem;color:var(--gray-500);">Dec</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.375rem;"><div style="flex:1;width:100%;background:var(--blue-100);border-radius:4px 4px 0 0;display:flex;align-items:flex-end;"><div style="width:100%;background:var(--blue-700);border-radius:4px 4px 0 0;height:55%;"></div></div><span style="font-size:.7rem;color:var(--gray-500);">Jan</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.375rem;"><div style="flex:1;width:100%;background:var(--blue-100);border-radius:4px 4px 0 0;display:flex;align-items:flex-end;"><div style="width:100%;background:var(--blue-700);border-radius:4px 4px 0 0;height:75%;"></div></div><span style="font-size:.7rem;color:var(--gray-500);">Feb</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.375rem;"><div style="flex:1;width:100%;background:var(--blue-100);border-radius:4px 4px 0 0;display:flex;align-items:flex-end;"><div style="width:100%;background:var(--blue-700);border-radius:4px 4px 0 0;height:85%;"></div></div><span style="font-size:.7rem;color:var(--gray-500);">Mar</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.375rem;"><div style="flex:1;width:100%;background:var(--gold-100);border-radius:4px 4px 0 0;display:flex;align-items:flex-end;"><div style="width:100%;background:var(--gold-500);border-radius:4px 4px 0 0;height:100%;"></div></div><span style="font-size:.7rem;color:var(--gray-700);font-weight:700;">Apr</span></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+          <button class="btn btn-blue btn-sm" onclick="Toast.success('P&amp;L report downloading...')">Export P&amp;L (PDF)</button>
+          <button class="btn btn-outline btn-sm" onclick="Toast.success('QuickBooks IIF export ready.')">QuickBooks Export</button>
+          <button class="btn btn-outline btn-sm" onclick="Toast.success('URA VAT return generated.')">URA VAT Return</button>
+        </div>
+      </div>
+
+      <!-- ══ FLEET ══ -->
+      <div class="view" id="view-fleet">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+          <h1 style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;">Fleet &amp; Drivers</h1>
+          <button class="btn btn-gold btn-sm" onclick="Toast.show('Add vehicle form opened.','success')">+ Add Vehicle</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr;gap:1rem;" id="fleetCards">
+          <div style="background:var(--white);border:1.5px solid var(--gray-200);border-left:4px solid var(--green-500);border-radius:var(--radius-lg);padding:1.25rem;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;">
+              <div><div style="font-family:var(--font-display);font-weight:800;font-size:1rem;">UBF 001K — 67-Seater Coach</div><div style="font-size:.8125rem;color:var(--gray-500);">Toyota Coaster 2022 · James Okello</div></div>
+              <span class="badge badge-green">Active</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-top:1rem;font-size:.8125rem;">
+              <div><div style="color:var(--gray-500);margin-bottom:.125rem;">Insurance</div><div style="font-weight:600;color:var(--green-700);">Valid · Sep 2026</div></div>
+              <div><div style="color:var(--gray-500);margin-bottom:.125rem;">Fitness</div><div style="font-weight:600;color:var(--green-700);">Valid · Jun 2026</div></div>
+              <div><div style="color:var(--gray-500);margin-bottom:.125rem;">Mileage</div><div style="font-weight:600;">48,200 km</div></div>
+            </div>
+            <div style="margin-top:1rem;display:flex;gap:.625rem;">
+              <button class="btn btn-sm btn-outline">Edit</button>
+              <button class="btn btn-sm btn-blue" onclick="Toast.success('Insurance renewal initiated via UAP Old Mutual.')">Renew Insurance</button>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1.5px solid var(--amber-500);border-left:4px solid var(--amber-500);border-radius:var(--radius-lg);padding:1.25rem;">
+            <div style="background:var(--amber-100);border-radius:var(--radius-sm);padding:.5rem .75rem;margin-bottom:.875rem;font-size:.8125rem;font-weight:600;color:var(--amber-700);">⚠️ Fitness certificate expires in 45 days</div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;">
+              <div><div style="font-family:var(--font-display);font-weight:800;font-size:1rem;">UBF 002K — 67-Seater Coach</div><div style="font-size:.8125rem;color:var(--gray-500);">Nissan Civilian 2021 · Sarah Nakato</div></div>
+              <span class="badge badge-amber">Maintenance</span>
+            </div>
+            <div style="margin-top:1rem;display:flex;gap:.625rem;">
+              <button class="btn btn-sm btn-outline">Edit</button>
+              <button class="btn btn-sm btn-danger" onclick="Toast.success('Fitness renewal reminder sent.')">Renew Fitness</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PAYROLL ══ -->
+      <div class="view" id="view-payroll">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+          <h1 style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;">Payroll</h1>
+          <button class="btn btn-gold btn-sm" onclick="runPayroll()">Run April Payroll</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Role</th><th>Basic</th><th>PAYE</th><th>NSSF</th><th>Net Pay</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>James Okello</td><td>Driver</td><td>UGX 800K</td><td>UGX 72K</td><td>UGX 40K</td><td style="font-weight:700;">UGX 688K</td><td><span class="badge badge-green">Paid</span></td></tr>
+              <tr><td>Sarah Nakato</td><td>Driver</td><td>UGX 800K</td><td>UGX 72K</td><td>UGX 40K</td><td style="font-weight:700;">UGX 688K</td><td><span class="badge badge-amber">Pending</span></td></tr>
+              <tr><td>Peter Mwesiga</td><td>Driver</td><td>UGX 750K</td><td>UGX 58K</td><td>UGX 37.5K</td><td style="font-weight:700;">UGX 654.5K</td><td><span class="badge badge-amber">Pending</span></td></tr>
+              <tr><td>Alice Apio</td><td>Operations</td><td>UGX 1.2M</td><td>UGX 168K</td><td>UGX 60K</td><td style="font-weight:700;">UGX 972K</td><td><span class="badge badge-green">Paid</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:1rem;display:flex;gap:.75rem;flex-wrap:wrap;">
+          <button class="btn btn-blue btn-sm" onclick="Toast.success('Bulk MoMo payment initiated for 2 pending staff.')">Pay All Pending via MoMo</button>
+          <button class="btn btn-outline btn-sm" onclick="Toast.success('NSSF remittance schedule downloaded.')">NSSF Remittance Schedule</button>
+        </div>
+      </div>
+
+      <!-- ══ COMPLIANCE ══ -->
+      <div class="view" id="view-compliance">
+        <h1 style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;margin-bottom:1.5rem;">Compliance Monitor</h1>
+        <div style="display:flex;flex-direction:column;gap:.875rem;">
+          <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+            <div style="display:flex;align-items:center;gap:.875rem;"><div style="width:40px;height:40px;background:var(--green-100);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.25rem;">🏢</div><div><div style="font-family:var(--font-display);font-weight:700;font-size:.9rem;">Business Registration</div><div style="font-size:.8125rem;color:var(--gray-500);">URSB Cert #2022-GC-4421</div></div></div>
+            <span class="badge badge-green">Valid</span>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+            <div style="display:flex;align-items:center;gap:.875rem;"><div style="width:40px;height:40px;background:var(--green-100);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.25rem;">🪪</div><div><div style="font-family:var(--font-display);font-weight:700;font-size:.9rem;">UTODA PSV Licence</div><div style="font-size:.8125rem;color:var(--gray-500);">Valid until Dec 2026</div></div></div>
+            <span class="badge badge-green">Valid</span>
+          </div>
+          <div style="background:var(--white);border:1.5px solid var(--amber-500);border-radius:var(--radius-lg);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+            <div style="display:flex;align-items:center;gap:.875rem;"><div style="width:40px;height:40px;background:var(--amber-100);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.25rem;">📋</div><div><div style="font-family:var(--font-display);font-weight:700;font-size:.9rem;">UBF 002K — Fitness Certificate</div><div style="font-size:.8125rem;color:var(--amber-700);">Expires in 45 days · Action required</div></div></div>
+            <button class="btn btn-sm btn-danger" onclick="Toast.success('Renewal initiated.')">Renew Now</button>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+            <div style="display:flex;align-items:center;gap:.875rem;"><div style="width:40px;height:40px;background:var(--green-100);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.25rem;">💼</div><div><div style="font-family:var(--font-display);font-weight:700;font-size:.9rem;">PSV Insurance (Fleet)</div><div style="font-size:.8125rem;color:var(--gray-500);">UAP Old Mutual · Valid until Sep 2026</div></div></div>
+            <span class="badge badge-green">Valid</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ ANALYTICS ══ -->
+      <div class="view" id="view-analytics">
+        <h1 style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;margin-bottom:1.5rem;">Route Analytics</h1>
+        <div class="kpi-row">
+          <div class="card-stat accent-blue"><div class="stat-lbl">Best Route</div><div class="stat-val">Kla→Gulu</div><div class="stat-sub">98% avg occupancy</div></div>
+          <div class="card-stat accent-gold"><div class="stat-lbl">Revenue/Seat</div><div class="stat-val">UGX 42K</div><div class="stat-sub">↑ 6% vs last month</div></div>
+          <div class="card-stat accent-green"><div class="stat-lbl">Repeat Passengers</div><div class="stat-val">62%</div><div class="stat-sub">Book again within 30 days</div></div>
+          <div class="card-stat accent-purple"><div class="stat-lbl">Parcel Revenue</div><div class="stat-val">UGX 840K</div><div class="stat-sub">Apr 2026</div></div>
+        </div>
+        <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;">
+          <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:1.25rem;">Occupancy by Route</h3>
+          <div style="display:flex;flex-direction:column;gap:.875rem;">
+            <div><div style="display:flex;justify-content:space-between;font-size:.8125rem;margin-bottom:.25rem;"><span style="font-weight:600;">Kampala → Gulu</span><span style="color:var(--green-700);font-weight:700;">98%</span></div><div style="height:8px;background:var(--gray-100);border-radius:4px;"><div style="width:98%;height:100%;background:var(--green-500);border-radius:4px;"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:.8125rem;margin-bottom:.25rem;"><span style="font-weight:600;">Kampala → Mbale</span><span style="color:var(--gold-700);font-weight:700;">74%</span></div><div style="height:8px;background:var(--gray-100);border-radius:4px;"><div style="width:74%;height:100%;background:var(--gold-500);border-radius:4px;"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:.8125rem;margin-bottom:.25rem;"><span style="font-weight:600;">Kampala → Jinja</span><span style="color:var(--blue-700);font-weight:700;">58%</span></div><div style="height:8px;background:var(--gray-100);border-radius:4px;"><div style="width:58%;height:100%;background:var(--blue-500);border-radius:4px;"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:.8125rem;margin-bottom:.25rem;"><span style="font-weight:600;">Kampala → Mbarara</span><span style="color:var(--blue-700);font-weight:700;">42%</span></div><div style="height:8px;background:var(--gray-100);border-radius:4px;"><div style="width:42%;height:100%;background:var(--blue-400);border-radius:4px;"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SMS ══ -->
+      <div class="view" id="view-sms">
+        <h1 style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;margin-bottom:1.5rem;">SMS Alerts</h1>
+        <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1.5rem;">
+          <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:1rem;">Automated Rules</h3>
+          <div style="display:flex;flex-direction:column;gap:.875rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem;background:var(--gray-50);border-radius:var(--radius-md);">
+              <div><div style="font-weight:600;font-size:.9rem;">Booking Confirmation</div><div style="font-size:.8125rem;color:var(--gray-500);">Send QR ticket immediately on payment</div></div>
+              <label style="cursor:pointer;position:relative;width:44px;height:24px;"><input type="checkbox" checked style="opacity:0;position:absolute;"><span style="position:absolute;inset:0;background:var(--green-500);border-radius:12px;transition:.2s;"></span><span style="position:absolute;left:2px;top:2px;width:20px;height:20px;background:white;border-radius:50%;transition:.2s;"></span></label>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem;background:var(--gray-50);border-radius:var(--radius-md);">
+              <div><div style="font-weight:600;font-size:.9rem;">24-Hour Departure Reminder</div><div style="font-size:.8125rem;color:var(--gray-500);">Sent the evening before travel</div></div>
+              <label style="cursor:pointer;position:relative;width:44px;height:24px;"><input type="checkbox" checked style="opacity:0;position:absolute;"><span style="position:absolute;inset:0;background:var(--green-500);border-radius:12px;"></span><span style="position:absolute;left:2px;top:2px;width:20px;height:20px;background:white;border-radius:50%;"></span></label>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem;background:var(--gray-50);border-radius:var(--radius-md);">
+              <div><div style="font-weight:600;font-size:.9rem;">Trip Delay Alert</div><div style="font-size:.8125rem;color:var(--gray-500);">Auto-SMS all passengers with delay duration &amp; new ETA</div></div>
+              <label style="cursor:pointer;position:relative;width:44px;height:24px;"><input type="checkbox" checked style="opacity:0;position:absolute;"><span style="position:absolute;inset:0;background:var(--green-500);border-radius:12px;"></span><span style="position:absolute;left:2px;top:2px;width:20px;height:20px;background:white;border-radius:50%;"></span></label>
+            </div>
+          </div>
+        </div>
+        <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;">
+          <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:.875rem;">Manual Broadcast</h3>
+          <div style="display:flex;flex-direction:column;gap:.75rem;">
+            <div class="form-group"><label class="form-label">Send To</label><select class="form-input form-select"><option>All passengers on active trips</option><option>Passengers on Kampala→Gulu 07:00</option><option>All my passengers (this month)</option></select></div>
+            <div class="form-group"><label class="form-label">Message (max 160 chars)</label><textarea class="form-input" rows="3" maxlength="160" placeholder="Type your message..."></textarea></div>
+            <button class="btn btn-gold btn-sm" onclick="Toast.success('SMS broadcast sent to 67 passengers. Cost: UGX 1,675.')">Send Broadcast</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ LOYALTY ══ -->
+      <div class="view" id="view-loyalty">
+        <h1 style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;margin-bottom:1.5rem;">Loyalty Programme</h1>
+        <div class="kpi-row">
+          <div class="card-stat accent-gold"><div class="stat-lbl">Active Members</div><div class="stat-val">1,240</div></div>
+          <div class="card-stat accent-blue"><div class="stat-lbl">Points Issued</div><div class="stat-val">4.8M</div></div>
+          <div class="card-stat accent-green"><div class="stat-lbl">Gold Members</div><div class="stat-val">43</div></div>
+          <div class="card-stat accent-purple"><div class="stat-lbl">Redemption Rate</div><div class="stat-val">18%</div></div>
+        </div>
+        <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;">
+          <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:1rem;">Top Members</h3>
+          <div class="table-wrapper" style="border:none;">
+            <table class="data-table">
+              <thead><tr><th>#</th><th>Member</th><th>Tier</th><th>Points</th><th>Trips</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>Akello Olivia</td><td><span class="badge badge-gold">🏆 Gold</span></td><td>12,450</td><td>89</td></tr>
+                <tr><td>2</td><td>John Mwesige</td><td><span class="badge badge-gold">🏆 Gold</span></td><td>10,200</td><td>74</td></tr>
+                <tr><td>3</td><td>Grace Namuwaya</td><td><span class="badge" style="background:var(--gray-100);color:var(--gray-600);">🥈 Silver</span></td><td>7,820</td><td>56</td></tr>
+                <tr><td>4</td><td>Charles Oryem</td><td><span class="badge" style="background:var(--gray-100);color:var(--gray-600);">🥈 Silver</span></td><td>6,400</td><td>48</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SETTINGS ══ -->
+      <div class="view" id="view-settings">
+        <h1 style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;margin-bottom:1.5rem;">Settings</h1>
+        <div style="display:flex;flex-direction:column;gap:1.25rem;max-width:600px;">
+          <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;">
+            <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:1rem;">Business Profile</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;">
+              <div class="form-group"><label class="form-label">Business Name</label><input type="text" class="form-input" value="Global Coaches Ltd."></div>
+              <div class="form-group"><label class="form-label">Contact Phone</label><input type="tel" class="form-input" value="+256 700 123 456"></div>
+              <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" value="ops@globalcoaches.ug"></div>
+              <div class="form-group"><label class="form-label">TIN</label><input type="text" class="form-input" value="1003456789"></div>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;">
+            <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:1rem;">Payout Settings</h3>
+            <div style="display:flex;flex-direction:column;gap:.875rem;">
+              <div class="form-group"><label class="form-label">Payout Method</label>
+                <select class="form-input form-select" onchange="updatePayoutHint(this.value)" id="payoutMethod">
+                  <option value="mtn">MTN MoMo B2C</option>
+                  <option value="airtel">Airtel Money</option>
+                  <option value="bank">Bank Transfer</option>
+                </select>
+              </div>
+              <div class="form-group"><label class="form-label" id="payoutHintLabel">MTN MoMo Merchant Code</label><input type="text" class="form-input" placeholder="e.g. 256700123456" id="payoutNumber"></div>
+              <div class="form-group"><label class="form-label">Payout Day</label>
+                <select class="form-input form-select"><option>Every Friday</option><option>Every Monday</option><option>1st of month</option><option>On request</option></select>
+              </div>
+            </div>
+            <button class="btn btn-blue btn-sm" style="margin-top:.875rem;" onclick="Toast.success('Payout settings saved.')">Save Payout Settings</button>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;">
+            <h3 style="font-family:var(--font-display);font-weight:700;margin-bottom:1rem;">Subscription Plan</h3>
+            <div style="padding:1rem;background:var(--blue-50);border-radius:var(--radius-md);margin-bottom:1rem;">
+              <div style="font-family:var(--font-display);font-weight:800;font-size:1rem;color:var(--blue-800);">Operator Pro — UGX 350,000/month</div>
+              <div style="font-size:.875rem;color:var(--blue-600);margin-top:.25rem;">Next billing: 1 May 2026 · 8% commission rate</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="Toast.show('Plan upgrade options displayed.','success')">Upgrade Plan</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /dashboard-content -->
+  </div><!-- /dashboard-main -->
+</div><!-- /dashboard-layout -->
+
+<script src="app.js"></script>
+<script>
+// ── LIVE CLOCK ────────────────────────────────────────────────
+function updateClock(){
+  const now=new Date();
+  document.getElementById('liveClock').textContent=now.toLocaleTimeString('en-UG',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock,1000); updateClock();
+document.getElementById('dashDateLine').textContent=new Date().toLocaleDateString('en-UG',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+// ── SIDEBAR ───────────────────────────────────────────────────
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+  document.body.style.overflow='';
+}
+
+// ── VIEW SWITCHING ────────────────────────────────────────────
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.sidebar-link').forEach(l=>l.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  const link=document.querySelector(`.sidebar-link[onclick*="${id}"]`);
+  if(link) link.classList.add('active');
+  document.getElementById('currentViewLabel').textContent=id.charAt(0).toUpperCase()+id.slice(1);
+  document.getElementById('headerBreadcrumb').style.display='flex';
+  closeSidebar();
+  if(id==='bookings') renderBookings();
+  if(id==='seatmgr')  renderSeatMgr();
+}
+
+// ── LIVE ACTIVITY FEED ────────────────────────────────────────
+const feedItems=[
+  {color:'#22C55E',text:'New booking · Kampala→Gulu · Seat 14 · Sarah K. · UGX 45,000'},
+  {color:'#3B82F6',text:'Parcel PKL-A1B2C3 picked up by driver · Kampala→Mbale'},
+  {color:'#F59E0B',text:'Trip delay logged · 15 min · Kampala→Jinja 11:00 AM · SMS sent to 32 passengers'},
+  {color:'#22C55E',text:'New booking · Kampala→Mbale · Seat 22 · John M. · UGX 30,000'},
+  {color:'#8B5CF6',text:'5★ rating received · James Okello · "Very punctual and professional"'},
+  {color:'#22C55E',text:'Payout processed · UGX 2.1M → MTN MoMo ****456'},
+  {color:'#3B82F6',text:'New corporate booking · CARE Uganda · 4 seats · Kampala→Gulu'},
+];
+let feedIdx=0;
+function addFeedItem(){
+  const feed=document.getElementById('actFeed');
+  if(!feed) return;
+  const item=feedItems[feedIdx%feedItems.length];
+  const el=document.createElement('div');
+  el.className='act-item';
+  el.innerHTML=`<div class="act-dot" style="background:${item.color};"></div><span style="font-size:.8125rem;color:var(--gray-700);flex:1;">${item.text}</span><span style="font-size:.7rem;color:var(--gray-400);">just now</span>`;
+  feed.insertBefore(el,feed.firstChild);
+  if(feed.children.length>6) feed.removeChild(feed.lastChild);
+  feedIdx++;
+}
+addFeedItem(); addFeedItem(); addFeedItem();
+setInterval(addFeedItem,9000);
+
+// ── BOOKINGS ──────────────────────────────────────────────────
+const bkgData=[
+  {ref:'RLX-001',pax:'Akello O.',route:'Kla→Gulu',seat:'14A',amt:'UGX 45,000',status:'confirmed'},
+  {ref:'RLX-002',pax:'John M.',route:'Kla→Mbale',seat:'7B',amt:'UGX 30,000',status:'confirmed'},
+  {ref:'RLX-003',pax:'Grace N.',route:'Kla→Jinja',seat:'22C',amt:'UGX 25,000',status:'confirmed'},
+  {ref:'RLX-004',pax:'Peter W.',route:'Kla→Mbarara',seat:'5A',amt:'UGX 35,000',status:'pending'},
+  {ref:'RLX-005',pax:'Alice B.',route:'Kla→Gulu',seat:'31D',amt:'UGX 45,000',status:'confirmed'},
+  {ref:'RLX-006',pax:'Moses K.',route:'Kla→Mbale',seat:'9E',amt:'UGX 30,000',status:'cancelled'},
+];
+function renderBookings(){
+  document.getElementById('bkgBody').innerHTML=bkgData.map(b=>`
+    <tr><td style="font-family:var(--font-display);font-weight:700;color:var(--blue-700);">${b.ref}</td><td>${b.pax}</td><td>${b.route}</td><td>${b.seat}</td><td>${b.amt}</td>
+    <td><span class="badge ${b.status==='confirmed'?'badge-green':b.status==='pending'?'badge-amber':'badge-red'}">${b.status}</span></td>
+    <td><button class="btn btn-sm btn-icon" onclick="Toast.show('Booking detail opened.','success')">View</button></td></tr>`).join('');
+}
+
+// ── SEAT MGR ──────────────────────────────────────────────────
+function renderSeatMgr(){
+  const c=document.getElementById('smapContainer');
+  if(!c) return;
+  const booked=new Set([1,3,5,7,9,11,12,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,66,67,2,4,6,8,10,14,16,18,20,22,24,26]);
+  c.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;gap:5px;min-width:240px;">';
+  const rows=[[1,null,2],[3,4,null,5,6,7],[8,9,null,10,11,12],[13,14,null,15,16,17],[18,19,null,20,21,22],[23,24,null,25,26,27],[28,29,null,30,31,32],[33,34,null,35,36,37],[38,39,null,40,41,42],[43,44,null,45,46,47],[48,49,null,50,51,52],[53,54,null,55,56,57],[58,59,null,60,61,62],[63,64,null,65,66,67]];
+  let html='';
+  rows.forEach(row=>{
+    html+='<div style="display:flex;gap:4px;align-items:center;">';
+    row.forEach(n=>{ if(n===null){html+='<div style="width:20px;"></div>';return;} const isB=booked.has(n); html+=`<div class="seat ${isB?'booked':'available'}" style="width:30px;height:30px;font-size:.6rem;">${n}</div>`; });
+    html+='</div>';
+  });
+  c.innerHTML=html;
+}
+
+// ── TABLE FILTER ──────────────────────────────────────────────
+function filterTable(tableId,query){
+  const tbl=document.getElementById(tableId);
+  if(!tbl) return;
+  const q=query.toLowerCase();
+  tbl.querySelectorAll('tbody tr').forEach(row=>{ row.style.display=row.textContent.toLowerCase().includes(q)?'':'none'; });
+}
+
+// ── EARNINGS PREVIEW ──────────────────────────────────────────
+function updateEarnings(price){
+  const p=parseInt(price)||0, gross=p*67, comm=Math.round(gross*.08), net=gross-comm;
+  document.getElementById('epGross').textContent=p?formatUGX(gross):'—';
+  document.getElementById('epComm').textContent=p?formatUGX(comm):'—';
+  document.getElementById('epNet').textContent=p?formatUGX(net):'—';
+}
+function submitTrip(){ Toast.success('Trip submitted for admin approval! You\'ll be notified when it goes live.'); setTimeout(()=>showView('mytrips'),1500); }
+
+// ── PAYOUT HINT ───────────────────────────────────────────────
+function updatePayoutHint(v){ document.getElementById('payoutHintLabel').textContent=v==='mtn'?'MTN MoMo Merchant Code':v==='airtel'?'Airtel Money Number':'Bank Account Number'; }
+
+// ── PAYROLL ───────────────────────────────────────────────────
+function runPayroll(){ Toast.success('April payroll calculated. Initiating MoMo bulk disbursement to all pending staff.'); }
+</script>
+</body>
+</html>

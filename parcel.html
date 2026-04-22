@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#071530">
+<title>Send a Parcel — Raylane Express</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+body { background: var(--gray-50); }
+.parcel-shell { max-width: 780px; margin: 0 auto; padding: 80px 1.25rem 120px; }
+.tier-card {
+  background: var(--white);
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all .2s ease;
+  position: relative;
+}
+.tier-card:hover { border-color: var(--blue-400); box-shadow: var(--shadow-md); }
+.tier-card.selected { border-color: var(--gold-500); background: #FFFDF5; }
+.tier-card .tier-badge {
+  position: absolute; top: -10px; right: 1rem;
+  font-family: var(--font-display); font-size: .7rem; font-weight: 700;
+  padding: .2rem .75rem; border-radius: 99px;
+}
+.tier-icon { width: 48px; height: 48px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+.step-tab { display: none; }
+.step-tab.active { display: block; }
+.addon-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .875rem 1rem; background: var(--gray-50); border-radius: var(--radius-md);
+  border: 1.5px solid var(--gray-200); cursor: pointer; transition: all .2s;
+}
+.addon-toggle.on { border-color: var(--gold-500); background: #FFFDF5; }
+.toggle-switch { width: 44px; height: 24px; border-radius: 12px; background: var(--gray-300); position: relative; transition: background .2s; flex-shrink: 0; }
+.toggle-switch.on { background: var(--gold-500); }
+.toggle-knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: left .2s; }
+.toggle-switch.on .toggle-knob { left: 22px; }
+.track-step { display: flex; align-items: flex-start; gap: 1rem; padding: .875rem 0; position: relative; }
+.track-node { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 1; font-size: .875rem; }
+</style>
+</head>
+<body>
+
+<nav class="navbar scrolled" style="background:rgba(7,21,48,.97);">
+  <div class="navbar-inner">
+    <a href="index.html" class="navbar-logo" style="display:flex;align-items:center;gap:.625rem;">
+      <img src="Raylane_express.png" alt="Raylane Express" height="36" onerror="this.style.display='none'">
+      <span style="font-family:var(--font-display);font-weight:800;font-size:1.0625rem;color:var(--gold-500);letter-spacing:-.01em;">Raylane<span style="color:white;">Express</span></span>
+    </a>
+    <div style="font-family:var(--font-display);font-size:.9rem;font-weight:600;color:rgba(255,255,255,.8);">Send a Parcel</div>
+    <a href="index.html" style="font-size:.8125rem;color:rgba(255,255,255,.6);">← Home</a>
+  </div>
+</nav>
+
+<main class="parcel-shell">
+  <div style="text-align:center;margin-bottom:2rem;">
+    <div class="section-label" style="justify-content:center;margin-bottom:.75rem;">📦 Parcel Delivery</div>
+    <h1 class="display-md" style="margin-bottom:.75rem;">Send Anything Across Uganda</h1>
+    <p class="body-md text-muted" style="max-width:520px;margin:0 auto;">Every Raylane bus carries parcels. Door-to-terminal, terminal-to-terminal, or terminal-to-door. Real-time tracking, OTP confirmation, UAP insurance available.</p>
+  </div>
+
+  <!-- Progress steps -->
+  <div class="progress-steps" style="margin-bottom:2rem;">
+    <div class="progress-step active" id="ps1"><div class="step-bubble">1</div><div class="step-label">Parcel Type</div></div>
+    <div class="step-line" id="pl1"></div>
+    <div class="progress-step" id="ps2"><div class="step-bubble">2</div><div class="step-label">Route &amp; Details</div></div>
+    <div class="step-line" id="pl2"></div>
+    <div class="progress-step" id="ps3"><div class="step-bubble">3</div><div class="step-label">Add-ons</div></div>
+    <div class="step-line" id="pl3"></div>
+    <div class="progress-step" id="ps4"><div class="step-bubble">4</div><div class="step-label">Payment</div></div>
+    <div class="step-line" id="pl4"></div>
+    <div class="progress-step" id="ps5"><div class="step-bubble">5</div><div class="step-label">Tracking</div></div>
+  </div>
+
+  <!-- ═══ STEP 1: SELECT TIER ═══ -->
+  <div class="step-tab active" id="ptab1">
+    <h2 class="heading-lg" style="margin-bottom:1.25rem;">What are you sending?</h2>
+    <div style="display:flex;flex-direction:column;gap:.875rem;" id="tierList">
+
+      <!-- TIER 1: Light Documents -->
+      <div class="tier-card" id="tier-docs" onclick="selectTier('docs',5000,'📄','Standard Documents / Light Items')">
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <div class="tier-icon" style="background:#EEF2FF;">📄</div>
+          <div style="flex:1;">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:.9375rem;">Standard Documents &amp; Light Items</div>
+            <div style="font-size:.8125rem;color:var(--gray-500);margin-top:.2rem;">Letters, receipts, catalogues, brochures — up to 0.5kg</div>
+          </div>
+          <div style="font-family:var(--font-display);font-weight:800;color:var(--blue-900);font-size:1.0625rem;white-space:nowrap;">UGX 5,000</div>
+        </div>
+      </div>
+
+      <!-- TIER 2: Declared Important Documents -->
+      <div class="tier-card" id="tier-important" onclick="selectTier('important',10000,'🔐','Declared Important Documents')">
+        <div class="tier-badge" style="background:var(--red-100);color:var(--red-700);">DECLARED</div>
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <div class="tier-icon" style="background:#FFF1F2;">🔐</div>
+          <div style="flex:1;">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:.9375rem;">Declared Important Documents</div>
+            <div style="font-size:.8125rem;color:var(--gray-500);margin-top:.2rem;">Academic transcripts, land titles, passports, contracts, court documents — must be declared at dispatch. Handled with priority care.</div>
+          </div>
+          <div style="font-family:var(--font-display);font-weight:800;color:var(--blue-900);font-size:1.0625rem;white-space:nowrap;">UGX 10,000</div>
+        </div>
+      </div>
+
+      <!-- TIER 3: Small Parcel -->
+      <div class="tier-card" id="tier-small" onclick="selectTier('small',12000,'📦','Small Parcel')">
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <div class="tier-icon" style="background:#FEF3C7;">📦</div>
+          <div style="flex:1;">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:.9375rem;">Small Parcel</div>
+            <div style="font-size:.8125rem;color:var(--gray-500);margin-top:.2rem;">Clothes, books, small electronics, shoes, household items — up to 5kg</div>
+          </div>
+          <div style="font-family:var(--font-display);font-weight:800;color:var(--blue-900);font-size:1.0625rem;white-space:nowrap;">UGX 12,000</div>
+        </div>
+      </div>
+
+      <!-- TIER 4: Medium Parcel 5-15kg -->
+      <div class="tier-card" id="tier-medium" onclick="selectTier('medium',15000,'🏠','Medium Parcel')">
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <div class="tier-icon" style="background:#F0FDF4;">🏠</div>
+          <div style="flex:1;">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:.9375rem;">Medium Parcel</div>
+            <div style="font-size:.8125rem;color:var(--gray-500);margin-top:.2rem;">Household goods, appliances, packaged food items — 5kg to 15kg</div>
+          </div>
+          <div style="font-family:var(--font-display);font-weight:800;color:var(--blue-900);font-size:1.0625rem;white-space:nowrap;">UGX 15,000</div>
+        </div>
+      </div>
+
+      <!-- TIER 5: Large Cargo 15-30kg -->
+      <div class="tier-card" id="tier-large" onclick="selectTier('large',20000,'🛒','Large Cargo')">
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <div class="tier-icon" style="background:#FFF1F2;">🛒</div>
+          <div style="flex:1;">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:.9375rem;">Large Cargo</div>
+            <div style="font-size:.8125rem;color:var(--gray-500);margin-top:.2rem;">Large packages, equipment, commercial goods — 15kg to 30kg</div>
+          </div>
+          <div style="font-family:var(--font-display);font-weight:800;color:var(--blue-900);font-size:1.0625rem;white-space:nowrap;">UGX 20,000</div>
+        </div>
+      </div>
+
+      <!-- TIER 6: Heavy Freight 30-50kg -->
+      <div class="tier-card" id="tier-heavy" onclick="selectTier('heavy',25000,'🚛','Heavy Freight')">
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <div class="tier-icon" style="background:#F5F3FF;">🚛</div>
+          <div style="flex:1;">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:.9375rem;">Heavy Freight</div>
+            <div style="font-size:.8125rem;color:var(--gray-500);margin-top:.2rem;">Industrial goods, machinery parts, heavy boxes — 30kg to 50kg. Requires pre-arrangement.</div>
+          </div>
+          <div style="font-family:var(--font-display);font-weight:800;color:var(--blue-900);font-size:1.0625rem;white-space:nowrap;">UGX 25,000</div>
+        </div>
+      </div>
+
+      <!-- TIER 7: Agricultural Produce (sacks) -->
+      <div class="tier-card" id="tier-agric" onclick="selectTier('agric',30000,'🌽','Agricultural Produce — Sacks')">
+        <div class="tier-badge" style="background:var(--green-100);color:var(--green-700);">AGRIC</div>
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <div class="tier-icon" style="background:#F0FDF4;">🌽</div>
+          <div style="flex:1;">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:.9375rem;">Agricultural Produce — Sacks &amp; Bags</div>
+            <div style="font-size:.8125rem;color:var(--gray-500);margin-top:.2rem;">Maize, beans, millet, groundnuts in polythene sacks or jute bags — up to 50kg per sack. Includes handling fee. Driver acceptance required.</div>
+          </div>
+          <div style="font-family:var(--font-display);font-weight:800;color:var(--blue-900);font-size:1.0625rem;white-space:nowrap;">UGX 30,000</div>
+        </div>
+      </div>
+
+      <!-- TIER 8: Wooden Crates -->
+      <div class="tier-card" id="tier-crate" onclick="selectTier('crate',35000,'📦','Wooden Crates / Produce Boxes')">
+        <div class="tier-badge" style="background:var(--amber-100);color:var(--amber-700);">FRAGILE</div>
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <div class="tier-icon" style="background:#FFFBEB;">🪵</div>
+          <div style="flex:1;">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:.9375rem;">Wooden Crates &amp; Produce Boxes</div>
+            <div style="font-size:.8125rem;color:var(--gray-500);margin-top:.2rem;">Tomatoes, cabbages, timber offcuts, fruit in crates. Careful loading/offloading. Space subject to availability on bus.</div>
+          </div>
+          <div style="font-family:var(--font-display);font-weight:800;color:var(--blue-900);font-size:1.0625rem;white-space:nowrap;">UGX 35,000</div>
+        </div>
+      </div>
+
+      <!-- TIER 9: Perishable / Cold Chain -->
+      <div class="tier-card" id="tier-perishable" onclick="selectTier('perishable',40000,'🧊','Perishable Goods')">
+        <div class="tier-badge" style="background:var(--blue-50);color:var(--blue-600);">PERISHABLE</div>
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <div class="tier-icon" style="background:#EFF6FF;">🧊</div>
+          <div style="flex:1;">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:.9375rem;">Perishable Goods</div>
+            <div style="font-size:.8125rem;color:var(--gray-500);margin-top:.2rem;">Dairy products, meat, fish, flowers, bananas. Must be properly packaged. Sender assumes risk of perishability. Priority loading.</div>
+          </div>
+          <div style="font-family:var(--font-display);font-weight:800;color:var(--blue-900);font-size:1.0625rem;white-space:nowrap;">UGX 40,000</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:1.25rem;padding:1rem;background:var(--amber-100);border-radius:var(--radius-md);font-size:.8125rem;color:var(--amber-700);">
+      ⚠️ <strong>Important:</strong> Raylane Express does not carry: live animals, flammable liquids, illegal substances, unmarked currency, or any item prohibited by KCCA / UNBS regulations. Declared value must be accurate — false declaration voids insurance.
+    </div>
+
+    <button class="btn btn-gold" style="width:100%;justify-content:center;margin-top:1.25rem;" id="tierNextBtn" onclick="goParcelStep(2)" disabled>Continue — Select Route →</button>
+  </div>
+
+  <!-- ═══ STEP 2: ROUTE & DETAILS ═══ -->
+  <div class="step-tab" id="ptab2">
+    <h2 class="heading-lg" style="margin-bottom:.375rem;">Sender &amp; Recipient Details</h2>
+    <p class="body-sm text-muted" style="margin-bottom:1.5rem;">Both parties will receive SMS notifications at key tracking milestones.</p>
+
+    <!-- Selected tier summary -->
+    <div style="background:var(--blue-50);border:1.5px solid var(--blue-200);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;">
+      <div><span id="sSummaryIcon" style="font-size:1.25rem;margin-right:.5rem;">📦</span><span style="font-family:var(--font-display);font-weight:700;" id="sSummaryName">Selected Tier</span></div>
+      <div style="font-family:var(--font-display);font-weight:800;color:var(--blue-900);" id="sSummaryPrice">UGX —</div>
+      <button onclick="goParcelStep(1)" class="btn btn-sm btn-outline" style="border-radius:var(--radius-full);">Change</button>
+    </div>
+
+    <!-- Route -->
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1.25rem;">
+      <h3 class="heading-md" style="margin-bottom:1rem;">Route</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;">
+        <div class="form-group">
+          <label class="form-label">Sending From *</label>
+          <select class="form-input form-select" id="pFrom" required>
+            <option value="">Select city</option>
+            <option>Kampala</option><option>Entebbe</option><option>Jinja</option><option>Mbale</option>
+            <option>Gulu</option><option>Mbarara</option><option>Fort Portal</option><option>Arua</option>
+            <option>Lira</option><option>Kabale</option><option>Kasese</option><option>Soroti</option>
+            <option>Tororo</option><option>Masaka</option><option>Hoima</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Delivering To *</label>
+          <select class="form-input form-select" id="pTo" required>
+            <option value="">Select city</option>
+            <option>Kampala</option><option>Entebbe</option><option>Jinja</option><option>Mbale</option>
+            <option>Gulu</option><option>Mbarara</option><option>Fort Portal</option><option>Arua</option>
+            <option>Lira</option><option>Kabale</option><option>Kasese</option><option>Soroti</option>
+            <option>Tororo</option><option>Masaka</option><option>Hoima</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Send Date *</label>
+          <input type="date" class="form-input" id="pDate" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Preferred Bus Departure</label>
+          <select class="form-input form-select" id="pBus">
+            <option>Next available bus</option>
+            <option>Morning (before 10 AM)</option>
+            <option>Afternoon (after 12 PM)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sender -->
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1.25rem;">
+      <h3 class="heading-md" style="margin-bottom:1rem;">Sender Details</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;">
+        <div class="form-group"><label class="form-label">Full Name *</label><input type="text" class="form-input" id="senderName" placeholder="Your full name" required></div>
+        <div class="form-group"><label class="form-label">Phone Number *</label><input type="tel" class="form-input" id="senderPhone" placeholder="07XX XXX XXX" required></div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Description of Contents *</label>
+          <textarea class="form-input" id="parcelDesc" rows="2" placeholder="Describe what's inside — required for insurance and customs compliance" required></textarea>
+        </div>
+        <div class="form-group"><label class="form-label">Declared Value (UGX)</label><input type="number" class="form-input" id="declaredValue" placeholder="e.g. 500000 — for insurance"></div>
+        <div class="form-group"><label class="form-label">Weight (approx. kg)</label><input type="number" class="form-input" id="parcelWeight" placeholder="e.g. 2.5"></div>
+      </div>
+    </div>
+
+    <!-- Recipient -->
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1.25rem;">
+      <h3 class="heading-md" style="margin-bottom:.5rem;">Recipient Details</h3>
+      <p class="body-sm text-muted" style="margin-bottom:1rem;">Recipient will receive an SMS with an OTP to confirm collection. This prevents wrong-person pickup.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;">
+        <div class="form-group"><label class="form-label">Recipient Full Name *</label><input type="text" class="form-input" id="recipName" placeholder="Who will collect?" required></div>
+        <div class="form-group"><label class="form-label">Recipient Phone *</label><input type="tel" class="form-input" id="recipPhone" placeholder="07XX XXX XXX" required></div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">Recipient National ID (Optional — for verified pickup)</label>
+          <input type="text" class="form-input" id="recipNID" placeholder="NIN number — optional. If provided, recipient must present ID to collect.">
+          <div style="font-size:.75rem;color:var(--gray-500);margin-top:.375rem;">ℹ️ If NID is provided, our terminal staff will verify recipient's identity before releasing the parcel.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:.75rem;">
+      <button class="btn btn-outline" onclick="goParcelStep(1)">← Back</button>
+      <button class="btn btn-gold" style="flex:1;justify-content:center;" onclick="validateRouteStep()">Continue to Add-ons →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 3: ADD-ONS ═══ -->
+  <div class="step-tab" id="ptab3">
+    <h2 class="heading-lg" style="margin-bottom:.375rem;">Optional Add-ons</h2>
+    <p class="body-sm text-muted" style="margin-bottom:1.5rem;">Enhance your delivery with extra services.</p>
+
+    <div style="display:flex;flex-direction:column;gap:.875rem;margin-bottom:1.5rem;">
+      <div class="addon-toggle" id="addonPickup" onclick="toggleAddon('addonPickup',5000)">
+        <div style="display:flex;align-items:center;gap:.875rem;">
+          <span style="font-size:1.5rem;">🏍️</span>
+          <div><div style="font-family:var(--font-display);font-weight:700;font-size:.9rem;">Pickup Rider</div><div style="font-size:.8125rem;color:var(--gray-500);">A Raylane rider collects from your location (within city). 2-hour window.</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.75rem;">
+          <span style="font-family:var(--font-display);font-weight:700;font-size:.875rem;color:var(--blue-800);">+UGX 5,000</span>
+          <div class="toggle-switch" id="tsPickup"><div class="toggle-knob"></div></div>
+        </div>
+      </div>
+
+      <div class="addon-toggle" id="addonInsurance" onclick="toggleAddon('addonInsurance','3pct')">
+        <div style="display:flex;align-items:center;gap:.875rem;">
+          <span style="font-size:1.5rem;">🛡️</span>
+          <div><div style="font-family:var(--font-display);font-weight:700;font-size:.9rem;">UAP Old Mutual Insurance</div><div style="font-size:.8125rem;color:var(--gray-500);">Covers loss, theft, and damage in transit. 3% of declared value. Claims in 5 days.</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.75rem;">
+          <span style="font-family:var(--font-display);font-weight:700;font-size:.875rem;color:var(--blue-800);" id="insurancePriceLabel">+3% value</span>
+          <div class="toggle-switch" id="tsInsurance"><div class="toggle-knob"></div></div>
+        </div>
+      </div>
+
+      <div class="addon-toggle" id="addonExpress" onclick="toggleAddon('addonExpress',8000)">
+        <div style="display:flex;align-items:center;gap:.875rem;">
+          <span style="font-size:1.5rem;">⚡</span>
+          <div><div style="font-family:var(--font-display);font-weight:700;font-size:.9rem;">Express Priority Loading</div><div style="font-size:.8125rem;color:var(--gray-500);">Parcel loaded on very next available bus. Guaranteed priority slot.</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.75rem;">
+          <span style="font-family:var(--font-display);font-weight:700;font-size:.875rem;color:var(--blue-800);">+UGX 8,000</span>
+          <div class="toggle-switch" id="tsExpress"><div class="toggle-knob"></div></div>
+        </div>
+      </div>
+
+      <div class="addon-toggle" id="addonDelivery" onclick="toggleAddon('addonDelivery',8000)">
+        <div style="display:flex;align-items:center;gap:.875rem;">
+          <span style="font-size:1.5rem;">🏠</span>
+          <div><div style="font-family:var(--font-display);font-weight:700;font-size:.9rem;">Last-Mile Delivery Rider</div><div style="font-size:.8125rem;color:var(--gray-500);">Rider delivers from destination terminal to recipient's address. Within city only.</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.75rem;">
+          <span style="font-family:var(--font-display);font-weight:700;font-size:.875rem;color:var(--blue-800);">+UGX 8,000</span>
+          <div class="toggle-switch" id="tsDelivery"><div class="toggle-knob"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Price summary -->
+    <div style="background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.25rem;margin-bottom:1.25rem;">
+      <div style="font-family:var(--font-display);font-weight:700;margin-bottom:.875rem;">Cost Summary</div>
+      <div style="display:flex;flex-direction:column;gap:.5rem;font-size:.875rem;" id="costLines"></div>
+      <div style="border-top:1px solid var(--gray-100);margin-top:.875rem;padding-top:.875rem;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-family:var(--font-display);font-weight:700;">Total to Pay</span>
+        <span style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;color:var(--blue-900);" id="parcelTotal">UGX —</span>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:.75rem;">
+      <button class="btn btn-outline" onclick="goParcelStep(2)">← Back</button>
+      <button class="btn btn-gold" style="flex:1;justify-content:center;" onclick="goParcelStep(4)">Continue to Payment →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 4: PAYMENT ═══ -->
+  <div class="step-tab" id="ptab4">
+    <h2 class="heading-lg" style="margin-bottom:.375rem;">Pay for Your Parcel</h2>
+    <p class="body-sm text-muted" style="margin-bottom:1.5rem;">Payment must be completed at the time of sending. Cash is accepted at the terminal if you prefer.</p>
+
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.25rem;margin-bottom:1.25rem;" id="payConfirmSummary"></div>
+
+    <div style="display:flex;flex-direction:column;gap:.75rem;margin-bottom:1.25rem;">
+      <div class="payment-option selected" id="pmtn" onclick="selPayment('mtn')">
+        <div style="width:44px;height:44px;background:linear-gradient(135deg,#FFD700,#FF8C00);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">📱</div>
+        <div style="flex:1;"><div style="font-family:var(--font-display);font-weight:700;">MTN MoMo</div><div style="font-size:.8125rem;color:var(--gray-500);">USSD push · Pay at terminal or remotely · ~8 seconds</div></div>
+        <input type="radio" name="pm" value="mtn" checked style="accent-color:var(--gold-500);">
+      </div>
+      <div class="payment-option" id="pairtel" onclick="selPayment('airtel')">
+        <div style="width:44px;height:44px;background:linear-gradient(135deg,#EF4444,#B91C1C);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">📱</div>
+        <div style="flex:1;"><div style="font-family:var(--font-display);font-weight:700;">Airtel Money</div><div style="font-size:.8125rem;color:var(--gray-500);">USSD push · Strong coverage northern Uganda</div></div>
+        <input type="radio" name="pm" value="airtel" style="accent-color:var(--gold-500);">
+      </div>
+      <div class="payment-option" id="pcash" onclick="selPayment('cash')">
+        <div style="width:44px;height:44px;background:linear-gradient(135deg,#22C55E,#15803D);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">💵</div>
+        <div style="flex:1;"><div style="font-family:var(--font-display);font-weight:700;">Cash at Terminal</div><div style="font-size:.8125rem;color:var(--gray-500);">Pay in cash when you drop off at the Raylane terminal</div></div>
+        <input type="radio" name="pm" value="cash" style="accent-color:var(--gold-500);">
+      </div>
+    </div>
+
+    <div id="momoPhoneGroup" style="background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1.25rem;">
+      <div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;margin-bottom:.625rem;" id="momoLabelP">MTN MoMo Number</div>
+      <input type="tel" class="form-input" id="pMomoPhone" placeholder="07XX XXX XXX">
+    </div>
+
+    <div style="background:var(--amber-100);border-radius:var(--radius-md);padding:.875rem 1rem;margin-bottom:1.25rem;font-size:.8125rem;color:var(--amber-700);">
+      🔒 By proceeding, you confirm that the parcel contents are accurately declared and comply with Raylane Express's carriage terms. Raylane is not liable for undeclared or prohibited items.
+    </div>
+
+    <div style="display:flex;gap:.75rem;">
+      <button class="btn btn-outline" onclick="goParcelStep(3)">← Back</button>
+      <button class="btn btn-gold" style="flex:1;justify-content:center;" id="pPayBtn" onclick="processParcelPayment()">
+        Confirm &amp; Pay — <span id="pPayAmt">UGX —</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 5: TRACKING RECEIPT ═══ -->
+  <div class="step-tab" id="ptab5">
+    <div style="text-align:center;margin-bottom:2rem;">
+      <div style="font-size:3.5rem;margin-bottom:.875rem;">📦</div>
+      <h1 class="display-md" style="margin-bottom:.75rem;">Parcel Booked!</h1>
+      <p class="body-md text-muted" style="max-width:460px;margin:0 auto;">Your parcel has been registered. Both sender and recipient will receive SMS confirmations shortly.</p>
+    </div>
+
+    <!-- Receipt / tracking card -->
+    <div style="background:var(--white);border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-lg);margin-bottom:1.5rem;">
+      <div style="background:linear-gradient(135deg,var(--blue-900),var(--blue-700));padding:1.5rem;color:white;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+          <div style="display:flex;align-items:center;gap:.5rem;">
+            <span style="font-family:var(--font-display);font-weight:800;font-size:1rem;color:var(--gold-500);">Raylane</span>
+            <span style="font-family:var(--font-display);font-weight:800;font-size:1rem;">Express</span>
+          </div>
+          <span class="badge" style="background:rgba(34,197,94,.2);color:#86EFAC;">✓ BOOKED</span>
+        </div>
+        <div style="font-size:.75rem;opacity:.6;font-family:var(--font-display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;">Tracking Number</div>
+        <div style="font-family:var(--font-display);font-size:1.625rem;font-weight:800;letter-spacing:.04em;color:var(--gold-500);" id="trackingNum">PKL-A1B2C3</div>
+        <div style="margin-top:1rem;display:flex;gap:1.5rem;flex-wrap:wrap;">
+          <div><div style="font-size:.7rem;opacity:.55;font-family:var(--font-display);font-weight:600;text-transform:uppercase;">From</div><div style="font-family:var(--font-display);font-weight:700;" id="tpFrom">Kampala</div></div>
+          <div><div style="font-size:.7rem;opacity:.55;font-family:var(--font-display);font-weight:600;text-transform:uppercase;">To</div><div style="font-family:var(--font-display);font-weight:700;" id="tpTo">Gulu</div></div>
+          <div><div style="font-size:.7rem;opacity:.55;font-family:var(--font-display);font-weight:600;text-transform:uppercase;">Type</div><div style="font-family:var(--font-display);font-weight:700;" id="tpType">—</div></div>
+          <div><div style="font-size:.7rem;opacity:.55;font-family:var(--font-display);font-weight:600;text-transform:uppercase;">Paid</div><div style="font-family:var(--font-display);font-weight:700;color:var(--gold-500);" id="tpPaid">UGX —</div></div>
+        </div>
+      </div>
+
+      <!-- Terms block on receipt -->
+      <div style="padding:1.25rem;border-bottom:1px solid var(--gray-100);">
+        <div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;margin-bottom:.625rem;">Key Terms &amp; Conditions</div>
+        <div style="font-size:.75rem;color:var(--gray-600);line-height:1.7;">
+          1. <strong>Liability:</strong> Raylane's maximum liability for loss or damage is limited to the declared value, or UGX 200,000, whichever is lower — unless UAP insurance was purchased.<br>
+          2. <strong>Prohibited items:</strong> Live animals, flammable substances, illegal items, unmarked currency, and hazardous materials are strictly prohibited.<br>
+          3. <strong>Collection:</strong> Recipient must present this tracking number and a valid ID (or NID if specified by sender) to collect. Parcels uncollected after 48 hours incur a UGX 2,000/day storage fee.<br>
+          4. <strong>Claims:</strong> Any damage or loss claim must be reported within 24 hours of expected delivery. Claims with UAP insurance are processed within 5 business days.<br>
+          5. <strong>Refunds:</strong> Parcel fees are non-refundable once the bus departs. Pre-dispatch cancellation: 80% refund if cancelled 2+ hours before bus departure.<br>
+          6. <strong>Contents:</strong> Sender is responsible for accurate declaration. False declaration voids all insurance and may result in parcel confiscation.
+        </div>
+      </div>
+
+      <!-- Tracking timeline -->
+      <div style="padding:1.25rem;">
+        <div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;margin-bottom:1rem;">Live Tracking</div>
+        <div style="position:relative;padding-left:2rem;">
+          <div style="position:absolute;left:15px;top:10px;bottom:10px;width:2px;background:var(--gray-200);"></div>
+          <div class="track-step"><div class="track-node" style="background:var(--gold-500);color:var(--blue-900);">✓</div><div><div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;color:var(--gold-700);">Registered</div><div style="font-size:.8125rem;color:var(--gray-500);">Parcel booked in system. Tracking ID issued.</div></div></div>
+          <div class="track-step" style="opacity:.5;"><div class="track-node" style="background:var(--gray-200);">2</div><div><div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;">Verified &amp; Accepted</div><div style="font-size:.8125rem;color:var(--gray-500);">Staff weighs, labels, and QR-codes parcel. Driver signs acceptance.</div></div></div>
+          <div class="track-step" style="opacity:.5;"><div class="track-node" style="background:var(--gray-200);">3</div><div><div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;">On Board &amp; In Transit</div><div style="font-size:.8125rem;color:var(--gray-500);">Loaded. GPS tracking active. ETA updated every 15 min. Both parties notified.</div></div></div>
+          <div class="track-step" style="opacity:.5;"><div class="track-node" style="background:var(--gray-200);">4</div><div><div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;">Arrived at Destination</div><div style="font-size:.8125rem;color:var(--gray-500);">Parcel off-loaded at destination terminal. Recipient SMS sent with OTP.</div></div></div>
+          <div class="track-step" style="opacity:.5;"><div class="track-node" style="background:var(--gray-200);">✓</div><div><div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;">Collected &amp; Delivered</div><div style="font-size:.8125rem;color:var(--gray-500);">Recipient confirms with OTP. Sender notified of successful delivery.</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:.75rem;">
+      <button class="btn btn-gold btn-lg" onclick="window.print()" style="width:100%;justify-content:center;">🖨️ Print Receipt</button>
+      <a href="track.html" class="btn btn-blue" style="width:100%;justify-content:center;display:flex;">📍 Track This Parcel</a>
+      <button class="btn btn-outline" onclick="location.reload()" style="width:100%;justify-content:center;">Send Another Parcel</button>
+    </div>
+  </div>
+</main>
+
+<nav class="bottom-nav">
+  <a href="index.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Home</a>
+  <a href="book.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>Book</a>
+  <a href="parcel.html" class="bottom-nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8"/></svg>Parcels</a>
+  <a href="track.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/></svg>Track</a>
+  <a href="apply.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17h18M5 17V8a2 2 0 012-2h10a2 2 0 012 2v9"/></svg>Operators</a>
+</nav>
+
+<script src="app.js"></script>
+<script>
+// ── STATE ─────────────────────────────────────────────────────
+const ps = { tier:null, tierPrice:0, tierIcon:'📦', tierName:'', addons:{pickup:false,insurance:false,express:false,delivery:false}, payMethod:'mtn' };
+
+// Set today as min date
+document.getElementById('pDate').min = new Date().toISOString().split('T')[0];
+document.getElementById('pDate').value = new Date().toISOString().split('T')[0];
+
+// ── STEP NAV ──────────────────────────────────────────────────
+function goParcelStep(n) {
+  document.querySelectorAll('.step-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('ptab'+n).classList.add('active');
+  for(let i=1;i<=5;i++){
+    const si=document.getElementById('ps'+i), b=si.querySelector('.step-bubble');
+    si.classList.remove('active','done');
+    if(i<n){si.classList.add('done');b.innerHTML='✓';}
+    else if(i===n){si.classList.add('active');b.textContent=i;}
+    else b.textContent=i;
+    const ln=document.getElementById('pl'+i);
+    if(ln) ln.classList.toggle('done',i<n);
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(n===3) renderCostSummary();
+  if(n===4) renderPaySummary();
+}
+
+// ── TIER SELECTION ────────────────────────────────────────────
+function selectTier(id, price, icon, name) {
+  ps.tier=id; ps.tierPrice=price; ps.tierIcon=icon; ps.tierName=name;
+  document.querySelectorAll('.tier-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('tier-'+id).classList.add('selected');
+  document.getElementById('tierNextBtn').removeAttribute('disabled');
+  // Update insurance label
+  const dv = parseInt(document.getElementById('declaredValue')?.value)||0;
+  document.getElementById('insurancePriceLabel').textContent = dv ? `+UGX ${Math.round(dv*.03).toLocaleString()}` : '+3% of value';
+}
+
+// ── VALIDATE STEP 2 ───────────────────────────────────────────
+function validateRouteStep() {
+  const fields = ['pFrom','pTo','pDate','senderName','senderPhone','parcelDesc','recipName','recipPhone'];
+  let ok = true;
+  fields.forEach(id => { const el=document.getElementById(id); if(el&&!el.value.trim()){el.classList.add('error');ok=false;el.addEventListener('change',()=>el.classList.remove('error'),{once:true});} });
+  if(!ok){ Toast.error('Please fill all required fields.'); return; }
+  if(document.getElementById('pFrom').value === document.getElementById('pTo').value){ Toast.error('Origin and destination cannot be the same.'); return; }
+  document.getElementById('sSummaryIcon').textContent=ps.tierIcon;
+  document.getElementById('sSummaryName').textContent=ps.tierName;
+  document.getElementById('sSummaryPrice').textContent=formatUGX(ps.tierPrice);
+  goParcelStep(3);
+}
+
+// ── ADD-ON TOGGLES ────────────────────────────────────────────
+function toggleAddon(id, cost) {
+  const el=document.getElementById(id), key=id.replace('addon','').toLowerCase();
+  const isOn=!ps.addons[key]; ps.addons[key]=isOn;
+  el.classList.toggle('on',isOn);
+  const ts=el.querySelector('.toggle-switch');
+  ts.classList.toggle('on',isOn);
+  renderCostSummary();
+}
+
+// ── COST SUMMARY ──────────────────────────────────────────────
+function calcTotal() {
+  let t=ps.tierPrice;
+  if(ps.addons.pickup) t+=5000;
+  if(ps.addons.insurance){ const dv=parseInt(document.getElementById('declaredValue')?.value)||0; t+=Math.round(dv*.03); }
+  if(ps.addons.express) t+=8000;
+  if(ps.addons.delivery) t+=8000;
+  return t;
+}
+function renderCostSummary() {
+  const lines=[{l:ps.tierName||'Parcel tier',v:ps.tierPrice}];
+  if(ps.addons.pickup) lines.push({l:'Pickup rider',v:5000});
+  if(ps.addons.insurance){const dv=parseInt(document.getElementById('declaredValue')?.value)||0;lines.push({l:'UAP Insurance (3%)',v:Math.round(dv*.03)});}
+  if(ps.addons.express) lines.push({l:'Express priority',v:8000});
+  if(ps.addons.delivery) lines.push({l:'Last-mile delivery',v:8000});
+  document.getElementById('costLines').innerHTML=lines.map(l=>`<div style="display:flex;justify-content:space-between;"><span style="color:var(--gray-600);">${l.l}</span><span>${formatUGX(l.v)}</span></div>`).join('');
+  document.getElementById('parcelTotal').textContent=formatUGX(calcTotal());
+}
+
+// ── PAY SUMMARY ───────────────────────────────────────────────
+function renderPaySummary() {
+  const total=calcTotal();
+  document.getElementById('payConfirmSummary').innerHTML=`
+    <div style="font-family:var(--font-display);font-weight:700;margin-bottom:.75rem;">Booking Summary</div>
+    <div style="font-size:.875rem;display:flex;flex-direction:column;gap:.375rem;color:var(--gray-600);">
+      <div style="display:flex;justify-content:space-between;"><span>Parcel type:</span><span style="font-weight:600;">${ps.tierName}</span></div>
+      <div style="display:flex;justify-content:space-between;"><span>Route:</span><span style="font-weight:600;">${document.getElementById('pFrom')?.value||'—'} → ${document.getElementById('pTo')?.value||'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;"><span>Sender:</span><span style="font-weight:600;">${document.getElementById('senderName')?.value||'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;"><span>Recipient:</span><span style="font-weight:600;">${document.getElementById('recipName')?.value||'—'}</span></div>
+    </div>
+    <div style="border-top:1px solid var(--gray-100);margin-top:.875rem;padding-top:.875rem;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-family:var(--font-display);font-weight:700;">Total</span>
+      <span style="font-family:var(--font-display);font-size:1.25rem;font-weight:800;color:var(--blue-900);">${formatUGX(total)}</span>
+    </div>`;
+  document.getElementById('pPayAmt').textContent=formatUGX(total);
+}
+
+function selPayment(m) {
+  ps.payMethod=m;
+  ['pmtn','pairtel','pcash'].forEach(id=>document.getElementById(id).classList.remove('selected'));
+  document.getElementById('p'+m).classList.add('selected');
+  document.querySelectorAll('input[name="pm"]').forEach(r=>r.checked=r.value===m);
+  document.getElementById('momoPhoneGroup').style.display=(m==='cash')?'none':'block';
+  if(m==='airtel') document.getElementById('momoLabelP').textContent='Airtel Money Number';
+  if(m==='mtn') document.getElementById('momoLabelP').textContent='MTN MoMo Number';
+}
+
+function processParcelPayment() {
+  if(ps.payMethod!=='cash'&&!document.getElementById('pMomoPhone').value){ Toast.error('Please enter your phone number.'); return; }
+  const btn=document.getElementById('pPayBtn');
+  btn.innerHTML='<svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="15"/></svg> Processing...';
+  btn.disabled=true;
+  if(ps.payMethod!=='cash') Toast.show('📱 USSD push sent — enter your MoMo PIN.','success',5000);
+  else Toast.show('Please proceed to the terminal to pay cash and drop off.','success',5000);
+  setTimeout(()=>{
+    const ref='PKL-'+Math.random().toString(36).substr(2,6).toUpperCase();
+    document.getElementById('trackingNum').textContent=ref;
+    document.getElementById('tpFrom').textContent=document.getElementById('pFrom')?.value||'—';
+    document.getElementById('tpTo').textContent=document.getElementById('pTo')?.value||'—';
+    document.getElementById('tpType').textContent=ps.tierName;
+    document.getElementById('tpPaid').textContent=formatUGX(calcTotal());
+    goParcelStep(5);
+  }, ps.payMethod==='cash'?500:3500);
+}
+</script>
+</body>
+</html>
