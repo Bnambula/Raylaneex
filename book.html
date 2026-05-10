@@ -408,8 +408,10 @@ document.getElementById('tRef').textContent = state.ref;
 function goStep(n){
   if(n===2 && !state.trip){ Toast.error('Please select a trip first.'); return; }
   if(n===3 && !state.seats.length){ Toast.error('Please select at least one seat to continue.'); return; }
-  document.querySelector('.step-pane.active').classList.remove('active');
-  document.getElementById('step'+n).classList.add('active');
+  const cur=document.querySelector('.step-pane.active');
+  if(cur) cur.classList.remove('active');
+  const nxt=document.getElementById('step'+n);
+  if(nxt) nxt.classList.add('active'); else return;
   for(let i=1;i<=5;i++){
     const si=document.getElementById('si-'+i), b=si.querySelector('.step-bubble');
     si.classList.remove('active','done');
@@ -423,11 +425,23 @@ function goStep(n){
   window.scrollTo({top:0,behavior:'smooth'});
   if(n===2 && state.trip) renderMap(state.trip);
   if(n===3) renderPaxForms();
-  if(n===4) renderOrder();
+  if(n===4){ renderOrder(); startCountdown(); }
   if(n===5) renderTicket();
 }
 
 // ── TRIPS ─────────────────────────────────────────────────────
+
+// ── UTILITY HELPERS ───────────────────────────────────────────
+function formatUGX(n){
+  if(n>=1000000) return 'UGX '+(n/1000000).toFixed(1)+'M';
+  if(n>=1000) return 'UGX '+(n/1000).toFixed(0)+',000';
+  return 'UGX '+n.toLocaleString();
+}
+function fmtUGX(n){ return 'UGX '+n.toLocaleString(); }
+function urgLabel(t){ return t.seats<=5?'🔴 Almost Full':t.seats<=15?'🟡 Filling Fast':'🟢 Available'; }
+function pct(t){ return Math.round((1-t.seats/t.total)*100); }
+function urg(t){ return t.seats<=5?'high':t.seats<=15?'med':'low'; }
+
 const trips=[
   {id:1,type:'raylane',bus:'coach',time:'07:00 AM',op:'Raylane Express Fleet',seats:14,total:67,price:45000,rating:4.9,rc:312,amenities:['AC','USB','WiFi'],period:'morning'},
   {id:2,type:'3rd',bus:'coach',time:'07:30 AM',op:'Link Bus',seats:5,total:67,price:35000,rating:4.7,rc:180,amenities:['AC','USB'],period:'morning'},
@@ -799,6 +813,72 @@ function shareWA(){
   const msg=encodeURIComponent(`🎫 Raylane Express — Booking Confirmed!\n\nRoute: ${fromCity} → ${toCity}\nRef: ${state.ref}\n\nBook at raylaneexpress.com`);
   window.open(`https://wa.me/?text=${msg}`,'_blank');
 }
+
+// ── PAYMENT SUBMISSION ────────────────────────────────────────
+function submitPayment(){
+  const phone = document.getElementById('payingPhone');
+  if(!phone || !phone.value.trim()){
+    Toast.error('Please enter the phone number you used to pay.');
+    return;
+  }
+  const methodEl = document.querySelector('input[name="payMethod"]:checked');
+  const method = methodEl ? methodEl.value : 'mtn';
+  const btn = document.getElementById('payBtn');
+  const origText = btn.innerHTML;
+  btn.innerHTML = '<svg style="width:18px;height:18px;animation:spin 1s linear infinite;display:inline-block;vertical-align:middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="15" opacity=".25"/><path d="M12 2a10 10 0 0 1 10 10" stroke-dasharray="30"/></svg> Submitting...';
+  btn.disabled = true;
+  state.payPhone = phone.value.trim();
+  state.payMethod = method;
+  setTimeout(()=>{
+    btn.innerHTML = origText;
+    btn.disabled = false;
+    Toast.success('Payment submitted! Verifying now — your QR ticket arrives via WhatsApp within 5 minutes.', 8000);
+    goStep(5);
+  }, 2000);
+}
+
+// ── SEAT LOCK COUNTDOWN ───────────────────────────────────────
+let cdTimer = null;
+function startCountdown(){
+  let secs = 600;
+  clearInterval(cdTimer);
+  cdTimer = setInterval(()=>{
+    secs--;
+    const m = Math.floor(secs/60).toString().padStart(2,'0');
+    const s = (secs%60).toString().padStart(2,'0');
+    const el = document.getElementById('countdown');
+    if(el) el.textContent = m+':'+s;
+    if(secs <= 0){
+      clearInterval(cdTimer);
+      Toast.error('Seat lock expired. Please reselect your seats.');
+      state.seats = [];
+      goStep(1);
+    }
+  },1000);
+}
+
+// Toast fallback if app.js not loaded
+if(typeof Toast==='undefined'){
+  window.Toast={
+    _t(msg,bg,dur=4000){
+      const t=document.createElement('div');
+      t.style.cssText='position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:'+bg+';color:white;padding:.875rem 1.5rem;border-radius:99px;font-size:.9375rem;font-weight:600;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:90vw;text-align:center;';
+      t.textContent=msg;
+      document.body.appendChild(t);
+      setTimeout(()=>t.remove(),dur);
+    },
+    success(m,d){ this._t(m,'#16A34A',d||4000); },
+    error(m){ this._t('❌ '+m,'#DC2626'); },
+    show(m,type){ type==='info'?this._t('ℹ️ '+m,'#1D4ED8'):this.success(m); }
+  };
+}
+
+// Keyframe for spinner
+(function(){
+  const s=document.createElement('style');
+  s.textContent='@keyframes spin{to{transform:rotate(360deg)}}';
+  document.head.appendChild(s);
+})();
 </script>
 </body>
 </html>
