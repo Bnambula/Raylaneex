@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Console — Raylane Express</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ba-dashboard.css">
+<style>
+.module-toggle-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:1.25rem;}
+.module-toggle-head{background:var(--ba-midnight);color:white;padding:.875rem 1.25rem;font-family:var(--font-head);font-weight:700;display:flex;align-items:center;justify-content:space-between;}
+.module-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.25rem;border-bottom:1px solid var(--border-light);}
+.module-toggle-row:last-child{border-bottom:none;}
+.emp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;transition:box-shadow .2s;margin-bottom:1rem;}
+.emp-card-head{background:linear-gradient(135deg,var(--ba-midnight),#075AAA);padding:1.25rem;color:white;display:flex;align-items:center;gap:.875rem;}
+.emp-avatar-lg{width:52px;height:52px;border-radius:50%;background:var(--ba-gold);color:var(--ba-midnight);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:800;font-size:1.125rem;flex-shrink:0;}
+.profile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.625rem;padding:1.25rem;font-size:.8375rem;}
+@media(max-width:639px){.profile-grid{grid-template-columns:repeat(2,1fr);}}
+.profile-item label{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ba-silver);display:block;margin-bottom:.125rem;}
+.profile-item span{font-weight:600;color:var(--ba-midnight);}
+.wage-panel{background:var(--surface-alt);border-top:1px solid var(--border-light);padding:1.125rem 1.25rem;}
+.wage-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:.875rem;}
+@media(max-width:639px){.wage-grid{grid-template-columns:repeat(2,1fr);}}
+.wage-item{display:flex;flex-direction:column;gap:.2rem;}
+.wage-item label{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ba-silver);}
+.wage-val{font-family:var(--font-head);font-weight:700;color:var(--ba-midnight);font-size:1rem;}
+.wage-val.green{color:var(--green);}
+.wage-val.red{color:var(--red);}
+.fin-gen-card{background:linear-gradient(135deg,#00173D,var(--ba-midnight));color:white;border-radius:var(--r-lg);padding:1.5rem;margin-bottom:1.25rem;}
+.tab-group{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem;}
+.tab-btn{padding:.5rem 1rem;border-radius:var(--r-full);font-family:var(--font-body);font-size:.8125rem;font-weight:600;cursor:pointer;transition:all .18s;border:1.5px solid var(--border);background:var(--surface);color:#64748B;}
+.tab-btn.active{background:var(--ba-midnight);border-color:var(--ba-midnight);color:white;}
+.req-card{background:var(--surface);border:1px solid var(--border);border-left-width:4px;border-radius:0 var(--r-md) var(--r-md) 0;padding:1rem 1.25rem;margin-bottom:.75rem;transition:box-shadow .18s;}
+.req-card:hover{box-shadow:var(--shadow-sm);}
+.req-card.trip{border-left-color:var(--green);}
+.req-card.premium{border-left-color:var(--ba-gold);}
+.req-card.driver-req{border-left-color:var(--ba-crimson);}
+.req-card.charter-req{border-left-color:var(--ba-blue);}
+.pay-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.125rem;margin-bottom:.75rem;transition:all .18s;}
+.pay-card:hover{box-shadow:var(--shadow-sm);}
+.pay-card.match{border-left:4px solid var(--green);}
+.pay-card.mismatch{border-left:4px solid var(--amber);}
+.pay-card.missing{border-left:4px solid var(--red);}
+.match-badge.m{background:var(--green-bg);color:var(--green);padding:.25rem .75rem;border-radius:var(--r-full);font-size:.75rem;font-weight:700;}
+.match-badge.w{background:var(--amber-bg);color:var(--amber);padding:.25rem .75rem;border-radius:var(--r-full);font-size:.75rem;font-weight:700;}
+.match-badge.e{background:var(--red-bg);color:var(--red);padding:.25rem .75rem;border-radius:var(--r-full);font-size:.75rem;font-weight:700;}
+.scenery-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;transition:all .2s;}
+.scenery-card:hover{box-shadow:var(--shadow-md);}
+.scenery-img{width:100%;height:160px;object-fit:cover;background:linear-gradient(135deg,var(--ba-midnight),var(--ba-blue));display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:3rem;}
+.route-badge{display:inline-flex;align-items:center;gap:.375rem;background:var(--ba-midnight);color:white;padding:.25rem .75rem;border-radius:var(--r-full);font-size:.75rem;font-weight:700;}
+.fuel-bar{height:8px;background:#E2E8F0;border-radius:4px;overflow:hidden;margin-top:.375rem;}
+.fuel-fill{height:100%;border-radius:4px;transition:width .5s ease;}
+</style>
+</head>
+<body>
+<!-- CONFIRM DIALOG -->
+<div class="confirm-overlay" id="confirmDlg">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="cIcon" style="background:#FFFBEB;">⚠️</div>
+    <div class="confirm-title" id="cTitle">Confirm Action</div>
+    <div class="confirm-body" id="cBody">Are you sure?</div>
+    <div style="display:flex;gap:.75rem;">
+      <button class="btn-s" style="flex:1;" onclick="cancelConfirm()">Cancel</button>
+      <button id="cOK" class="btn-p" style="flex:1;" onclick="execConfirm()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN MODAL -->
+<div class="modal-overlay" id="mainModal">
+  <div class="modal-box" style="max-width:660px;">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">Detail</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div id="modalBody" style="max-height:60vh;overflow-y:auto;"></div>
+    <div id="modalFoot" style="display:flex;gap:.625rem;margin-top:1.25rem;flex-wrap:wrap;"></div>
+  </div>
+</div>
+<div class="da-layout">
+  <div class="da-overlay" id="daOverlay" onclick="closeSB()"></div>
+  <aside class="da-sb" id="daSB">
+    <div class="da-sb-logo">
+      <div class="da-sb-logo-mark">RL</div>
+      <div>
+        <div class="da-sb-logo-text">Raylane Express</div>
+        <div class="da-sb-logo-sub">Admin Console</div>
+      </div>
+    </div>
+    <nav style="flex:1;padding:.5rem 0;overflow-y:auto;">
+      <div class="da-ns">Overview</div>
+      <a class="da-nl active" onclick="sv('dash')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a class="da-nl" onclick="sv('payments_inbox')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Payment Confirmations<span class="da-nbadge" id="payBadge">8</span></a>
+      <a class="da-nl" onclick="sv('inbox')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Requests Inbox<span class="da-nbadge">11</span></a>
+
+      <div class="da-ns">Bookings & Trips</div>
+      <a class="da-nl" onclick="sv('bookings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V6a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6"/></svg>All Bookings<span class="da-nbadge">247</span></a>
+      <a class="da-nl" onclick="sv('trips')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17h18M5 17V8a2 2 0 012-2h10a2 2 0 012 2v9"/></svg>Trip Approvals<span class="da-nbadge">5</span></a>
+      <a class="da-nl" onclick="sv('charter')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/></svg>Charter Quotes<span class="da-nbadge">3</span></a>
+      <a class="da-nl" onclick="sv('parcels')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8"/></svg>Parcels</a>
+
+      <div class="da-ns">Operators</div>
+      <a class="da-nl" onclick="sv('operators')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>All Operators</a>
+      <a class="da-nl" onclick="sv('applications')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>Operator Applications<span class="da-nbadge">2</span></a>
+      <a class="da-nl" onclick="sv('modules')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="6" height="6"/><rect x="9" y="3" width="6" height="6"/><rect x="16" y="3" width="6" height="6"/></svg>Module Control</a>
+
+      <div class="da-ns">Fleet & Operations</div>
+      <a class="da-nl" onclick="sv('fleet')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Fleet Control</a>
+      <a class="da-nl" onclick="sv('drivers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Driver Management</a>
+      <a class="da-nl" onclick="sv('routes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/></svg>Route Management</a>
+      <a class="da-nl" onclick="sv('fuel')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 22h12M5 22V6a2 2 0 012-2h6a2 2 0 012 2v16"/><path d="M15 8h2a2 2 0 012 2v5a2 2 0 002 2h0a2 2 0 002-2V9l-3-4"/></svg>Fuel Management</a>
+
+      <div class="da-ns">Finance</div>
+      <a class="da-nl" onclick="sv('financials')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>Financial Statements</a>
+      <a class="da-nl" onclick="sv('costs')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Cost Management</a>
+      <a class="da-nl" onclick="sv('vendors')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>Vendor Management</a>
+      <a class="da-nl" onclick="sv('payments')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Payouts</a>
+
+      <div class="da-ns">HR</div>
+      <a class="da-nl" onclick="sv('hr')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>Staff &amp; HR</a>
+      <a class="da-nl" onclick="sv('jobs')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/></svg>Job Applications<span class="da-nbadge">6</span></a>
+
+      <div class="da-ns">Content & Platform</div>
+      <a class="da-nl" onclick="sv('scenery')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Featured Scenery</a>
+      <a class="da-nl" onclick="sv('audit')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Audit Log</a>
+      <a class="da-nl" onclick="sv('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33"/></svg>Settings</a>
+    </nav>
+    <div class="da-sb-foot">
+      <div class="da-avatar">SA</div>
+      <div style="flex:1;min-width:0;"><div style="font-family:var(--font-body);font-size:.8125rem;font-weight:600;color:white;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Super Admin</div><div style="font-size:.6875rem;color:var(--ba-spindle);opacity:.7;">Raylane Express Platform</div></div>
+      <a href="index.html" style="font-size:.6875rem;color:var(--ba-spindle);opacity:.6;flex-shrink:0;">Exit</a>
+    </div>
+  </aside>
+  <div class="da-main">
+    <div class="da-topbar">
+      <button class="da-menu-btn" onclick="openSB()"><span></span><span></span><span></span></button>
+      <div class="da-breadcrumb" style="flex:1;">Admin / <strong id="adminBC">Dashboard</strong></div>
+      <div class="live-dot">Live</div>
+      <div style="margin:0 .875rem;width:1px;height:20px;background:var(--border);"></div>
+      <div style="font-family:var(--font-body);font-size:.8125rem;font-weight:600;color:#334155;" id="admClock"></div>
+    </div>
+    <div class="da-content">
+<!-- ════ DASHBOARD ════ -->
+<div class="da-view active" id="v-dash">
+  <div class="pg-header">
+    <div><div class="pg-title">Platform Overview</div><div class="pg-sub" id="admDate">Wednesday, 22 April 2026</div></div>
+    <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+      <button class="btn-p" onclick="sv('payments_inbox')">🔔 Verify Payments (8)</button>
+      <button class="btn-s" onclick="sv('trips')">✅ Trip Approvals (5)</button>
+      <button class="btn-s" onclick="confirm_('Generate Report','Compile all platform activity into a PDF?','info','📊',()=>Toast.success('Report generated and emailed to admin.'))">📊 Daily Report</button>
+    </div>
+  </div>
+  <div class="kpi-grid cols-5" style="grid-template-columns:repeat(2,1fr);">
+    <div class="kpi ba"><div class="kpi-lbl">Today Bookings</div><div class="kpi-val">47</div><div class="kpi-trend up">↑ 12% vs yesterday</div></div>
+    <div class="kpi gold"><div class="kpi-lbl">Pending Verification</div><div class="kpi-val">8</div><div class="kpi-sub">Awaiting payment check</div></div>
+    <div class="kpi green"><div class="kpi-lbl">Active Operators</div><div class="kpi-val">28</div><div class="kpi-sub">3 applications pending</div></div>
+    <div class="kpi red"><div class="kpi-lbl">Pending Payouts</div><div class="kpi-val">UGX 8.4M</div><div class="kpi-sub">Due Friday 25 Apr</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr;gap:1.5rem;">
+    <div class="card">
+      <div class="card-title">⚠️ Alerts Requiring Attention
+        <div class="live-dot">Live</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.625rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:.875rem 1rem;background:#FFFBEB;border:1px solid #FDE68A;border-radius:var(--r-md);flex-wrap:wrap;gap:.5rem;">
+          <div><div style="font-weight:700;font-size:.875rem;color:#92400E;">8 payments awaiting verification</div><div style="font-size:.8125rem;color:#B45309;">Some may have name mismatches — check immediately</div></div>
+          <button class="btn-gold btn-sm" onclick="sv('payments_inbox')">Review Now →</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:.875rem 1rem;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:var(--r-md);flex-wrap:wrap;gap:.5rem;">
+          <div><div style="font-weight:700;font-size:.875rem;color:#1E40AF;">5 trips awaiting approval</div><div style="font-size:.8125rem;color:#3B82F6;">Trips cannot go live until admin approves</div></div>
+          <button class="btn-p btn-sm" onclick="sv('trips')">Approve Trips →</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:.875rem 1rem;background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--r-md);flex-wrap:wrap;gap:.5rem;">
+          <div><div style="font-weight:700;font-size:.875rem;color:#991B1B;">UBF 002K fitness certificate expires in 45 days</div><div style="font-size:.8125rem;color:#DC2626;">Renew before deadline to avoid trip blocks</div></div>
+          <button class="btn-d btn-sm" onclick="sv('fleet')">View Fleet →</button>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="card-title">Live Activity Feed <span class="live-dot">Live</span></div><div class="feed" id="admFeed"></div></div>
+    <div class="card"><div class="card-title">Quick Actions</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;">
+        <button class="btn-p" style="justify-content:center;padding:.875rem;" onclick="sv('payments_inbox')">🔔 Verify Payments (8)</button>
+        <button class="btn-s" style="justify-content:center;padding:.875rem;" onclick="sv('trips')">✅ Approve Trips (5)</button>
+        <button class="btn-s" style="justify-content:center;padding:.875rem;" onclick="sv('inbox')">📥 Requests Inbox (11)</button>
+        <button class="btn-s" style="justify-content:center;padding:.875rem;" onclick="sv('jobs')">👤 Job Apps (6)</button>
+        <button class="btn-s" style="justify-content:center;padding:.875rem;" onclick="sv('applications')">🚌 Operator Apps (2)</button>
+        <button class="btn-s" style="justify-content:center;padding:.875rem;" onclick="sv('scenery')">🖼 Featured Scenery</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ════ PAYMENT CONFIRMATIONS INBOX ════ -->
+<div class="da-view" id="v-payments_inbox">
+  <div class="pg-header">
+    <div><div class="pg-title">Payment Confirmations Inbox</div><div class="pg-sub">Verify payments before issuing tickets — name must match booking name exactly. Tickets sent via WhatsApp on confirmation.</div></div>
+    <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+      <div class="search-wrap" style="min-width:200px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search name, ref, route..."></div>
+      <select class="form-input" style="width:auto;" onchange="fPayFilter(this.value)">
+        <option value="">All Payments</option>
+        <option value="match">✅ Matched</option>
+        <option value="mismatch">⚠️ Mismatch</option>
+        <option value="missing">❌ Missing</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Name matching legend -->
+  <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem;">
+    <div style="display:flex;align-items:center;gap:.5rem;font-size:.8125rem;"><div style="width:14px;height:14px;background:var(--green);border-radius:2px;"></div><strong>✅ Match</strong> — Reference name = Booking name → Confirm immediately</div>
+    <div style="display:flex;align-items:center;gap:.5rem;font-size:.8125rem;"><div style="width:14px;height:14px;background:var(--amber);border-radius:2px;"></div><strong>⚠️ Mismatch</strong> — Different names → Call to verify before confirming</div>
+    <div style="display:flex;align-items:center;gap:.5rem;font-size:.8125rem;"><div style="width:14px;height:14px;background:var(--red);border-radius:2px;"></div><strong>❌ Missing</strong> — No reference name → High risk, contact customer</div>
+  </div>
+
+  <div id="payInboxList">
+
+    <!-- MATCHED PAYMENT -->
+    <div class="pay-card match" data-status="match">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.75rem;margin-bottom:.875rem;">
+        <div>
+          <div style="font-family:var(--font-head);font-weight:700;font-size:1rem;">Akello Olivia Sarah</div>
+          <div style="font-size:.8125rem;color:var(--ba-silver);margin-top:.125rem;">Kampala → Gulu · 22 Apr · Seats 14A, 14B · UGX 90,000 · MTN MoMo</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.625rem;">
+          <span class="match-badge m">✅ NAME MATCHED</span>
+          <div style="font-size:.75rem;color:var(--ba-silver);">Seat lock: <strong id="lock1" style="color:var(--green);">08:42</strong></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;font-size:.8375rem;margin-bottom:.875rem;background:var(--green-bg);border-radius:var(--r-md);padding:.875rem;">
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">Booking Name</label><span style="font-weight:700;">Akello Olivia Sarah</span></div>
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">Payment Reference</label><span style="font-weight:700;color:var(--green);">Akello Olivia Sarah ✓</span></div>
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">Paying Number</label><span style="font-weight:700;">0771 123 456</span></div>
+      </div>
+      <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+        <button class="btn-g" onclick="confirm_('Confirm & Issue Ticket','Confirm payment for Akello Olivia Sarah? QR ticket will be generated and sent via WhatsApp to 0771 123 456 immediately.','info','🎟',()=>{Toast.success('✅ Ticket issued! Sent via WhatsApp to 0771 123 456.');document.getElementById('payBadge').textContent=parseInt(document.getElementById('payBadge').textContent)-1;})">🎟 Confirm &amp; Issue Ticket</button>
+        <button class="btn-s" onclick="Toast.success('Hold placed on booking. Not confirmed yet.')">⏳ Hold</button>
+        <button class="btn-d" onclick="confirm_('Reject Payment','Reject this payment? Seats will be released and customer notified.','danger','❌',()=>Toast.error('Rejected. Seats released. Customer notified via SMS.'))">❌ Reject</button>
+      </div>
+    </div>
+
+    <!-- MISMATCH PAYMENT -->
+    <div class="pay-card mismatch" data-status="mismatch">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.75rem;margin-bottom:.875rem;">
+        <div>
+          <div style="font-family:var(--font-head);font-weight:700;font-size:1rem;">John Mwesige</div>
+          <div style="font-size:.8125rem;color:var(--ba-silver);margin-top:.125rem;">Kampala → Mbale · 22 Apr · Seat 7B · UGX 30,000 · MTN MoMo</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.625rem;">
+          <span class="match-badge w">⚠️ NAME MISMATCH</span>
+          <div style="font-size:.75rem;color:var(--ba-silver);">Seat lock: <strong style="color:var(--amber);">05:17</strong></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;font-size:.8375rem;margin-bottom:.875rem;background:var(--amber-bg);border-radius:var(--r-md);padding:.875rem;border:1px solid #FDE68A;">
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">Booking Name</label><span style="font-weight:700;">John Mwesige</span></div>
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">Payment Reference</label><span style="font-weight:700;color:var(--amber);">J. Mwesige ⚠️</span></div>
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">Paying Number</label><span style="font-weight:700;">0700 987 654</span></div>
+      </div>
+      <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:var(--r-md);padding:.75rem;margin-bottom:.875rem;font-size:.8125rem;color:#92400E;">
+        ⚠️ Reference "J. Mwesige" does not exactly match booking name "John Mwesige". Call 0700 987 654 to verify before issuing ticket.
+      </div>
+      <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+        <button class="btn-p" onclick="Toast.success('Calling 0700 987 654... (use your phone to call)')">📞 Call Customer</button>
+        <button class="btn-g" onclick="confirm_('Manually Verify & Issue','You have spoken to the customer and confirmed they are John Mwesige. Issue ticket to 0700 987 654?','warn','⚠️',()=>Toast.success('Manually verified. Ticket issued via WhatsApp.'))">✅ Verify &amp; Issue Ticket</button>
+        <button class="btn-s" onclick="Toast.success('Hold placed.')">⏳ Hold</button>
+        <button class="btn-d" onclick="confirm_('Reject Payment','Reject this mismatch payment?','danger','❌',()=>Toast.error('Rejected. Seats released.'))">❌ Reject</button>
+      </div>
+    </div>
+
+    <!-- MISSING REFERENCE -->
+    <div class="pay-card missing" data-status="missing">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.75rem;margin-bottom:.875rem;">
+        <div>
+          <div style="font-family:var(--font-head);font-weight:700;font-size:1rem;">Grace Namuwaya</div>
+          <div style="font-size:.8125rem;color:var(--ba-silver);margin-top:.125rem;">Kampala → Jinja · 22 Apr · Seat 22C · UGX 25,000 · Airtel Money</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.625rem;">
+          <span class="match-badge e">❌ NO REFERENCE</span>
+          <div style="font-size:.75rem;color:var(--ba-silver);">Seat lock: <strong style="color:var(--red);">02:55</strong></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;font-size:.8375rem;margin-bottom:.875rem;background:var(--red-bg);border-radius:var(--r-md);padding:.875rem;border:1px solid #FECACA;">
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">Booking Name</label><span style="font-weight:700;">Grace Namuwaya</span></div>
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">Payment Reference</label><span style="font-weight:700;color:var(--red);">MISSING ❌</span></div>
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">Paying Number</label><span style="font-weight:700;">0772 456 789</span></div>
+      </div>
+      <div style="background:var(--red-bg);border:1px solid #FECACA;border-radius:var(--r-md);padding:.75rem;margin-bottom:.875rem;font-size:.8125rem;color:#991B1B;">
+        ❌ No payment reference provided. High risk of fraud or wrong payment. Call customer immediately to verify.
+      </div>
+      <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+        <button class="btn-p" onclick="Toast.success('Calling 0772 456 789...')">📞 Call Customer</button>
+        <button class="btn-g" onclick="confirm_('Issue Ticket After Call','You have verified Grace Namuwaya by phone. Issue ticket?','warn','✅',()=>Toast.success('Verified by call. Ticket issued.'))">✅ Issue After Verification</button>
+        <button class="btn-d" onclick="confirm_('Reject Missing Reference','Reject payment with no reference? Seat will be released.','danger','❌',()=>Toast.error('Rejected. Seat released.'))">❌ Reject</button>
+      </div>
+    </div>
+
+    <!-- QR Payment -->
+    <div class="pay-card match" data-status="match">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.75rem;margin-bottom:.875rem;">
+        <div>
+          <div style="font-family:var(--font-head);font-weight:700;font-size:1rem;">Peter Ochieng Wandera</div>
+          <div style="font-size:.8125rem;color:var(--ba-silver);margin-top:.125rem;">Kampala → Mbarara · 23 Apr · Seat 5A · UGX 35,000 · QR Code (MTN MoMo App)</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.625rem;">
+          <span class="match-badge m">✅ NAME MATCHED</span>
+          <span class="badge badge-navy">🔳 QR Payment</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;font-size:.8375rem;margin-bottom:.875rem;background:var(--green-bg);border-radius:var(--r-md);padding:.875rem;">
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">Booking Name</label><span style="font-weight:700;">Peter Ochieng Wandera</span></div>
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">QR Reference</label><span style="font-weight:700;color:var(--green);">Peter Ochieng Wandera ✓</span></div>
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">Paying Number</label><span style="font-weight:700;">0751 222 333</span></div>
+      </div>
+      <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+        <button class="btn-g" onclick="confirm_('Confirm & Issue Ticket','Confirm QR payment for Peter Ochieng Wandera? Ticket sent to 0751 222 333 via WhatsApp.','info','🎟',()=>Toast.success('✅ Ticket issued via WhatsApp!'))">🎟 Confirm &amp; Issue Ticket</button>
+        <button class="btn-d" onclick="confirm_('Reject','Reject this payment?','danger','❌',()=>Toast.error('Rejected.'))">❌ Reject</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+<!-- ════ REQUESTS INBOX ════ -->
+<div class="da-view" id="v-inbox">
+  <div class="pg-header">
+    <div><div class="pg-title">Requests Inbox</div><div class="pg-sub">All operator requests — trip approvals, premium upgrades, driver additions. All approvals are admin-only.</div></div>
+    <button class="btn-s" onclick="Toast.success('All marked as read.')">Mark All Read</button>
+  </div>
+  <div class="tab-group">
+    <button class="tab-btn active" onclick="fTab('reqList','all',this)">All (11)</button>
+    <button class="tab-btn" onclick="fTab('reqList','trip',this)">Trips (5)</button>
+    <button class="tab-btn" onclick="fTab('reqList','premium',this)">Upgrades (2)</button>
+    <button class="tab-btn" onclick="fTab('reqList2','driver-req',this)">Drivers (2)</button>
+    <button class="tab-btn" onclick="fTab('reqList','charter-req',this)">Charter (2)</button>
+  </div>
+  <div id="reqList">
+    <div class="req-card trip" data-type="trip">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;margin-bottom:.625rem;">
+        <div><div style="font-family:var(--font-head);font-weight:700;">Trip Approval — Kampala → Gulu</div><div style="font-size:.8125rem;color:var(--ba-silver);">Global Coaches · 22 Apr 07:00 · 67-Seater · UGX 45,000/seat · Driver: James Okello</div></div>
+        <span class="badge badge-amber">Trip Request</span>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+        <button class="btn-g btn-sm" onclick="confirm_('Approve Trip','Approve Kampala to Gulu 07:00? Trip goes live on the public site immediately.','info','✅',()=>Toast.success('Trip approved and live!'))">✅ Approve</button>
+        <button class="btn-d btn-sm" onclick="confirm_('Reject Trip','Reject this trip submission?','danger','❌',()=>Toast.error('Rejected. Operator notified.'))">Reject</button>
+        <button class="btn-s btn-sm" onclick="Toast.show('Details: UBF 001K · Insurance valid Sep 2026 · Driver PSV licensed','info')">View Details</button>
+      </div>
+    </div>
+    <div class="req-card trip" data-type="trip">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;margin-bottom:.625rem;">
+        <div><div style="font-family:var(--font-head);font-weight:700;">Trip Approval — Kampala → Mbale</div><div style="font-size:.8125rem;color:var(--ba-silver);">Link Bus · 22 Apr 09:00 · 67-Seater · UGX 30,000/seat</div></div>
+        <span class="badge badge-amber">Trip Request</span>
+      </div>
+      <div style="display:flex;gap:.5rem;">
+        <button class="btn-g btn-sm" onclick="confirm_('Approve Trip','Approve Link Bus Kampala to Mbale?','info','✅',()=>Toast.success('Approved and live!'))">✅ Approve</button>
+        <button class="btn-d btn-sm" onclick="confirm_('Reject','Reject?','danger','❌',()=>Toast.error('Rejected.'))">Reject</button>
+      </div>
+    </div>
+    <div class="req-card trip" data-type="trip" style="border-left-color:var(--red);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;margin-bottom:.625rem;">
+        <div><div style="font-family:var(--font-head);font-weight:700;">Trip Approval — Gulu → Kampala</div><div style="font-size:.8125rem;color:var(--ba-silver);">Fast Coaches · 23 Apr 06:30</div></div>
+        <span class="badge badge-red">⚠️ Insurance Expired</span>
+      </div>
+      <div style="display:flex;gap:.5rem;">
+        <button class="btn-d btn-sm" onclick="confirm_('Block Trip','Insurance expired on vehicle UAB 234P. Block trip and notify operator?','danger','🚫',()=>Toast.error('Trip blocked. Compliance notice sent.'))">🚫 Block Trip</button>
+        <button class="btn-s btn-sm" onclick="Toast.success('Compliance warning sent to Fast Coaches.')">Send Warning</button>
+      </div>
+    </div>
+    <div class="req-card premium" data-type="premium">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;margin-bottom:.625rem;">
+        <div><div style="font-family:var(--font-head);font-weight:700;">Premium Upgrade — YY Coaches</div><div style="font-size:.8125rem;color:var(--ba-silver);">Requesting Starter → Operator Pro · UGX 150,000/month billing</div></div>
+        <span class="badge badge-gold">Premium Upgrade</span>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+        <button class="btn-g btn-sm" onclick="confirm_('Activate Pro Plan','Activate Operator Pro for YY Coaches? Invoice generated and modules unlocked immediately.','info','⭐',()=>Toast.success('Pro plan activated. Modules unlocked. Invoice sent.'))">⭐ Activate Pro</button>
+        <button class="btn-d btn-sm" onclick="confirm_('Decline','Decline upgrade request?','danger','❌',()=>Toast.error('Declined.'))">Decline</button>
+        <button class="btn-s btn-sm" onclick="sv('modules')">Review Modules</button>
+      </div>
+    </div>
+    <div class="req-card driver-req" data-type="driver-req">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;margin-bottom:.625rem;">
+        <div><div style="font-family:var(--font-head);font-weight:700;">Add Driver — Global Coaches</div><div style="font-size:.8125rem;color:var(--ba-silver);">Moses Wamala · PSV CM9800XXXXX · Expiry Mar 2027 · 6 yrs experience</div></div>
+        <span class="badge badge-red">Driver Addition</span>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+        <button class="btn-g btn-sm" onclick="confirm_('Approve Driver','Add Moses Wamala to Global Coaches roster? NID and PSV verified.','info','👤',()=>Toast.success('Driver approved and added.'))">✅ Approve Driver</button>
+        <button class="btn-d btn-sm" onclick="confirm_('Reject','Reject driver addition?','danger','❌',()=>Toast.error('Rejected.'))">Reject</button>
+      </div>
+    </div>
+    <div class="req-card charter-req" data-type="charter-req">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;margin-bottom:.625rem;">
+        <div><div style="font-family:var(--font-head);font-weight:700;">Charter Quote — CARE Uganda · Bus Charter</div><div style="font-size:.8125rem;color:var(--ba-silver);">47 pax · Kampala → Gulu · 23 Apr · ref QT-001</div></div>
+        <span class="badge badge-blue">Charter Request</span>
+      </div>
+      <div style="display:flex;gap:.5rem;">
+        <button class="btn-p btn-sm" onclick="sv('charter')">Review & Quote →</button>
+        <button class="btn-s btn-sm" onclick="Toast.success('Marked as contacted.')">Mark Contacted</button>
+      </div>
+    </div>
+    <div class="req-card upgrade" data-type="upgrade" style="border-left-color:#8B5CF6;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;margin-bottom:.625rem;">
+        <div><div style="font-family:var(--font-head);font-weight:700;">Team Member Request — Global Coaches</div><div style="font-size:.8125rem;color:var(--ba-silver);">Brian Kakembo · Operations Manager · Trips &amp; Bookings access · ops@globalcoaches.ug</div></div>
+        <span class="badge badge-purple">Team Access Request</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.625rem;margin-bottom:.875rem;background:var(--surface-alt);border-radius:var(--r-md);padding:.875rem;font-size:.8125rem;">
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">Name</label><span style="font-weight:600;">Brian Kakembo</span></div>
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">Email</label><span style="font-weight:600;">brian@globalcoaches.ug</span></div>
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">Phone</label><span style="font-weight:600;">0782 567 890</span></div>
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">Role</label><span style="font-weight:600;">Operations Manager</span></div>
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">Access Level</label><span style="font-weight:600;">Trips &amp; Bookings</span></div>
+        <div><label style="font-size:.6875rem;font-weight:700;text-transform:uppercase;color:var(--ba-silver);display:block;">Requested By</label><span style="font-weight:600;">James Tumusiime (GM)</span></div>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+        <button class="btn-g btn-sm" onclick="confirm_('Approve Team Member','Approve Brian Kakembo for Trips and Bookings access on Global Coaches portal? Login credentials will be sent via SMS and email immediately.','info','✅',()=>Toast.success('Approved! Login credentials sent to Brian Kakembo via SMS and email.'))">✅ Approve &amp; Send Login</button>
+        <button class="btn-d btn-sm" onclick="confirm_('Reject Request','Reject this team member request? Global Coaches will be notified.','danger','❌',()=>Toast.error('Request rejected. Global Coaches notified.'))">Reject</button>
+        <button class="btn-s btn-sm" onclick="Toast.success('Request for more details sent to Global Coaches.')">Request More Info</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ════ TRIP APPROVALS ════ -->
+<div class="da-view" id="v-trips">
+  <div class="pg-header">
+    <div><div class="pg-title">Trip Approvals</div><div class="pg-sub">All trips require admin approval before appearing on the public website. Raylane internal fleet trips are auto-approved.</div></div>
+    <button class="btn-g" onclick="confirm_('Approve All Trips','Approve all 5 pending trips? They go live on the public site immediately.','info','✅',()=>Toast.success('All 5 trips approved and live!'))">✅ Approve All (5)</button>
+  </div>
+  <div style="background:var(--blue-bg);border:1px solid #BFDBFE;border-radius:var(--r-md);padding:.875rem 1rem;margin-bottom:1.25rem;font-size:.8125rem;color:#1E40AF;">
+    ℹ️ <strong>Trip Flow:</strong> Operator creates trip → <span class="badge badge-amber">PENDING_APPROVAL</span> → Admin approves → <span class="badge badge-green">LIVE ON WEBSITE</span> &nbsp;|&nbsp; Raylane internal fleet → <span class="badge badge-green">AUTO_APPROVED → LIVE</span>
+  </div>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Route</th><th>Operator</th><th>Date</th><th>Time</th><th>Vehicle</th><th>Price/Seat</th><th>Insurance</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Kampala → Gulu</strong></td><td>Global Coaches</td><td>22 Apr</td><td>07:00</td><td>UBF 001K</td><td>UGX 45,000</td><td><span class="badge badge-green">Valid</span></td><td><span class="badge badge-blue">Operator</span></td><td><span class="badge badge-amber">Pending</span></td>
+          <td style="display:flex;gap:.375rem;flex-wrap:wrap;"><button class="btn-g btn-xs" onclick="confirm_('Approve','Approve Kla→Gulu 07:00?','info','✅',()=>Toast.success('Approved!'))">✅</button><button class="btn-d btn-xs" onclick="confirm_('Reject','Reject?','danger','❌',()=>Toast.error('Rejected.'))">✗</button><button class="btn-s btn-xs">Query</button></td>
+        </tr>
+        <tr><td><strong>Kampala → Mbale</strong></td><td>Link Bus</td><td>22 Apr</td><td>09:00</td><td>UBH 045Z</td><td>UGX 30,000</td><td><span class="badge badge-green">Valid</span></td><td><span class="badge badge-blue">Operator</span></td><td><span class="badge badge-amber">Pending</span></td>
+          <td style="display:flex;gap:.375rem;"><button class="btn-g btn-xs" onclick="confirm_('Approve','Approve Kla→Mbale?','info','✅',()=>Toast.success('Approved!'))">✅</button><button class="btn-d btn-xs" onclick="confirm_('Reject','Reject?','danger','❌',()=>Toast.error('Rejected.'))">✗</button></td>
+        </tr>
+        <tr><td><strong>Gulu → Kampala</strong></td><td>Fast Coaches</td><td>23 Apr</td><td>06:30</td><td>UAB 234P</td><td>UGX 42,000</td><td><span class="badge badge-red">⚠️ EXPIRED</span></td><td><span class="badge badge-blue">Operator</span></td><td><span class="badge badge-red">Blocked</span></td>
+          <td style="display:flex;gap:.375rem;"><button class="btn-d btn-xs" onclick="confirm_('Block','Insurance expired. Block and notify?','danger','🚫',()=>Toast.error('Blocked.'))">🚫</button><button class="btn-s btn-xs" onclick="Toast.success('Reminder sent.')">Remind</button></td>
+        </tr>
+        <tr><td><strong>Kampala → Gulu</strong></td><td style="color:var(--ba-gold);font-weight:700;">Raylane Fleet</td><td>22 Apr</td><td>06:00</td><td>UBF 001K</td><td>UGX 48,000</td><td><span class="badge badge-green">Valid</span></td><td><span class="badge badge-gold">Auto-Approved</span></td><td><span class="badge badge-green">LIVE ✓</span></td>
+          <td><button class="btn-s btn-xs">View</button></td>
+        </tr>
+        <tr><td><strong>Kampala → Jinja</strong></td><td>Global Coaches</td><td>24 Apr</td><td>10:00</td><td>UBF 002K</td><td>UGX 25,000</td><td><span class="badge badge-amber">⚠️ 45 days</span></td><td><span class="badge badge-blue">Operator</span></td><td><span class="badge badge-amber">Pending</span></td>
+          <td style="display:flex;gap:.375rem;"><button class="btn-g btn-xs" onclick="confirm_('Approve + Warn','Approve Kla→Jinja? Fitness certificate expires soon — compliance warning sent.','warn','⚠️',()=>Toast.success('Approved with compliance warning.'))">⚠️ Approve</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<!-- ════ ALL BOOKINGS ════ -->
+<div class="da-view" id="v-bookings">
+  <div class="pg-header">
+    <div><div class="pg-title">All Bookings</div></div>
+    <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+      <div class="search-wrap" style="min-width:220px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search ref, name, route..." oninput="fTbl('tBkg',this.value)"></div>
+      <select class="form-input" style="width:auto;" onchange="fTbl('tBkg',this.value)"><option value="">All Status</option><option>confirmed</option><option>pending</option><option>cancelled</option></select>
+      <button class="btn-s" onclick="Toast.success('Exported to CSV.')">Export CSV</button>
+    </div>
+  </div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr);">
+    <div class="kpi ba"><div class="kpi-lbl">Total Bookings</div><div class="kpi-val">1,247</div></div>
+    <div class="kpi gold"><div class="kpi-lbl">MTD Revenue</div><div class="kpi-val">UGX 56.2M</div></div>
+  </div>
+  <div class="tbl-wrap">
+    <table class="tbl" id="tBkg">
+      <thead><tr><th>Ref</th><th>Passenger</th><th>Phone</th><th>Route</th><th>Operator</th><th>Date</th><th>Seat</th><th>Amount</th><th>Method</th><th>Ref Name Match</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td><strong style="color:var(--ba-blue);">RLX-001</strong></td><td>Akello Olivia</td><td>0771 123 456</td><td>Kla→Gulu</td><td>Raylane</td><td>21 Apr</td><td>14A</td><td>UGX 45,000</td><td>MTN MoMo</td><td><span class="match-badge m">✅ Match</span></td><td><span class="badge badge-green">Confirmed</span></td>
+          <td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs" onclick="openBkg('RLX-001','Akello Olivia','0771 123 456','Kla→Gulu','Raylane','21 Apr','14A','UGX 45,000','Confirmed')">View</button></td>
+        </tr>
+        <tr><td><strong style="color:var(--ba-blue);">RLX-002</strong></td><td>John Mwesige</td><td>0700 987 654</td><td>Kla→Mbale</td><td>Link Bus</td><td>21 Apr</td><td>7B</td><td>UGX 30,000</td><td>MTN MoMo</td><td><span class="match-badge w">⚠️ Mismatch</span></td><td><span class="badge badge-amber">Pending</span></td>
+          <td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs" onclick="openBkg('RLX-002','John Mwesige','0700 987 654','Kla→Mbale','Link Bus','21 Apr','7B','UGX 30,000','Pending')">View</button><button class="btn-p btn-xs" onclick="sv('payments_inbox')">Verify →</button></td>
+        </tr>
+        <tr><td><strong style="color:var(--ba-blue);">RLX-003</strong></td><td>Grace Namuwaya</td><td>0772 456 789</td><td>Kla→Jinja</td><td>Global</td><td>21 Apr</td><td>22C</td><td>UGX 25,000</td><td>Airtel</td><td><span class="match-badge e">❌ Missing</span></td><td><span class="badge badge-amber">Pending</span></td>
+          <td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs" onclick="openBkg('RLX-003','Grace Namuwaya','0772 456 789','Kla→Jinja','Global Coaches','21 Apr','22C','UGX 25,000','Pending')">View</button><button class="btn-d btn-xs" onclick="sv('payments_inbox')">Risk!</button></td>
+        </tr>
+        <tr><td><strong style="color:var(--ba-blue);">RLX-004</strong></td><td>Peter Wandera</td><td>0751 222 333</td><td>Kla→Mbarara</td><td>YY Coaches</td><td>21 Apr</td><td>5A</td><td>UGX 35,000</td><td>QR/Airtel</td><td><span class="match-badge m">✅ Match</span></td><td><span class="badge badge-green">Confirmed</span></td>
+          <td><button class="btn-s btn-xs" onclick="openBkg('RLX-004','Peter Wandera','0751 222 333','Kla→Mbarara','YY Coaches','21 Apr','5A','UGX 35,000','Confirmed')">View</button></td>
+        </tr>
+        <tr><td><strong style="color:var(--ba-blue);">RLX-005</strong></td><td>Alice Apio</td><td>0782 567 890</td><td>Kla→Gulu</td><td>Raylane</td><td>22 Apr</td><td>31D</td><td>UGX 45,000</td><td>MTN MoMo</td><td><span class="match-badge m">✅ Match</span></td><td><span class="badge badge-red">Cancelled</span></td>
+          <td><button class="btn-s btn-xs" onclick="openBkg('RLX-005','Alice Apio','0782 567 890','Kla→Gulu','Raylane','22 Apr','31D','UGX 45,000','Cancelled')">View</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<!-- ════ CHARTER QUOTES ════ -->
+<div class="da-view" id="v-charter">
+  <div class="pg-title">Charter & Corporate Quotes</div>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Ref</th><th>Organisation</th><th>Type</th><th>Details</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td><strong style="color:var(--ba-blue);">QT-001</strong></td><td>CARE Uganda</td><td><span class="badge badge-blue">Bus Charter</span></td><td style="font-size:.8125rem;">Kla→Gulu · 23 Apr · 47 pax · 1 coach</td><td>21 Apr 09:14</td><td><span class="badge badge-amber">New</span></td>
+          <td style="display:flex;gap:.375rem;"><button class="btn-p btn-xs" onclick="Toast.success('Quote sent to CARE Uganda.')">Send Quote</button><button class="btn-s btn-xs" onclick="Toast.success('Marked contacted.')">Contacted</button></td>
+        </tr>
+        <tr><td><strong style="color:var(--ba-blue);">QT-002</strong></td><td>USAID Uganda</td><td><span class="badge badge-green">SUV Hire</span></td><td style="font-size:.8125rem;">3× Toyota Hilux · 1 month · N.Uganda</td><td>20 Apr 15:45</td><td><span class="badge badge-blue">In Progress</span></td>
+          <td><button class="btn-p btn-xs" onclick="Toast.success('Quote finalised and sent.')">Finalise</button></td>
+        </tr>
+        <tr><td><strong style="color:var(--ba-blue);">QT-003</strong></td><td>Stanbic Bank</td><td><span class="badge badge-purple">Corporate</span></td><td style="font-size:.8125rem;">Enterprise plan · 100+ trips/month</td><td>19 Apr 11:00</td><td><span class="badge badge-green">Quote Sent</span></td>
+          <td><button class="btn-s btn-xs" onclick="Toast.success('Follow-up sent.')">Follow Up</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════ PARCELS ════ -->
+<div class="da-view" id="v-parcels">
+  <div class="pg-header">
+    <div><div class="pg-title">Parcel Management</div></div>
+    <div style="display:flex;gap:.625rem;"><div class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search tracking ID..."></div></div>
+  </div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr);">
+    <div class="kpi ba"><div class="kpi-lbl">Active Parcels</div><div class="kpi-val">23</div></div>
+    <div class="kpi gold"><div class="kpi-lbl">Pending Verification</div><div class="kpi-val">4</div><div class="kpi-sub">Awaiting payment confirmation</div></div>
+  </div>
+  <div class="tbl-wrap">
+    <table class="tbl">
+      <thead><tr><th>Tracking ID</th><th>Route</th><th>Sender</th><th>Recipient</th><th>Type</th><th>Fee</th><th>Payment</th><th>Name Match</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td><strong style="color:var(--ba-blue);">PKL-A1B2C3</strong></td><td>Kla→Gulu</td><td>Sarah K. 0771 111</td><td>John O. 0700 222</td><td>Small 2kg</td><td>UGX 12,000</td><td>MTN MoMo</td><td><span class="match-badge m">✅ Match</span></td><td><span class="badge badge-amber">In Transit</span></td><td><button class="btn-s btn-xs" onclick="Toast.success('Location: Karuma Bridge, 12:40 PM')">Track</button></td></tr>
+        <tr><td><strong style="color:var(--ba-blue);">PKL-D4E5F6</strong></td><td>Kla→Mbale</td><td>Moses T.</td><td>Grace N.</td><td>Documents</td><td>UGX 5,000</td><td>QR/Airtel</td><td><span class="match-badge m">✅ Match</span></td><td><span class="badge badge-green">Delivered ✓</span></td><td><button class="btn-s btn-xs" onclick="Toast.success('Delivered 14:22.')">View</button></td></tr>
+        <tr><td><strong style="color:var(--ba-blue);">PKL-G7H8I9</strong></td><td>Kla→Jinja</td><td>Paul W.</td><td>Agnes B.</td><td>Agric 25kg</td><td>UGX 30,000</td><td>MTN MoMo</td><td><span class="match-badge e">❌ Missing</span></td><td><span class="badge badge-red">Pending Verification</span></td><td><button class="btn-p btn-xs" onclick="sv('payments_inbox')">Verify →</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<!-- OPERATORS -->
+<div class="da-view" id="v-operators">
+  <div class="pg-header">
+    <div><div class="pg-title">All Operators</div></div>
+    <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+      <div class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search operators..."></div>
+      <select class="form-input" style="width:auto;"><option>All Status</option><option>Active</option><option>Suspended</option></select>
+      <button class="btn-p" onclick="openModal('Add Operator','<div class=grid-2><div class=form-group><label class=form-label>Business Name *</label><input type=text class=form-input></div><div class=form-group><label class=form-label>Plan</label><select class=form-input><option>Starter</option><option>Pro</option></select></div><div class=form-group><label class=form-label>MTN MoMo Code</label><input type=text class=form-input></div><div class=form-group><label class=form-label>Commission %</label><input type=number class=form-input value=8></div></div>','add-op')">+ Add Operator</button>
+    </div>
+  </div>
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Operator</th><th>Plan</th><th>Vehicles</th><th>Drivers</th><th>MTD Revenue</th><th>Commission</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Global Coaches Ltd.</strong></td><td><span class="badge badge-gold">⭐ Pro</span></td><td>8</td><td>12</td><td>UGX 12.4M</td><td>UGX 992K</td><td><span class="badge badge-green">Active</span></td>
+        <td style="display:flex;gap:.375rem;flex-wrap:wrap;">
+          <button class="btn-s btn-xs" onclick="sv('modules')">Modules</button>
+          <button class="btn-p btn-xs" onclick="openModal('Edit Operator','<div class=grid-2><div class=form-group><label class=form-label>Business Name</label><input type=text class=form-input value=\'Global Coaches Ltd.\'></div><div class=form-group><label class=form-label>Plan</label><select class=form-input><option>Starter</option><option selected>Pro</option></select></div><div class=form-group><label class=form-label>Commission %</label><input type=number class=form-input value=8></div></div>','save-op')">Edit</button>
+          <button class="btn-d btn-xs" onclick="confirm_('Suspend Operator','Suspend Global Coaches? No new trips can be submitted.','danger','⚠️',()=>Toast.error('Operator suspended.'))">Suspend</button>
+        </td>
+      </tr>
+      <tr><td><strong>Link Bus Uganda</strong></td><td><span class="badge badge-blue">Starter</span></td><td>3</td><td>5</td><td>UGX 4.2M</td><td>UGX 336K</td><td><span class="badge badge-green">Active</span></td>
+        <td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs" onclick="sv('modules')">Modules</button><button class="btn-p btn-xs" onclick="Toast.success('Edit opened.')">Edit</button></td>
+      </tr>
+      <tr><td><strong>YY Coaches</strong></td><td><span class="badge badge-blue">Starter</span></td><td>2</td><td>3</td><td>UGX 1.8M</td><td>UGX 144K</td><td><span class="badge badge-amber">Insurance Warning</span></td>
+        <td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs">Modules</button><button class="btn-s btn-xs" onclick="Toast.success('Reminder sent.')">Remind</button></td>
+      </tr>
+      <tr><td><strong>Fast Coaches</strong></td><td><span class="badge badge-blue">Starter</span></td><td>4</td><td>6</td><td>UGX 3.1M</td><td>UGX 248K</td><td><span class="badge badge-red">Compliance Issue</span></td>
+        <td><button class="btn-d btn-xs" onclick="confirm_('Suspend Fast Coaches','Insurance expired on 2 vehicles. Suspend until resolved?','danger','🚫',()=>Toast.error('Fast Coaches suspended.'))">Suspend</button></td>
+      </tr>
+    </tbody>
+  </table></div>
+</div>
+
+<!-- OPERATOR APPLICATIONS -->
+<div class="da-view" id="v-applications">
+  <div class="pg-title">Operator Applications</div>
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.875rem;margin-bottom:.875rem;">
+        <div><div style="font-family:var(--font-head);font-weight:700;font-size:1.0625rem;">Nile Star Coaches Ltd.</div><div style="font-size:.8125rem;color:var(--ba-silver);">Applied 20 Apr 2026 · Operator Pro · 5 vehicles</div></div>
+        <span class="badge badge-amber">Pending Review</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.625rem;margin-bottom:1rem;font-size:.8125rem;">
+        <div>TIN: <strong>1009876543</strong></div>
+        <div>PSV Licence: <span class="badge badge-green">Uploaded ✓</span></div>
+        <div>Insurance: <span class="badge badge-green">Valid ✓</span></div>
+        <div>Fitness Cert: <span class="badge badge-green">Uploaded ✓</span></div>
+        <div>NID Verified: <span class="badge badge-green">✓</span></div>
+        <div>MoMo Code: <span class="badge badge-green">Verified ✓</span></div>
+      </div>
+      <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+        <button class="btn-g" onclick="confirm_('Approve Operator','Approve Nile Star Coaches? Account created and login sent via SMS.','info','✅',()=>Toast.success('Approved! Credentials sent via SMS.'))">✅ Approve & Activate</button>
+        <button class="btn-d" onclick="confirm_('Reject','Reject Nile Star Coaches?','danger','❌',()=>Toast.error('Rejected.'))">Reject</button>
+        <button class="btn-s" onclick="Toast.success('Document request sent.')">Request Docs</button>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.875rem;margin-bottom:.875rem;">
+        <div><div style="font-family:var(--font-head);font-weight:700;font-size:1.0625rem;">Sunrise Transport Co.</div><div style="font-size:.8125rem;color:var(--ba-silver);">Applied 19 Apr 2026 · Starter · 2 vehicles</div></div>
+        <span class="badge badge-red">Missing Documents</span>
+      </div>
+      <div class="alert-banner err">⚠️ Missing: PSV Operator Licence · Vehicle fitness certificate (1 of 2 vehicles)</div>
+      <button class="btn-s" onclick="Toast.success('Document request SMS sent.')">Request Missing Documents</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODULE CONTROL -->
+<div class="da-view" id="v-modules">
+  <div class="pg-header">
+    <div><div class="pg-title">Module Control</div><div class="pg-sub">Activate and deactivate premium modules per operator. Only admin can enable or disable modules.</div></div>
+    <button class="btn-p" onclick="confirm_('Save All Module Settings','Save all module configurations? This immediately affects operator portal access.','info','💾',()=>Toast.success('Module settings saved.'))">Save All Changes</button>
+  </div>
+  <div class="module-toggle-card">
+    <div class="module-toggle-head"><span>⭐ Global Coaches Ltd. — Operator Pro</span><span class="badge badge-gold">Pro Plan</span></div>
+    <div class="module-toggle-row"><div><div style="font-weight:600;font-size:.875rem;">Financials & P&L</div><div style="font-size:.75rem;color:var(--ba-silver);">IFRS statements, cost breakdown, expense tracking</div></div><div class="tog on" onclick="togMod(this,'global-fin')"><div class="tog-k"></div></div></div>
+    <div class="module-toggle-row"><div><div style="font-weight:600;font-size:.875rem;">Fleet & Drivers</div><div style="font-size:.75rem;color:var(--ba-silver);">Vehicle registry, maintenance, driver management</div></div><div class="tog on" onclick="togMod(this,'global-fleet')"><div class="tog-k"></div></div></div>
+    <div class="module-toggle-row"><div><div style="font-weight:600;font-size:.875rem;">Analytics & Reports</div><div style="font-size:.75rem;color:var(--ba-silver);">Route occupancy, peak times, revenue charts</div></div><div class="tog on" onclick="togMod(this,'global-anal')"><div class="tog-k"></div></div></div>
+    <div class="module-toggle-row"><div><div style="font-weight:600;font-size:.875rem;">Compliance Monitor</div><div style="font-size:.75rem;color:var(--ba-silver);">Document registry, expiry tracking, in-portal insurance</div></div><div class="tog on" onclick="togMod(this,'global-comp')"><div class="tog-k"></div></div></div>
+    <div class="module-toggle-row"><div><div style="font-weight:600;font-size:.875rem;">Payroll Module</div><div style="font-size:.75rem;color:var(--ba-silver);">Driver salaries, NSSF/PAYE, MoMo B2C disbursement</div></div><div class="tog on" onclick="togMod(this,'global-pay')"><div class="tog-k"></div></div></div>
+    <div class="module-toggle-row"><div><div style="font-weight:600;font-size:.875rem;">Corporate Accounts</div><div style="font-size:.75rem;color:var(--ba-silver);">NGO/corporate billing, invoicing, monthly statements</div></div><div class="tog on" onclick="togMod(this,'global-corp')"><div class="tog-k"></div></div></div>
+    <div class="module-toggle-row"><div><div style="font-weight:600;font-size:.875rem;">Loyalty Programme</div><div style="font-size:.75rem;color:var(--ba-silver);">Points, tiers, leaderboard, WhatsApp balance alerts</div></div><div class="tog on" onclick="togMod(this,'global-loyal')"><div class="tog-k"></div></div></div>
+    <div class="module-toggle-row"><div><div style="font-weight:600;font-size:.875rem;">SMS Alerts & Broadcast</div><div style="font-size:.75rem;color:var(--ba-silver);">Automated rules and manual broadcast via Africa Talking</div></div><div class="tog on" onclick="togMod(this,'global-sms')"><div class="tog-k"></div></div></div>
+    <div class="module-toggle-row"><div><div style="font-weight:600;font-size:.875rem;">Marketing Toolkit</div><div style="font-size:.75rem;color:var(--ba-silver);">Booking links, promo codes, WhatsApp sharing</div></div><div class="tog on" onclick="togMod(this,'global-mktg')"><div class="tog-k"></div></div></div>
+    <div class="module-toggle-row"><div><div style="font-weight:600;font-size:.875rem;">Vendor Marketplace</div><div style="font-size:.75rem;color:var(--ba-silver);">Preferred suppliers, credit management</div></div><div class="tog on" onclick="togMod(this,'global-vend')"><div class="tog-k"></div></div></div>
+  </div>
+  <div class="module-toggle-card">
+    <div class="module-toggle-head"><span>Link Bus Uganda — Starter Plan</span><span class="badge badge-blue">Starter Plan</span></div>
+    <div class="module-toggle-row"><div><div style="font-weight:600;font-size:.875rem;">Financials & P&L</div><div style="font-size:.75rem;color:var(--ba-silver);">Upgrade to Pro required</div></div><div class="tog" onclick="confirm_('Enable Financials','Enable Financials for Link Bus? Pro plan upgrade billing applies.','info','📊',()=>{this.classList.toggle('on');Toast.success('Module enabled.')})"><div class="tog-k"></div></div></div>
+    <div class="module-toggle-row"><div><div style="font-weight:600;font-size:.875rem;">Fleet & Drivers</div></div><div class="tog" onclick="confirm_('Enable Fleet Module','Enable Fleet & Drivers for Link Bus?','info','🚌',()=>{this.classList.toggle('on');Toast.success('Module enabled.')})"><div class="tog-k"></div></div></div>
+    <div class="module-toggle-row"><div><div style="font-weight:600;font-size:.875rem;">Payroll Module</div></div><div class="tog" onclick="confirm_('Enable Payroll','Enable Payroll for Link Bus?','info','💰',()=>{this.classList.toggle('on');Toast.success('Enabled.')})"><div class="tog-k"></div></div></div>
+    <div class="module-toggle-row"><div><div style="font-weight:600;font-size:.875rem;">SMS Alerts</div></div><div class="tog on" onclick="togMod(this,'link-sms')"><div class="tog-k"></div></div></div>
+  </div>
+</div>
+<!-- FLEET CONTROL -->
+<div class="da-view" id="v-fleet">
+  <div class="pg-header">
+    <div><div class="pg-title">Fleet Control</div></div>
+    <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+      <button class="btn-p" onclick="openModal('Add Vehicle','<div class=grid-2><div class=form-group><label class=form-label>Registration Plate *</label><input type=text class=form-input placeholder=UBF 001K></div><div class=form-group><label class=form-label>Vehicle Type</label><select class=form-input><option>67-Seater Coach</option><option>14-Seater Minivan</option><option>Toyota Hilux 4x4</option></select></div><div class=form-group><label class=form-label>Fleet Owner</label><select class=form-input><option>Raylane Express Fleet</option><option>Global Coaches</option><option>Link Bus</option></select></div><div class=form-group><label class=form-label>Make & Model</label><input type=text class=form-input placeholder=Toyota Coaster 2022></div><div class=form-group><label class=form-label>Insurance Expiry</label><input type=date class=form-input></div><div class=form-group><label class=form-label>Fitness Expiry</label><input type=date class=form-input></div></div>','add-vehicle')">+ Add Vehicle</button>
+      <button class="btn-s" onclick="Toast.success('Compliance alerts sent to all operators with expiring documents.')">Send Compliance Alerts</button>
+    </div>
+  </div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr);">
+    <div class="kpi ba"><div class="kpi-lbl">Total Vehicles</div><div class="kpi-val">18</div><div class="kpi-sub">Across all operators</div></div>
+    <div class="kpi red"><div class="kpi-lbl">Compliance Issues</div><div class="kpi-val">3</div><div class="kpi-sub">Require immediate action</div></div>
+  </div>
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Plate</th><th>Type</th><th>Owner</th><th>Assigned Driver</th><th>Insurance</th><th>Fitness Cert</th><th>Mileage</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr><td><strong>UBF 001K</strong></td><td>67-Seater</td><td>Raylane Fleet</td><td>James Okello</td><td><span class="badge badge-green">Sep 2026 ✓</span></td><td><span class="badge badge-green">Jun 2026 ✓</span></td><td>48,200 km</td><td><span class="badge badge-green">Active</span></td>
+        <td style="display:flex;gap:.375rem;flex-wrap:wrap;">
+          <button class="btn-s btn-xs" onclick="openModal('Edit Vehicle — UBF 001K','<div class=grid-2><div class=form-group><label class=form-label>Registration</label><input type=text class=form-input value=\'UBF 001K\'></div><div class=form-group><label class=form-label>Insurance Expiry</label><input type=date class=form-input value=2026-09-15></div><div class=form-group><label class=form-label>Fitness Expiry</label><input type=date class=form-input value=2026-06-20></div><div class=form-group><label class=form-label>Status</label><select class=form-input><option selected>Active</option><option>Maintenance</option><option>Inactive</option></select></div></div>','save-ubf001')">Edit</button>
+          <button class="btn-s btn-xs" onclick="Toast.success('Maintenance scheduled for UBF 001K.')">Schedule Service</button>
+        </td>
+      </tr>
+      <tr><td><strong>UBF 002K</strong></td><td>67-Seater</td><td>Raylane Fleet</td><td>Sarah Nakato</td><td><span class="badge badge-green">Sep 2026 ✓</span></td><td><span class="badge badge-red">⚠️ Expires Jun 5</span></td><td>61,400 km</td><td><span class="badge badge-amber">Maintenance</span></td>
+        <td style="display:flex;gap:.375rem;">
+          <button class="btn-d btn-xs" onclick="confirm_('Block Vehicle','Block UBF 002K from trips until fitness certificate is renewed?','danger','🚫',()=>Toast.error('UBF 002K blocked. Operator notified.'))">Block</button>
+          <button class="btn-s btn-xs" onclick="Toast.success('Renewal notice sent.')">Renew</button>
+        </td>
+      </tr>
+      <tr><td><strong>UBG 100K</strong></td><td>14-Seater</td><td>Global Coaches</td><td>Peter Mwesiga</td><td><span class="badge badge-amber">⚠️ 60 days</span></td><td><span class="badge badge-green">Aug 2026 ✓</span></td><td>34,100 km</td><td><span class="badge badge-green">Active</span></td>
+        <td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs" onclick="Toast.success('Insurance reminder sent to Global Coaches.')">Remind</button></td>
+      </tr>
+      <tr><td><strong>UAB 234P</strong></td><td>67-Seater</td><td>Fast Coaches</td><td>Rachael N.</td><td><span class="badge badge-red">❌ EXPIRED</span></td><td><span class="badge badge-red">❌ EXPIRED</span></td><td>92,800 km</td><td><span class="badge badge-red">Suspended</span></td>
+        <td style="display:flex;gap:.375rem;">
+          <button class="btn-d btn-xs" onclick="confirm_('Suspend Vehicle','Keep UAB 234P suspended until compliance is restored?','danger','🚫',()=>Toast.error('Vehicle remains suspended.'))">Suspend</button>
+          <button class="btn-s btn-xs" onclick="Toast.success('Urgent compliance notice sent to Fast Coaches.')">Urgent Notice</button>
+        </td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <!-- Maintenance Log -->
+  <div class="card" style="margin-top:1.5rem;">
+    <div class="card-title">Recent Maintenance Log
+      <button class="btn-p btn-sm" onclick="openModal('Log Maintenance','<div class=grid-2><div class=form-group><label class=form-label>Vehicle</label><select class=form-input><option>UBF 001K</option><option>UBF 002K</option><option>UBG 100K</option></select></div><div class=form-group><label class=form-label>Date</label><input type=date class=form-input></div><div class=form-group><label class=form-label>Issue / Work Done</label><input type=text class=form-input placeholder=e.g. Oil change + brake pads></div><div class=form-group><label class=form-label>Cost (UGX)</label><input type=number class=form-input></div><div class=form-group><label class=form-label>Vendor</label><input type=text class=form-input placeholder=Centenary Auto Garage></div><div class=form-group><label class=form-label>Next Service Due</label><input type=date class=form-input></div></div>','log-maint')">+ Log Maintenance</button>
+    </div>
+    <div class="tbl-wrap" style="border:none;"><table class="tbl">
+      <thead><tr><th>Date</th><th>Vehicle</th><th>Issue / Work Done</th><th>Cost</th><th>Vendor</th><th>Next Service</th></tr></thead>
+      <tbody>
+        <tr><td>18 Apr 2026</td><td><strong>UBF 001K</strong></td><td>Oil change + air filter replacement</td><td>UGX 180,000</td><td>Centenary Auto Garage</td><td>18 Jul 2026</td></tr>
+        <tr><td>12 Apr 2026</td><td><strong>UBF 002K</strong></td><td>Brake pad replacement — front axle</td><td>UGX 320,000</td><td>Kampala Motors Ltd.</td><td>12 Oct 2026</td></tr>
+        <tr><td>05 Apr 2026</td><td><strong>UBG 100K</strong></td><td>Tyre rotation + wheel alignment</td><td>UGX 95,000</td><td>Total Energies Workshop</td><td>05 Jul 2026</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- DRIVER MANAGEMENT -->
+<div class="da-view" id="v-drivers">
+  <div class="pg-header">
+    <div><div class="pg-title">Driver Management</div></div>
+    <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+      <button class="btn-p" onclick="openModal('Add Driver','<div class=grid-2><div class=form-group><label class=form-label>Full Name *</label><input type=text class=form-input required></div><div class=form-group><label class=form-label>Phone *</label><input type=tel class=form-input required></div><div class=form-group><label class=form-label>NID *</label><input type=text class=form-input required></div><div class=form-group><label class=form-label>Licence Class *</label><select class=form-input><option>PSV</option><option>Class B</option><option>Class C</option></select></div><div class=form-group><label class=form-label>Licence Expiry *</label><input type=date class=form-input required></div><div class=form-group><label class=form-label>Basic Monthly Salary (UGX)</label><input type=number class=form-input value=800000></div><div class=form-group><label class=form-label>Trip Bonus per Trip (UGX)</label><input type=number class=form-input value=5000></div><div class=form-group><label class=form-label>Assigned Operator</label><select class=form-input><option>Raylane Fleet</option><option>Global Coaches</option><option>Link Bus</option></select></div></div>','add-driver')">+ Add Driver</button>
+      <button class="btn-s" onclick="Toast.success('All driver compliance alerts sent.')">Send Licence Reminders</button>
+    </div>
+  </div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr);">
+    <div class="kpi ba"><div class="kpi-lbl">Total Drivers</div><div class="kpi-val">24</div></div>
+    <div class="kpi red"><div class="kpi-lbl">Licence Issues</div><div class="kpi-val">2</div><div class="kpi-sub">Expired or expiring soon</div></div>
+  </div>
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Driver</th><th>NID</th><th>Licence</th><th>Expiry</th><th>Operator</th><th>Vehicle</th><th>Salary</th><th>Trip Bonus</th><th>Rating</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr><td><strong>James Okello</strong></td><td style="font-family:monospace;font-size:.75rem;">CM9200XXXXX</td><td>PSV</td><td style="color:var(--green);font-weight:600;">Dec 2027</td><td>Raylane Fleet</td><td>UBF 001K</td><td>UGX 800K</td><td>UGX 5K/trip</td><td>⭐ 4.9</td><td><span class="badge badge-green">Active</span></td>
+        <td style="display:flex;gap:.375rem;flex-wrap:wrap;">
+          <button class="btn-s btn-xs" onclick="openModal('Driver Profile — James Okello','<div class=profile-grid><div class=profile-item><label>Full Name</label><span>James Okello</span></div><div class=profile-item><label>NID</label><span>CM9200XXXXX</span></div><div class=profile-item><label>Phone</label><span>0782 001 001</span></div><div class=profile-item><label>Licence</label><span>PSV</span></div><div class=profile-item><label>Expiry</label><span>Dec 2027</span></div><div class=profile-item><label>Rating</label><span>4.9 ⭐ (312 reviews)</span></div><div class=profile-item><label>Trips This Month</label><span>24 trips</span></div><div class=profile-item><label>Emergency Contact</label><span>Mary Okello 0771 001 002</span></div><div class=profile-item><label>Blood Group</label><span>O+</span></div></div>','view-driver')">Profile</button>
+          <button class="btn-p btn-xs" onclick="openModal('Edit Wages — James Okello','<div class=grid-2><div class=form-group><label class=form-label>Basic Monthly Salary (UGX)</label><input type=number class=form-input value=800000></div><div class=form-group><label class=form-label>Trip Bonus per Trip (UGX)</label><input type=number class=form-input value=5000></div><div class=form-group><label class=form-label>Overtime Rate per Hour (UGX)</label><input type=number class=form-input value=8000></div><div class=form-group><label class=form-label>Daily Allowance (UGX)</label><input type=number class=form-input value=0></div><div class=form-group><label class=form-label>Payment Method</label><select class=form-input><option>MTN MoMo B2C</option><option>Airtel Money</option><option>Bank Transfer</option><option>Cash</option></select></div><div class=form-group><label class=form-label>Pay Day</label><select class=form-input><option>Last Friday</option><option>25th of month</option><option>1st of month</option></select></div></div>','edit-wages-james')">Edit Wages</button>
+          <button class="btn-s btn-xs" onclick="confirm_('Daily Pay','Pay James Okello today trip earnings of UGX 24,000 via MoMo?','info','💰',()=>Toast.success('Daily pay sent: UGX 24,000 to James Okello.'))">Daily Pay</button>
+          <button class="btn-d btn-xs" onclick="confirm_('Suspend Driver','Suspend James Okello? He will be removed from trip assignments.','danger','⚠️',()=>Toast.error('Driver suspended.'))">Suspend</button>
+        </td>
+      </tr>
+      <tr><td><strong>Sarah Nakato</strong></td><td style="font-family:monospace;font-size:.75rem;">CF8100XXXXX</td><td>PSV</td><td style="color:var(--green);font-weight:600;">Mar 2026</td><td>Raylane Fleet</td><td>UBF 002K</td><td>UGX 800K</td><td>UGX 5K/trip</td><td>⭐ 4.7</td><td><span class="badge badge-green">Active</span></td>
+        <td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs" onclick="Toast.success('Profile viewed.')">Profile</button><button class="btn-p btn-xs" onclick="Toast.success('Wage editor opened.')">Edit Wages</button><button class="btn-s btn-xs" onclick="confirm_('Daily Pay','Pay Sarah Nakato UGX 20,000 daily earnings?','info','💰',()=>Toast.success('Daily pay sent.'))">Daily Pay</button></td>
+      </tr>
+      <tr><td><strong>Peter Mwesiga</strong></td><td style="font-family:monospace;font-size:.75rem;">CB7400XXXXX</td><td>PSV</td><td style="color:var(--red);font-weight:600;">⚠️ May 2025 EXPIRED</td><td>Global Coaches</td><td>UBG 100K</td><td>UGX 750K</td><td>UGX 5K/trip</td><td>⭐ 4.5</td><td><span class="badge badge-red">Licence Expired</span></td>
+        <td style="display:flex;gap:.375rem;"><button class="btn-d btn-xs" onclick="confirm_('Suspend Driver','Suspend Peter Mwesiga — licence expired. Remove from all trip assignments?','danger','⚠️',()=>Toast.error('Driver suspended. Global Coaches notified.'))">Suspend</button><button class="btn-s btn-xs" onclick="Toast.success('Renewal reminder sent to Peter Mwesiga.')">Remind</button></td>
+      </tr>
+    </tbody>
+  </table></div>
+</div>
+
+<!-- ROUTE MANAGEMENT -->
+<div class="da-view" id="v-routes">
+  <div class="pg-header">
+    <div><div class="pg-title">Route Management</div></div>
+    <button class="btn-p" onclick="openModal('Add Route','<div class=grid-2><div class=form-group><label class=form-label>From *</label><input type=text class=form-input list=routeCities></div><div class=form-group><label class=form-label>To *</label><input type=text class=form-input list=routeCities></div><div class=form-group><label class=form-label>Distance (km)</label><input type=number class=form-input></div><div class=form-group><label class=form-label>Approx Duration</label><input type=text class=form-input placeholder=e.g. 4 hrs 30 mins></div><div class=form-group><label class=form-label>Min Fare (UGX)</label><input type=number class=form-input></div><div class=form-group><label class=form-label>Max Fare (UGX)</label><input type=number class=form-input></div><div class=form-group><label class=form-label>Status</label><select class=form-input><option>Active</option><option>Seasonal</option><option>Inactive</option></select></div></div><datalist id=routeCities><option value=Kampala><option value=Gulu><option value=Mbale><option value=Mbarara><option value=Fort Portal><option value=Jinja><option value=Entebbe><option value=Arua><option value=Lira><option value=Kabale></datalist>','add-route')">+ Add Route</button>
+  </div>
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Route</th><th>Distance</th><th>Duration</th><th>Fare Range</th><th>Active Trips</th><th>MTD Revenue</th><th>Profitability</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Kampala → Gulu</strong></td><td>337 km</td><td>4h 30m</td><td>UGX 42,000 – 50,000</td><td>3 today</td><td>UGX 18.2M</td><td><span class="badge badge-green">High ↑</span></td><td><span class="badge badge-green">Active</span></td>
+        <td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs" onclick="Toast.success('Route analytics: 98% avg occupancy, UGX 18.2M MTD revenue.')">Analytics</button><button class="btn-p btn-xs" onclick="Toast.success('Route edit opened.')">Edit</button></td>
+      </tr>
+      <tr><td><strong>Kampala → Mbale</strong></td><td>234 km</td><td>3h 15m</td><td>UGX 28,000 – 35,000</td><td>2 today</td><td>UGX 9.4M</td><td><span class="badge badge-green">Good</span></td><td><span class="badge badge-green">Active</span></td>
+        <td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs" onclick="Toast.success('Route analytics: 74% avg occupancy.')">Analytics</button><button class="btn-p btn-xs">Edit</button></td>
+      </tr>
+      <tr><td><strong>Kampala → Mbarara</strong></td><td>262 km</td><td>3h 45m</td><td>UGX 32,000 – 40,000</td><td>1 today</td><td>UGX 6.1M</td><td><span class="badge badge-amber">Medium</span></td><td><span class="badge badge-green">Active</span></td>
+        <td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs">Analytics</button><button class="btn-p btn-xs">Edit</button></td>
+      </tr>
+      <tr><td><strong>Kampala → Fort Portal</strong></td><td>302 km</td><td>4h 15m</td><td>UGX 38,000 – 45,000</td><td>0 today</td><td>UGX 2.8M</td><td><span class="badge badge-amber">Low</span></td><td><span class="badge badge-green">Active</span></td>
+        <td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs">Analytics</button><button class="btn-p btn-xs">Edit</button><button class="btn-d btn-xs" onclick="confirm_('Deactivate Route','Deactivate Kampala → Fort Portal? No new trips can be created on this route.','danger','🚫',()=>Toast.error('Route deactivated.'))">Deactivate</button></td>
+      </tr>
+    </tbody>
+  </table></div>
+</div>
+
+<!-- FUEL MANAGEMENT -->
+<div class="da-view" id="v-fuel">
+  <div class="pg-header">
+    <div><div class="pg-title">Fuel Management</div><div class="pg-sub">Track fuel consumption per vehicle, monitor costs, and compare against budget</div></div>
+    <button class="btn-p" onclick="openModal('Log Fuel','<div class=grid-2><div class=form-group><label class=form-label>Vehicle *</label><select class=form-input><option>UBF 001K</option><option>UBF 002K</option><option>UBG 100K</option></select></div><div class=form-group><label class=form-label>Date *</label><input type=date class=form-input></div><div class=form-group><label class=form-label>Litres *</label><input type=number class=form-input step=0.1></div><div class=form-group><label class=form-label>Cost per Litre (UGX)</label><input type=number class=form-input value=5200></div><div class=form-group><label class=form-label>Total Cost (UGX)</label><input type=number class=form-input></div><div class=form-group><label class=form-label>Station / Vendor</label><select class=form-input><option>Total Energies</option><option>Shell Uganda</option><option>Gapco Uganda</option><option>Other</option></select></div><div class=form-group><label class=form-label>Odometer Reading (km)</label><input type=number class=form-input></div><div class=form-group><label class=form-label>Route / Trip</label><input type=text class=form-input placeholder=e.g. Kampala-Gulu></div></div>','log-fuel')">+ Log Fuel</button>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi ba"><div class="kpi-lbl">Fuel Cost (Apr)</div><div class="kpi-val">UGX 1.8M</div><div class="kpi-sub">Across 3 Raylane vehicles</div></div>
+    <div class="kpi red"><div class="kpi-lbl">Cost per km</div><div class="kpi-val">UGX 1,240</div><div class="kpi-sub">↑ 4% vs last month</div></div>
+    <div class="kpi gold"><div class="kpi-lbl">Litres Used (Apr)</div><div class="kpi-val">346 L</div></div>
+    <div class="kpi green"><div class="kpi-lbl">Fuel Budget Left</div><div class="kpi-val">UGX 200K</div><div class="kpi-sub">Of UGX 2M monthly</div></div>
+  </div>
+  <!-- Vehicle fuel bars -->
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div class="card-title">Fuel Consumption by Vehicle</div>
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+      <div><div style="display:flex;justify-content:space-between;font-size:.875rem;margin-bottom:.375rem;"><span style="font-weight:600;">UBF 001K — Toyota Coaster</span><span>142 L · UGX 738,400 · 51.2 km/L avg</span></div><div class="fuel-bar"><div class="fuel-fill" style="width:72%;background:var(--ba-blue);"></div></div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:.875rem;margin-bottom:.375rem;"><span style="font-weight:600;">UBF 002K — Nissan Civilian</span><span>128 L · UGX 665,600 · 47.1 km/L avg</span></div><div class="fuel-bar"><div class="fuel-fill" style="width:64%;background:var(--ba-blue);"></div></div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:.875rem;margin-bottom:.375rem;"><span style="font-weight:600;">UBG 100K — 14-Seater</span><span>76 L · UGX 395,200 · 38.9 km/L avg</span></div><div class="fuel-bar"><div class="fuel-fill" style="width:38%;background:var(--green);"></div></div></div>
+    </div>
+  </div>
+  <!-- Fuel log table -->
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Date</th><th>Vehicle</th><th>Litres</th><th>Cost/L</th><th>Total</th><th>Station</th><th>Odometer</th><th>Route</th></tr></thead>
+    <tbody>
+      <tr><td>21 Apr</td><td><strong>UBF 001K</strong></td><td>45 L</td><td>UGX 5,200</td><td>UGX 234,000</td><td>Total Energies Kampala</td><td>48,200 km</td><td>Kla → Gulu</td></tr>
+      <tr><td>20 Apr</td><td><strong>UBF 002K</strong></td><td>38 L</td><td>UGX 5,200</td><td>UGX 197,600</td><td>Shell Jinja Road</td><td>61,400 km</td><td>Kla → Mbale</td></tr>
+      <tr><td>19 Apr</td><td><strong>UBG 100K</strong></td><td>22 L</td><td>UGX 5,200</td><td>UGX 114,400</td><td>Total Energies Kampala</td><td>34,100 km</td><td>Kla → Jinja</td></tr>
+      <tr><td>18 Apr</td><td><strong>UBF 001K</strong></td><td>42 L</td><td>UGX 5,150</td><td>UGX 216,300</td><td>Total Energies Kampala</td><td>47,863 km</td><td>Kla → Gulu</td></tr>
+    </tbody>
+  </table></div>
+</div>
+<!-- FINANCIAL STATEMENTS -->
+<div class="da-view" id="v-financials">
+  <div class="pg-header">
+    <div>
+      <div class="pg-title">Financial Statements</div>
+      <div style="display:flex;align-items:center;gap:.625rem;margin-top:.375rem;flex-wrap:wrap;">
+        <span class="badge" style="background:#F0FDF4;color:#166534;font-size:.6875rem;">GAAP / IAS 1</span>
+        <span class="badge" style="background:#EFF6FF;color:#1E40AF;font-size:.6875rem;">IFRS Compliant</span>
+        <span class="badge" style="background:#FFF7ED;color:#C2410C;font-size:.6875rem;">URA Ready</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Period selector bar -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+      <label style="font-family:var(--font-body);font-size:.875rem;font-weight:700;color:var(--ba-midnight);">Period:</label>
+      <input type="month" id="finMonth" value="2026-05" class="form-input" style="width:180px;" onchange="updateFinPeriod()">
+    </div>
+    <div style="height:24px;width:1px;background:var(--border);"></div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+      <button class="tab-btn active" id="fpBtn-month" onclick="setFinPeriod('month',this)">Monthly</button>
+      <button class="tab-btn" id="fpBtn-quarter" onclick="setFinPeriod('quarter',this)">Quarterly</button>
+      <button class="tab-btn" id="fpBtn-semi" onclick="setFinPeriod('semi',this)">Semi-Annual</button>
+      <button class="tab-btn" id="fpBtn-annual" onclick="setFinPeriod('annual',this)">Annual</button>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:.625rem;flex-wrap:wrap;">
+      <button class="btn-s" onclick="genStatement('income')">Income Statement</button>
+      <button class="btn-s" onclick="genStatement('position')">Financial Position</button>
+      <button class="btn-s" onclick="genStatement('cashflow')">Cash Flow</button>
+      <button class="btn-s" onclick="genStatement('equity')">Changes in Equity</button>
+      <button class="btn-p" onclick="genStatement('all')">📊 Full Package (PDF)</button>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.5rem;">
+    <div class="kpi green"><div class="kpi-lbl" style="display:flex;justify-content:space-between;"><span>Total Revenue</span><span style="font-size:.6rem;background:var(--green-bg);color:var(--green);padding:.1rem .4rem;border-radius:4px;">May 2026</span></div><div class="kpi-val" style="font-size:1.25rem;" id="kpiRevenue">UGX 0.14M</div><div class="kpi-sub">Gross bookings + parcel + SaaS</div></div>
+    <div class="kpi ba"><div class="kpi-lbl" style="display:flex;justify-content:space-between;"><span>Commission (8%)</span><span style="font-size:.6rem;background:var(--blue-bg);color:var(--blue-s);padding:.1rem .4rem;border-radius:4px;">Platform income</span></div><div class="kpi-val" style="font-size:1.25rem;" id="kpiCommission">UGX 0.01M</div></div>
+    <div class="kpi red"><div class="kpi-lbl" style="display:flex;justify-content:space-between;"><span>Operating Costs</span><span style="font-size:.6rem;background:var(--red-bg);color:var(--red);padding:.1rem .4rem;border-radius:4px;">All obligations</span></div><div class="kpi-val" style="font-size:1.25rem;" id="kpiCosts">UGX 3.11M</div></div>
+    <div class="kpi red"><div class="kpi-lbl" style="display:flex;justify-content:space-between;"><span>Net Profit/(Loss)</span><span style="font-size:.6rem;background:var(--red-bg);color:var(--red);padding:.1rem .4rem;border-radius:4px;">Loss</span></div><div class="kpi-val" style="font-size:1.25rem;color:var(--red);" id="kpiProfit">-UGX 3.10M</div></div>
+  </div>
+
+  <!-- Two-column statements -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+
+    <!-- Income Statement -->
+    <div class="card">
+      <div class="card-title">Income Statement (IAS 1) — Summary
+        <button class="btn-s btn-xs" onclick="window.print()">🖨 Print</button>
+      </div>
+      <div class="fin-section">
+        <div class="fin-row"><span>Revenue — Passenger Bookings</span><span style="color:var(--ba-blue);font-weight:600;">UGX 96,600</span></div>
+        <div class="fin-row"><span>Revenue — Parcel Services</span><span style="color:var(--ba-blue);font-weight:600;">UGX 11,040</span></div>
+        <div class="fin-row"><span>Revenue — Charter Hire</span><span style="color:var(--ba-blue);font-weight:600;">UGX 16,560</span></div>
+        <div class="fin-row"><span>Revenue — SaaS Subscriptions</span><span style="color:var(--ba-blue);font-weight:600;">UGX 13,800</span></div>
+        <div class="fin-row subtotal"><span><strong>Gross Revenue</strong></span><span style="color:var(--ba-blue);font-weight:800;">UGX 138,000</span></div>
+        <div class="fin-row"><span>Less: Platform Commission (8%)</span><span style="color:var(--ba-silver);">UGX 11,040</span></div>
+        <div class="fin-row"><span>Less: Operating Expenses</span><span style="color:var(--red);">UGX 3,110,000</span></div>
+        <div class="fin-row total"><span>Net Profit / (Loss)</span><span style="color:var(--red);font-size:1.0625rem;">-UGX 3,098,960 ⚠️</span></div>
+      </div>
+      <div style="background:var(--red-bg);border:1px solid #FECACA;border-radius:var(--r-md);padding:.75rem;margin-top:.875rem;font-size:.8125rem;color:var(--red);">
+        ⚠️ Operating costs exceed revenue this period. Revenue is growing — costs are front-loaded as the platform scales. Review cost management view.
+      </div>
+    </div>
+
+    <!-- Statement of Financial Position -->
+    <div class="card">
+      <div class="card-title">Statement of Financial Position (IAS 1)
+        <button class="btn-s btn-xs" onclick="window.print()">🖨 Print</button>
+      </div>
+      <div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ba-silver);margin-bottom:.5rem;">ASSETS</div>
+      <div class="fin-row"><span>Cash and Cash Equivalents</span><span style="color:var(--ba-blue);font-weight:600;">UGX 20,700</span></div>
+      <div class="fin-row"><span>Accounts Receivable</span><span style="color:var(--ba-blue);font-weight:600;">UGX 11,040</span></div>
+      <div class="fin-row"><span>Prepaid Expenses</span><span style="color:var(--ba-blue);font-weight:600;">UGX 311,000</span></div>
+      <div class="fin-row subtotal"><span>Property and Equipment (Fleet)</span><span style="color:var(--ba-blue);font-weight:600;">UGX 45,000,000</span></div>
+      <div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ba-silver);margin:1rem 0 .5rem;">LIABILITIES</div>
+      <div class="fin-row"><span>Accounts Payable</span><span style="color:var(--red);font-weight:600;">UGX 7,695,000</span></div>
+      <div class="fin-row"><span>Deferred Revenue</span><span style="color:var(--red);font-weight:600;">UGX 4,140</span></div>
+      <div style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ba-silver);margin:1rem 0 .5rem;">EQUITY</div>
+      <div class="fin-row total"><span>Retained Earnings</span><span style="color:var(--green);font-weight:600;">UGX 0</span></div>
+    </div>
+  </div>
+
+  <!-- Export buttons - no QuickBooks -->
+  <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+    <button class="btn-p" onclick="Toast.success('Full financial package generating as PDF...')">📄 Export PDF</button>
+    <button class="btn-s" onclick="Toast.success('Excel spreadsheet exported.')">📥 Export Excel (.xlsx)</button>
+    <button class="btn-s" onclick="Toast.success('CSV data file exported.')">📊 Export CSV</button>
+    <button class="btn-s" onclick="Toast.success('URA VAT return for selected period generated.')">🏛 URA VAT Return</button>
+    <button class="btn-s" onclick="Toast.success('NSSF remittance schedule downloaded.')">📋 NSSF Schedule</button>
+    <button class="btn-s" onclick="confirm_('Email to Auditor','Send full financial package to external auditor and CPA?','info','📧',()=>Toast.success('Financial package sent to Ntakiwa Elsa (CPA) and external auditor.'))">📧 Email to Auditor</button>
+  </div>
+</div>
+
+<div class="da-view" id="v-costs">
+  <div class="pg-header">
+    <div><div class="pg-title">Cost Management</div><div class="pg-sub">Log and track all operational expenses — each cost feeds automatically into financial statements</div></div>
+    <button class="btn-p" onclick="openModal('Add Expense','<div class=grid-2><div class=form-group><label class=form-label>Date *</label><input type=date class=form-input required></div><div class=form-group><label class=form-label>Category *</label><select class=form-input required><option>Fuel</option><option>Vehicle Repairs</option><option>Driver Wages</option><option>Staff Salaries</option><option>Rent</option><option>Electricity</option><option>Water</option><option>Internet</option><option>Software Subscriptions</option><option>ChatGPT / Claude</option><option>YouTube Premium</option><option>Twitter / X</option><option>Insurance</option><option>NSSF</option><option>PAYE</option><option>Bank Charges</option><option>Marketing</option><option>Other</option></select></div><div class=form-group><label class=form-label>Amount (UGX) *</label><input type=number class=form-input required></div><div class=form-group><label class=form-label>Vendor</label><input type=text class=form-input placeholder=e.g. Total Energies></div><div class=form-group><label class=form-label>Link to Vehicle</label><select class=form-input><option value="">Not applicable</option><option>UBF 001K</option><option>UBF 002K</option><option>UBG 100K</option></select></div><div class=form-group><label class=form-label>Link to Route</label><select class=form-input><option value="">Not applicable</option><option>Kampala - Gulu</option><option>Kampala - Mbale</option></select></div><div class=form-group><label class=form-label>Receipt / Invoice No.</label><input type=text class=form-input></div><div class=form-group><label class=form-label>Notes</label><textarea class=form-input rows=2></textarea></div></div>','add-expense')">+ Add Expense</button>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi red"><div class="kpi-lbl">Total Costs (Apr)</div><div class="kpi-val">UGX 4.2M</div></div>
+    <div class="kpi ba"><div class="kpi-lbl">Fuel (43%)</div><div class="kpi-val">UGX 1.8M</div></div>
+    <div class="kpi purple"><div class="kpi-lbl">Salaries (29%)</div><div class="kpi-val">UGX 1.2M</div></div>
+    <div class="kpi gold"><div class="kpi-lbl">Maintenance (14%)</div><div class="kpi-val">UGX 600K</div></div>
+  </div>
+  <div style="display:flex;gap:.625rem;flex-wrap:wrap;margin-bottom:1.25rem;">
+    <div class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search expenses..." oninput="fTbl('tCosts',this.value)"></div>
+    <select class="form-input" style="width:auto;" onchange="fTbl('tCosts',this.value)"><option value="">All Categories</option><option>Fuel</option><option>Vehicle Repairs</option><option>Driver Wages</option><option>Staff Salaries</option><option>Software Subscriptions</option><option>Insurance</option></select>
+    <button class="btn-s" onclick="Toast.success('Expense report exported.')">Export CSV</button>
+  </div>
+  <div class="tbl-wrap"><table class="tbl" id="tCosts">
+    <thead><tr><th>Date</th><th>Category</th><th>Amount (UGX)</th><th>Vendor</th><th>Vehicle</th><th>Route</th><th>Receipt No.</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr><td>21 Apr</td><td><strong>Fuel</strong></td><td>UGX 234,000</td><td>Total Energies</td><td>UBF 001K</td><td>Kla → Gulu</td><td>TE-2026-1241</td><td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs" onclick="Toast.success('Expense details viewed.')">View</button><button class="btn-d btn-xs" onclick="confirm_('Delete Expense','Delete this fuel expense record?','danger','🗑',()=>Toast.error('Expense deleted.'))">Delete</button></td></tr>
+      <tr><td>20 Apr</td><td><strong>Vehicle Repairs</strong></td><td>UGX 320,000</td><td>Kampala Motors</td><td>UBF 002K</td><td>—</td><td>KM-2026-0892</td><td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs">View</button><button class="btn-d btn-xs" onclick="confirm_('Delete','Delete this expense?','danger','🗑',()=>Toast.error('Deleted.'))">Delete</button></td></tr>
+      <tr><td>18 Apr</td><td><strong>Driver Wages</strong></td><td>UGX 800,000</td><td>James Okello</td><td>UBF 001K</td><td>—</td><td>PAYROLL-APR-001</td><td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs">View</button></td></tr>
+      <tr><td>15 Apr</td><td><strong>Software Subscriptions</strong></td><td>UGX 48,000</td><td>Anthropic (Claude AI)</td><td>—</td><td>—</td><td>INV-CLAUDE-0426</td><td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs">View</button><button class="btn-d btn-xs" onclick="confirm_('Delete','Delete?','danger','🗑',()=>Toast.error('Deleted.'))">Delete</button></td></tr>
+      <tr><td>01 Apr</td><td><strong>Rent</strong></td><td>UGX 180,000</td><td>Kampala Properties Ltd.</td><td>—</td><td>—</td><td>RENT-APR-2026</td><td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs">View</button></td></tr>
+      <tr><td>01 Apr</td><td><strong>Staff Salaries</strong></td><td>UGX 2,400,000</td><td>Internal Payroll</td><td>—</td><td>—</td><td>PAYROLL-STAFF-APR</td><td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs">View</button></td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<!-- VENDOR MANAGEMENT -->
+<div class="da-view" id="v-vendors">
+  <div class="pg-header">
+    <div><div class="pg-title">Vendor Management</div></div>
+    <button class="btn-p" onclick="openModal('Add Vendor','<div class=grid-2><div class=form-group><label class=form-label>Vendor Name *</label><input type=text class=form-input required></div><div class=form-group><label class=form-label>Category *</label><select class=form-input><option>Fuel Supplier</option><option>Vehicle Maintenance</option><option>Insurance</option><option>Software / SaaS</option><option>Utilities</option><option>Office Supplies</option><option>Other</option></select></div><div class=form-group><label class=form-label>Contact Person</label><input type=text class=form-input></div><div class=form-group><label class=form-label>Phone</label><input type=tel class=form-input></div><div class=form-group><label class=form-label>Email</label><input type=email class=form-input></div><div class=form-group><label class=form-label>Payment Terms</label><select class=form-input><option>Pay on delivery</option><option>Net 7 days</option><option>Net 15 days</option><option>Net 30 days</option><option>Monthly credit</option></select></div><div class=form-group><label class=form-label>Credit Limit (UGX)</label><input type=number class=form-input></div></div>','add-vendor')">+ Add Vendor</button>
+  </div>
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Vendor</th><th>Category</th><th>Contact</th><th>Payment Terms</th><th>Outstanding</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Total Energies Uganda</strong></td><td>Fuel Supplier</td><td>0312 200 000</td><td>Net 30 days</td><td>UGX 0</td><td><span class="badge badge-green">Active</span></td>
+        <td style="display:flex;gap:.375rem;">
+          <button class="btn-s btn-xs" onclick="openModal('Vendor — Total Energies','<div class=profile-grid><div class=profile-item><label>Category</label><span>Fuel Supplier</span></div><div class=profile-item><label>Contact</label><span>0312 200 000</span></div><div class=profile-item><label>Terms</label><span>Net 30</span></div><div class=profile-item><label>MTD Spend</label><span>UGX 1.8M</span></div><div class=profile-item><label>Outstanding</label><span>UGX 0</span></div><div class=profile-item><label>YTD Spend</label><span>UGX 6.2M</span></div></div>','view-vendor')">View</button>
+          <button class="btn-p btn-xs" onclick="openModal('Create Invoice — Total Energies','<div class=grid-2><div class=form-group><label class=form-label>Invoice Amount (UGX)</label><input type=number class=form-input></div><div class=form-group><label class=form-label>Invoice Date</label><input type=date class=form-input></div><div class=form-group><label class=form-label>Due Date</label><input type=date class=form-input></div><div class=form-group><label class=form-label>Description</label><input type=text class=form-input placeholder=e.g. Fuel April 2026></div></div>','create-invoice')">Create Invoice</button>
+        </td>
+      </tr>
+      <tr><td><strong>Centenary Auto Garage</strong></td><td>Vehicle Maintenance</td><td>0772 400 400</td><td>Net 15 days</td><td>UGX 320,000</td><td><span class="badge badge-amber">Payment Due</span></td>
+        <td style="display:flex;gap:.375rem;">
+          <button class="btn-s btn-xs">View</button>
+          <button class="btn-g btn-xs" onclick="confirm_('Mark Invoice Paid','Mark Centenary Auto Garage invoice of UGX 320,000 as paid?','info','✅',()=>Toast.success('Invoice marked as paid.'))">Mark Paid</button>
+        </td>
+      </tr>
+      <tr><td><strong>Kampala Properties Ltd.</strong></td><td>Office Rent</td><td>0414 500 500</td><td>Monthly prepay</td><td>UGX 0</td><td><span class="badge badge-green">Active</span></td>
+        <td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs">View</button><button class="btn-d btn-xs" onclick="confirm_('Delete Vendor','Remove Kampala Properties from vendor list?','danger','🗑',()=>Toast.error('Vendor removed.'))">Delete</button></td>
+      </tr>
+    </tbody>
+  </table></div>
+</div>
+
+<!-- PAYOUTS -->
+<div class="da-view" id="v-payments">
+  <div class="pg-header">
+    <div><div class="pg-title">Operator Payouts</div><div class="pg-sub">Review and release weekly operator payouts — every release requires confirmation</div></div>
+    <button class="btn-p" onclick="confirm_('Process All Payouts','Release pending payouts to all operators totalling UGX 8,400,000? This initiates MTN MoMo B2C transfers. Cannot be undone.','danger','💰',()=>Toast.success('All payouts initiated. Operators will receive SMS receipts.'))">💰 Process All (UGX 8.4M)</button>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi gold"><div class="kpi-lbl">Pending Payouts</div><div class="kpi-val">UGX 8.4M</div></div>
+    <div class="kpi green"><div class="kpi-lbl">Paid This Month</div><div class="kpi-val">UGX 32.1M</div></div>
+    <div class="kpi ba"><div class="kpi-lbl">Platform Commission</div><div class="kpi-val">UGX 4.5M</div></div>
+    <div class="kpi red"><div class="kpi-lbl">Disputed Payouts</div><div class="kpi-val">2</div></div>
+  </div>
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Operator</th><th>MoMo Code</th><th>Gross Revenue</th><th>Commission 8%</th><th>Net Payout</th><th>Method</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Global Coaches</strong></td><td style="font-family:monospace;">256700123456</td><td>UGX 12.4M</td><td>UGX 992K</td><td style="font-weight:700;color:var(--green);">UGX 11.408M</td><td>MTN MoMo</td><td><span class="badge badge-amber">Pending</span></td>
+        <td><button class="btn-g btn-xs" onclick="confirm_('Release Payout','Release UGX 11,408,000 to Global Coaches MoMo 256700123456? Verify amount and merchant code before proceeding.','warn','💸',()=>Toast.success('Payout released. SMS receipt sent to Global Coaches.'))">Release</button></td>
+      </tr>
+      <tr><td><strong>Link Bus Uganda</strong></td><td style="font-family:monospace;">256772345678</td><td>UGX 4.2M</td><td>UGX 336K</td><td style="font-weight:700;color:var(--green);">UGX 3.864M</td><td>MTN MoMo</td><td><span class="badge badge-amber">Pending</span></td>
+        <td><button class="btn-g btn-xs" onclick="confirm_('Release Payout','Release UGX 3,864,000 to Link Bus Uganda?','warn','💸',()=>Toast.success('Payout released.'))">Release</button></td>
+      </tr>
+      <tr><td><strong>YY Coaches</strong></td><td style="font-family:monospace;">256701987654</td><td>UGX 1.8M</td><td>UGX 144K</td><td style="font-weight:700;color:var(--green);">UGX 1.656M</td><td>Airtel Money</td><td><span class="badge badge-green">Released ✓</span></td>
+        <td><button class="btn-s btn-xs" onclick="Toast.success('Receipt: Released 19 Apr at 14:30. Ref ATM-2026-04-19-001.')">Receipt</button></td>
+      </tr>
+      <tr><td><strong>Fast Coaches</strong></td><td style="font-family:monospace;">256782098765</td><td>UGX 3.1M</td><td>UGX 248K</td><td style="font-weight:700;color:var(--green);">UGX 2.852M</td><td>Bank Transfer</td><td><span class="badge badge-red">Disputed</span></td>
+        <td style="display:flex;gap:.375rem;"><button class="btn-d btn-xs" onclick="Toast.show('Dispute: Fast Coaches claims 6% commission applied in Mar 2026, not 8%. Review transaction logs.','info')">Investigate</button></td>
+      </tr>
+    </tbody>
+  </table></div>
+</div>
+<!-- HR — STAFF & DRIVERS -->
+<div class="da-view" id="v-hr">
+  <div class="pg-header">
+    <div><div class="pg-title">HR — Staff & Drivers</div></div>
+    <div style="display:flex;gap:.625rem;flex-wrap:wrap;">
+      <button class="btn-p" onclick="openModal('Add Raylane Staff','<div class=grid-2><div class=form-group><label class=form-label>Full Name *</label><input type=text class=form-input required></div><div class=form-group><label class=form-label>Role *</label><select class=form-input><option>Operations Manager</option><option>Accountant</option><option>Safety Officer</option><option>Customer Support</option><option>IT Developer</option></select></div><div class=form-group><label class=form-label>NID *</label><input type=text class=form-input required></div><div class=form-group><label class=form-label>Phone *</label><input type=tel class=form-input required></div><div class=form-group><label class=form-label>Email</label><input type=email class=form-input></div><div class=form-group><label class=form-label>Basic Salary (UGX)</label><input type=number class=form-input></div><div class=form-group><label class=form-label>Start Date</label><input type=date class=form-input></div></div>','add-staff')">+ Add Staff</button>
+      <button class="btn-s" onclick="Toast.success('Payroll report exported.')">Export Payroll</button>
+    </div>
+  </div>
+  <div class="tab-group">
+    <button class="tab-btn active" onclick="fHR('all',this)">All Staff (7)</button>
+    <button class="tab-btn" onclick="fHR('hq',this)">Raylane HQ (3)</button>
+    <button class="tab-btn" onclick="fHR('driver',this)">Drivers (4)</button>
+  </div>
+  <div id="hrGrid">
+    <!-- Mubbale Deo -->
+    <div class="emp-card" data-role="hq">
+      <div class="emp-card-head">
+        <div class="emp-avatar-lg">MD</div>
+        <div style="flex:1;"><div style="font-family:var(--font-head);font-weight:700;font-size:1rem;">Mubbale Deo</div><div style="font-size:.8125rem;opacity:.8;">Operations Manager</div><div style="font-size:.75rem;opacity:.6;margin-top:.125rem;">BPLM Kyambogo · CIPS Certified</div></div>
+        <span class="badge badge-green">Active</span>
+      </div>
+      <div class="profile-grid">
+        <div class="profile-item"><label>Employee ID</label><span>EMP-001</span></div>
+        <div class="profile-item"><label>NID</label><span>CM9100XXXXX</span></div>
+        <div class="profile-item"><label>Phone</label><span>0772 100 001</span></div>
+        <div class="profile-item"><label>Email</label><span>deo@raylane.ug</span></div>
+        <div class="profile-item"><label>Start Date</label><span>01 Jan 2024</span></div>
+        <div class="profile-item"><label>Department</label><span>Operations</span></div>
+      </div>
+      <div class="wage-panel">
+        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ba-silver);margin-bottom:.625rem;">Wage Management</div>
+        <div class="wage-grid">
+          <div class="wage-item"><label>Basic Salary</label><div class="wage-val">UGX 2,500,000</div></div>
+          <div class="wage-item"><label>Transport Allow.</label><div class="wage-val">UGX 150,000</div></div>
+          <div class="wage-item"><label>Housing Allow.</label><div class="wage-val">UGX 200,000</div></div>
+          <div class="wage-item"><label>Net Pay</label><div class="wage-val green">UGX 2,478,000</div></div>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+          <button class="btn-p btn-xs" onclick="openModal('Edit Wages — Mubbale Deo','<div class=grid-2><div class=form-group><label class=form-label>Basic Salary (UGX)</label><input type=number class=form-input value=2500000></div><div class=form-group><label class=form-label>Transport Allowance</label><input type=number class=form-input value=150000></div><div class=form-group><label class=form-label>Housing Allowance</label><input type=number class=form-input value=200000></div><div class=form-group><label class=form-label>Effective Date</label><input type=date class=form-input></div><div class=form-group><label class=form-label>Reason</label><select class=form-input><option>Annual Review</option><option>Promotion</option><option>Cost of Living</option><option>Performance Bonus</option></select></div></div>','edit-wages-deo')">Edit Wages</button>
+          <button class="btn-s btn-xs" onclick="openModal('Payslip — Mubbale Deo — Apr 2026','<div class=fin-section><div class=fin-section-title>MUBBALE DEO — APR 2026 PAYSLIP</div><div class=fin-row><span>Basic Salary</span><span>UGX 2,500,000</span></div><div class=fin-row><span>Transport Allowance</span><span>UGX 150,000</span></div><div class=fin-row><span>Housing Allowance</span><span>UGX 200,000</span></div><div class=fin-row total><span>Gross Pay</span><span>UGX 2,850,000</span></div><div class=fin-row><span>NSSF Employee 5%</span><span>-UGX 142,500</span></div><div class=fin-row><span>PAYE</span><span>-UGX 229,500</span></div><div class=fin-row total style=color:var(--green);><span>Net Pay</span><span>UGX 2,478,000</span></div></div>','view-payslip')">Payslip</button>
+          <button class="btn-s btn-xs" onclick="openModal('Edit Profile — Mubbale Deo','<div class=grid-2><div class=form-group><label class=form-label>Full Name</label><input type=text class=form-input value=\'Mubbale Deo\'></div><div class=form-group><label class=form-label>Phone</label><input type=tel class=form-input value=0772100001></div><div class=form-group><label class=form-label>Email</label><input type=email class=form-input value=deo@raylane.ug></div><div class=form-group><label class=form-label>Role</label><input type=text class=form-input value=\'Operations Manager\'></div><div class=form-group><label class=form-label>Emergency Contact</label><input type=text class=form-input></div></div>','edit-profile-deo')">Edit Profile</button>
+          <button class="btn-s btn-xs" onclick="confirm_('Process Advance','Process advance salary payment for Mubbale Deo via MoMo?','info','💰',()=>Toast.success('Advance processed via MTN MoMo.'))">Pay Advance</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ntakiwa Elsa -->
+    <div class="emp-card" data-role="hq">
+      <div class="emp-card-head">
+        <div class="emp-avatar-lg">NE</div>
+        <div style="flex:1;"><div style="font-family:var(--font-head);font-weight:700;font-size:1rem;">Ntakiwa Elsa</div><div style="font-size:.8125rem;opacity:.8;">Chief Accountant</div><div style="font-size:.75rem;opacity:.6;margin-top:.125rem;">MUBS Accounting & Finance · CPA Uganda</div></div>
+        <span class="badge badge-green">Active</span>
+      </div>
+      <div class="profile-grid">
+        <div class="profile-item"><label>Employee ID</label><span>EMP-002</span></div>
+        <div class="profile-item"><label>NID</label><span>CF8100XXXXX</span></div>
+        <div class="profile-item"><label>Phone</label><span>0700 200 002</span></div>
+        <div class="profile-item"><label>Email</label><span>elsa@raylane.ug</span></div>
+        <div class="profile-item"><label>Qualifications</label><span>MUBS · CPA</span></div>
+        <div class="profile-item"><label>Start Date</label><span>01 Jan 2024</span></div>
+      </div>
+      <div class="wage-panel">
+        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ba-silver);margin-bottom:.625rem;">Wage Management</div>
+        <div class="wage-grid">
+          <div class="wage-item"><label>Basic Salary</label><div class="wage-val">UGX 2,200,000</div></div>
+          <div class="wage-item"><label>Allowances</label><div class="wage-val">UGX 300,000</div></div>
+          <div class="wage-item"><label>NSSF + PAYE</label><div class="wage-val red">-UGX 335,000</div></div>
+          <div class="wage-item"><label>Net Pay</label><div class="wage-val green">UGX 2,165,000</div></div>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+          <button class="btn-p btn-xs" onclick="Toast.success('Wage editor opened for Ntakiwa Elsa.')">Edit Wages</button>
+          <button class="btn-s btn-xs" onclick="Toast.success('Payslip for Ntakiwa Elsa viewed.')">Payslip</button>
+          <button class="btn-s btn-xs" onclick="Toast.success('Profile edit opened.')">Edit Profile</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mugala Maria -->
+    <div class="emp-card" data-role="hq">
+      <div class="emp-card-head">
+        <div class="emp-avatar-lg">MM</div>
+        <div style="flex:1;"><div style="font-family:var(--font-head);font-weight:700;font-size:1rem;">Mugala Maria</div><div style="font-size:.8125rem;opacity:.8;">Passenger Welfare & Safety Lead</div></div>
+        <span class="badge badge-green">Active</span>
+      </div>
+      <div class="profile-grid">
+        <div class="profile-item"><label>Employee ID</label><span>EMP-003</span></div>
+        <div class="profile-item"><label>Phone</label><span>0751 300 003</span></div>
+        <div class="profile-item"><label>Email</label><span>maria@raylane.ug</span></div>
+        <div class="profile-item"><label>Start Date</label><span>01 Mar 2024</span></div>
+        <div class="profile-item"><label>Basic Salary</label><span>UGX 1,800,000</span></div>
+        <div class="profile-item"><label>Net Pay</label><span style="color:var(--green);font-weight:700;">UGX 1,620,000</span></div>
+      </div>
+      <div class="wage-panel">
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+          <button class="btn-p btn-xs" onclick="Toast.success('Wage editor opened.')">Edit Wages</button>
+          <button class="btn-s btn-xs" onclick="Toast.success('Payslip viewed.')">Payslip</button>
+          <button class="btn-s btn-xs" onclick="Toast.success('Profile edit opened.')">Edit Profile</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- James Okello - Driver -->
+    <div class="emp-card" data-role="driver">
+      <div class="emp-card-head" style="background:linear-gradient(135deg,#0F2860,#1A3A8F);">
+        <div class="emp-avatar-lg">JO</div>
+        <div style="flex:1;"><div style="font-family:var(--font-head);font-weight:700;font-size:1rem;">James Okello</div><div style="font-size:.8125rem;opacity:.8;">PSV Driver · Raylane Express Fleet</div><div style="font-size:.75rem;opacity:.6;">Licence CM9200XXXXX · Expiry Dec 2027</div></div>
+        <span class="badge badge-green">Active</span>
+      </div>
+      <div class="profile-grid">
+        <div class="profile-item"><label>Driver ID</label><span>DRV-001</span></div>
+        <div class="profile-item"><label>NID</label><span>CM9200XXXXX</span></div>
+        <div class="profile-item"><label>Phone</label><span>0782 001 001</span></div>
+        <div class="profile-item"><label>Vehicle</label><span>UBF 001K</span></div>
+        <div class="profile-item"><label>Rating</label><span>⭐ 4.9 (312)</span></div>
+        <div class="profile-item"><label>Trips (Apr)</label><span>24 trips</span></div>
+      </div>
+      <div class="wage-panel">
+        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ba-silver);margin-bottom:.625rem;">Daily & Monthly Wages</div>
+        <div class="wage-grid">
+          <div class="wage-item"><label>Basic Monthly</label><div class="wage-val">UGX 800,000</div></div>
+          <div class="wage-item"><label>Trip Bonus ×24</label><div class="wage-val">UGX 120,000</div></div>
+          <div class="wage-item"><label>NSSF + PAYE</label><div class="wage-val red">-UGX 94,000</div></div>
+          <div class="wage-item"><label>Net Pay</label><div class="wage-val green">UGX 874,000</div></div>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+          <button class="btn-p btn-xs" onclick="openModal('Edit Driver Wages — James Okello','<div class=grid-2><div class=form-group><label class=form-label>Basic Monthly Salary (UGX)</label><input type=number class=form-input value=800000></div><div class=form-group><label class=form-label>Trip Bonus per Trip (UGX)</label><input type=number class=form-input value=5000></div><div class=form-group><label class=form-label>Overtime Rate per Hour (UGX)</label><input type=number class=form-input value=8000></div><div class=form-group><label class=form-label>Daily Allowance (UGX)</label><input type=number class=form-input value=0></div><div class=form-group><label class=form-label>Payment Method</label><select class=form-input><option>MTN MoMo B2C</option><option>Airtel Money</option><option>Bank Transfer</option></select></div><div class=form-group><label class=form-label>Pay Day</label><select class=form-input><option>Last Friday</option><option>25th of month</option></select></div></div>','edit-wages-james')">Edit Wages</button>
+          <button class="btn-s btn-xs" onclick="confirm_('Daily Pay','Pay James Okello today trip earnings of UGX 24,000 via MoMo?','info','💰',()=>Toast.success('Daily pay sent: UGX 24,000 to James Okello.'))">Daily Pay</button>
+          <button class="btn-s btn-xs" onclick="openModal('Driver Payslip — James Okello','<div class=fin-section><div class=fin-section-title>JAMES OKELLO — APR 2026</div><div class=fin-row><span>Basic Salary</span><span>UGX 800,000</span></div><div class=fin-row><span>Trip Bonus 24 × UGX 5,000</span><span>UGX 120,000</span></div><div class=fin-row><span>Overtime 6 hrs × UGX 8,000</span><span>UGX 48,000</span></div><div class=fin-row total><span>Gross Pay</span><span>UGX 968,000</span></div><div class=fin-row><span>NSSF Employee 5%</span><span>-UGX 48,400</span></div><div class=fin-row><span>PAYE</span><span>-UGX 45,600</span></div><div class=fin-row total style=color:var(--green);><span>Net Pay</span><span>UGX 874,000</span></div></div>','payslip-james')">Payslip</button>
+          <button class="btn-s btn-xs" onclick="openModal('Edit Profile — James Okello','<div class=grid-2><div class=form-group><label class=form-label>Full Name</label><input type=text class=form-input value=\'James Okello\'></div><div class=form-group><label class=form-label>Phone</label><input type=tel class=form-input value=0782001001></div><div class=form-group><label class=form-label>NID</label><input type=text class=form-input value=CM9200XXXXX></div><div class=form-group><label class=form-label>Licence Expiry</label><input type=date class=form-input value=2027-12-31></div><div class=form-group><label class=form-label>Emergency Contact</label><input type=text class=form-input></div><div class=form-group><label class=form-label>Blood Group</label><select class=form-input><option>A+</option><option>O+</option><option>B+</option></select></div></div>','edit-profile-james')">Edit Profile</button>
+          <button class="btn-d btn-xs" onclick="confirm_('Deactivate Driver','Deactivate James Okello? Removed from all trip assignments.','danger','⚠️',()=>Toast.error('Driver deactivated.'))">Deactivate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JOB APPLICATIONS -->
+<div class="da-view" id="v-jobs">
+  <div class="pg-header">
+    <div><div class="pg-title">Job Applications</div></div>
+    <button class="btn-s" onclick="Toast.success('Applications exported.')">Export CSV</button>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi ba"><div class="kpi-lbl">Total Apps</div><div class="kpi-val">18</div></div>
+    <div class="kpi gold"><div class="kpi-lbl">New</div><div class="kpi-val">6</div></div>
+    <div class="kpi green"><div class="kpi-lbl">Shortlisted</div><div class="kpi-val">4</div></div>
+    <div class="kpi purple"><div class="kpi-lbl">Offers Sent</div><div class="kpi-val">1</div></div>
+  </div>
+  <div class="pipeline-grid">
+    <div class="pipeline-col">
+      <div class="pipeline-head">📥 New (6) <span class="badge badge-blue">6</span></div>
+      <div class="pipeline-card">
+        <div style="font-family:var(--font-head);font-weight:700;font-size:.875rem;">Nakamya Brenda</div>
+        <div style="font-size:.75rem;color:var(--ba-silver);">Field Operations Officer · Makerere</div>
+        <div style="font-size:.7rem;color:#94A3B8;margin-top:.25rem;">Applied 21 Apr</div>
+        <div style="display:flex;gap:.375rem;margin-top:.625rem;">
+          <button class="btn-g btn-xs" onclick="confirm_('Shortlist','Shortlist Nakamya Brenda?','info','⭐',()=>Toast.success('Shortlisted.'))">Shortlist</button>
+          <button class="btn-d btn-xs" onclick="confirm_('Reject','Reject application?','danger','❌',()=>Toast.error('Rejected.'))">Reject</button>
+        </div>
+      </div>
+      <div class="pipeline-card">
+        <div style="font-family:var(--font-head);font-weight:700;font-size:.875rem;">Okello Timothy</div>
+        <div style="font-size:.75rem;color:var(--ba-silver);">Junior Developer · Kyambogo</div>
+        <div style="font-size:.7rem;color:#94A3B8;margin-top:.25rem;">Applied 20 Apr</div>
+        <div style="display:flex;gap:.375rem;margin-top:.625rem;">
+          <button class="btn-g btn-xs" onclick="confirm_('Shortlist','Shortlist Okello Timothy?','info','⭐',()=>Toast.success('Shortlisted.'))">Shortlist</button>
+          <button class="btn-d btn-xs" onclick="confirm_('Reject','Reject?','danger','❌',()=>Toast.error('Rejected.'))">Reject</button>
+        </div>
+      </div>
+    </div>
+    <div class="pipeline-col">
+      <div class="pipeline-head">⭐ Shortlisted (4) <span class="badge badge-amber">4</span></div>
+      <div class="pipeline-card">
+        <div style="font-family:var(--font-head);font-weight:700;font-size:.875rem;">Mugisha Peter</div>
+        <div style="font-size:.75rem;color:var(--ba-silver);">Sales Executive · 3 yrs experience</div>
+        <div style="display:flex;gap:.375rem;margin-top:.625rem;">
+          <button class="btn-p btn-xs" onclick="confirm_('Schedule Interview','Schedule interview with Mugisha Peter?','info','📅',()=>Toast.success('Interview scheduled. SMS sent.'))">📅 Interview</button>
+        </div>
+      </div>
+      <div class="pipeline-card">
+        <div style="font-family:var(--font-head);font-weight:700;font-size:.875rem;">Namukasa Jovia</div>
+        <div style="font-size:.75rem;color:var(--ba-silver);">Customer Experience · MUBS</div>
+        <div style="display:flex;gap:.375rem;margin-top:.625rem;">
+          <button class="btn-p btn-xs" onclick="confirm_('Schedule Interview','Schedule interview with Namukasa Jovia?','info','📅',()=>Toast.success('Interview scheduled.'))">📅 Interview</button>
+        </div>
+      </div>
+    </div>
+    <div class="pipeline-col">
+      <div class="pipeline-head">🎤 Interviewed (2) <span class="badge badge-purple">2</span></div>
+      <div class="pipeline-card">
+        <div style="font-family:var(--font-head);font-weight:700;font-size:.875rem;">Ochieng Mark</div>
+        <div style="font-size:.75rem;color:var(--ba-silver);">Field Ops · Strong interview</div>
+        <div style="display:flex;gap:.375rem;margin-top:.625rem;flex-wrap:wrap;">
+          <button class="btn-g btn-xs" onclick="confirm_('Extend Offer','Extend offer to Ochieng Mark? Letter sent via email and SMS.','info','🎉',()=>Toast.success('Offer extended!'))">Extend Offer</button>
+          <button class="btn-d btn-xs" onclick="confirm_('Decline','Decline Ochieng Mark?','danger','❌',()=>Toast.error('Declined.'))">Decline</button>
+        </div>
+      </div>
+    </div>
+    <div class="pipeline-col">
+      <div class="pipeline-head">🎉 Offer Sent (1) <span class="badge badge-green">1</span></div>
+      <div class="pipeline-card">
+        <div style="font-family:var(--font-head);font-weight:700;font-size:.875rem;">Nabirye Ruth</div>
+        <div style="font-size:.75rem;color:var(--ba-silver);">CX Associate</div>
+        <div style="background:var(--green-bg);border-radius:4px;padding:.25rem .5rem;margin-top:.5rem;font-size:.7rem;font-weight:600;color:var(--green);">⏳ Awaiting acceptance</div>
+        <div style="display:flex;gap:.375rem;margin-top:.625rem;">
+          <button class="btn-s btn-xs" onclick="Toast.success('Follow-up sent.')">Follow Up</button>
+          <button class="btn-g btn-xs" onclick="confirm_('Mark Accepted','Mark Nabirye Ruth as accepted and start onboarding?','info','✅',()=>Toast.success('Accepted! Onboarding initiated.'))">Mark Accepted</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURED SCENERY -->
+<div class="da-view" id="v-scenery">
+  <div class="pg-header">
+    <div><div class="pg-title">Featured Scenery Manager</div><div class="pg-sub">Upload weekly scenic images — they appear on the homepage under "Featured This Week Along Our Routes", driving emotional connection and route bookings</div></div>
+    <button class="btn-p" onclick="openModal('Upload New Scenery Image','<div class=form-group style=margin-bottom:.875rem><label class=form-label>Image Upload</label><div style=border:2px dashed var(--border);border-radius:var(--r-md);padding:2rem;text-align:center;cursor:pointer;background:var(--surface-alt)>📸 Click to upload image<br><span style=font-size:.75rem;color:var(--ba-silver)>JPG, PNG · Max 5MB · Recommended 1200×800px</span></div></div><div class=grid-2><div class=form-group><label class=form-label>Title *</label><input type=text class=form-input placeholder=e.g. Sunset over Murchison Falls></div><div class=form-group><label class=form-label>Route Tag *</label><select class=form-input><option>Kampala → Gulu</option><option>Kampala → Mbale</option><option>Kampala → Mbarara</option><option>Kampala → Fort Portal</option><option>Kampala → Jinja</option></select></div><div class=form-group><label class=form-label>Caption</label><textarea class=form-input rows=2 placeholder=Short description for the image></textarea></div><div class=form-group><label class=form-label>Feature Duration</label><select class=form-input><option>This week (7 days)</option><option>2 weeks</option><option>1 month</option></select></div></div>','upload-scenery')">+ Upload New Image</button>
+  </div>
+  <!-- Currently Featured -->
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div class="card-title">Currently Featured This Week</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+      <div class="scenery-card" style="border:2px solid var(--ba-gold);">
+        <div class="scenery-img">🌅</div>
+        <div style="padding:1rem;">
+          <div style="font-family:var(--font-head);font-weight:700;font-size:.9375rem;margin-bottom:.375rem;">Sunset over Murchison Falls</div>
+          <div class="route-badge" style="margin-bottom:.5rem;">Kampala → Gulu</div>
+          <div style="font-size:.8125rem;color:var(--ba-silver);margin-bottom:.875rem;">Witness one of Africa's most powerful waterfalls on your journey north. Book the morning departure for the best light.</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;">
+            <div style="font-size:.75rem;color:var(--green);font-weight:600;">✅ Featured This Week · Expires Sun 27 Apr</div>
+            <div style="display:flex;gap:.375rem;">
+              <button class="btn-s btn-xs" onclick="Toast.success('Image replaced.')">Replace</button>
+              <button class="btn-d btn-xs" onclick="confirm_('Remove Featured','Remove this image from the featured section?','danger','🗑',()=>Toast.error('Removed from featured.'))">Remove</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="scenery-card">
+        <div class="scenery-img">🏔</div>
+        <div style="padding:1rem;">
+          <div style="font-family:var(--font-head);font-weight:700;font-size:.9375rem;margin-bottom:.375rem;">Rwenzori Mountain Views</div>
+          <div class="route-badge" style="margin-bottom:.5rem;">Kampala → Fort Portal</div>
+          <div style="font-size:.8125rem;color:var(--ba-silver);margin-bottom:.875rem;">The Mountains of the Moon — snow-capped peaks rising above the western rift valley, visible from the Fort Portal highway.</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;">
+            <div style="font-size:.75rem;color:var(--ba-silver);">Archived — last featured 15 Apr</div>
+            <div style="display:flex;gap:.375rem;">
+              <button class="btn-g btn-xs" onclick="confirm_('Re-feature Image','Set Rwenzori Mountains as featured this week?','info','🖼',()=>Toast.success('Now featured this week!'))">Re-feature</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Scenery Archive -->
+  <div class="card">
+    <div class="card-title">Scenery Archive</div>
+    <div class="tbl-wrap" style="border:none;"><table class="tbl">
+      <thead><tr><th>Title</th><th>Route</th><th>Featured Period</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Sunset over Murchison Falls</strong></td><td>Kla → Gulu</td><td>21 Apr – 27 Apr 2026</td><td><span class="badge badge-green">Active ✓</span></td><td style="display:flex;gap:.375rem;"><button class="btn-s btn-xs">Edit</button><button class="btn-d btn-xs" onclick="confirm_('Delete','Delete this scenery image?','danger','🗑',()=>Toast.error('Deleted.'))">Delete</button></td></tr>
+        <tr><td><strong>Rwenzori Mountain Views</strong></td><td>Kla → Fort Portal</td><td>14 Apr – 20 Apr 2026</td><td><span class="badge badge-gray">Archived</span></td><td style="display:flex;gap:.375rem;"><button class="btn-g btn-xs" onclick="Toast.success('Re-featured!')">Re-feature</button><button class="btn-d btn-xs" onclick="confirm_('Delete','Delete?','danger','🗑',()=>Toast.error('Deleted.'))">Delete</button></td></tr>
+        <tr><td><strong>Lake Victoria Dawn</strong></td><td>Kla → Jinja</td><td>07 Apr – 13 Apr 2026</td><td><span class="badge badge-gray">Archived</span></td><td style="display:flex;gap:.375rem;"><button class="btn-g btn-xs" onclick="Toast.success('Re-featured!')">Re-feature</button><button class="btn-d btn-xs" onclick="confirm_('Delete','Delete?','danger','🗑',()=>Toast.error('Deleted.'))">Delete</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- AUDIT LOG -->
+<div class="da-view" id="v-audit">
+  <div class="pg-header">
+    <div><div class="pg-title">Audit Log</div><div class="pg-sub">Immutable record of all admin actions — cannot be edited or deleted</div></div>
+    <button class="btn-s" onclick="Toast.success('Audit log exported.')">Export Log</button>
+  </div>
+  <div class="tbl-wrap"><table class="tbl" id="tAudit">
+    <thead><tr><th>Timestamp</th><th>Admin</th><th>Action</th><th>Entity</th><th>IP Address</th></tr></thead>
+    <tbody id="auditBody"></tbody>
+  </table></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="da-view" id="v-settings">
+  <div class="pg-title">Platform Settings</div>
+  <div style="display:flex;flex-direction:column;gap:1.25rem;max-width:640px;">
+    <div class="card"><div class="card-title">Commission & Fees</div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Default Commission Rate (%)</label><input type="number" class="form-input" value="8" min="0" max="25"></div>
+        <div class="form-group"><label class="form-label">Seat Lock Duration (seconds)</label><input type="number" class="form-input" value="600" min="60" max="600"></div>
+        <div class="form-group"><label class="form-label">Advance Booking Deposit (%)</label><input type="number" class="form-input" value="20"></div>
+        <div class="form-group"><label class="form-label">Max Advance Booking Days</label><input type="number" class="form-input" value="30"></div>
+      </div>
+      <button class="btn-p" style="margin-top:.875rem;" onclick="confirm_('Save Settings','Save all platform settings? This affects commission calculations and booking behaviour across the entire platform.','warn','⚙️',()=>Toast.success('Settings saved.'))">Save All Settings</button>
+    </div>
+    <div class="card"><div class="card-title">Merchant Codes</div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">MTN MoMo Merchant Code</label><input type="text" class="form-input" value="RAYLANE"></div>
+        <div class="form-group"><label class="form-label">Airtel Money Merchant Code</label><input type="text" class="form-input" value="RAYLANE"></div>
+      </div>
+      <button class="btn-p" style="margin-top:.875rem;" onclick="confirm_('Save Merchant Codes','Update merchant codes? This affects all payment instructions shown to passengers.','warn','💳',()=>Toast.success('Merchant codes updated.'))">Save Codes</button>
+    </div>
+    <div class="card"><div class="card-title">SMS Templates</div>
+      <div style="display:flex;flex-direction:column;gap:.875rem;">
+        <div class="form-group"><label class="form-label">Booking Confirmation SMS</label><textarea class="form-input" rows="2">Your Raylane Express ticket is confirmed. Booking: {ref}. Route: {route}. Departure: {time}. Seat: {seat}. Safe travels!</textarea></div>
+        <div class="form-group"><label class="form-label">Payment Received SMS</label><textarea class="form-input" rows="2">Payment received for booking {ref}. Your Raylane ticket is being confirmed. You will receive your QR ticket via WhatsApp within 5 minutes.</textarea></div>
+        <div class="form-group"><label class="form-label">Payment Mismatch SMS</label><textarea class="form-input" rows="2">Your payment reference name does not match your booking name. Please call us on {phone} to resolve immediately. Booking: {ref}.</textarea></div>
+      </div>
+      <button class="btn-p" style="margin-top:.875rem;" onclick="confirm_('Save SMS Templates','Save SMS templates? These will be used for all automated messages.','info','📱',()=>Toast.success('Templates saved.'))">Save Templates</button>
+    </div>
+    <div class="card"><div class="card-title">Staff Accounts</div>
+      <button class="btn-p btn-sm" onclick="openModal('Create Staff Account','<div class=form-group style=margin-bottom:.875rem><label class=form-label>Full Name *</label><input type=text class=form-input></div><div class=form-group style=margin-bottom:.875rem><label class=form-label>Role *</label><select class=form-input><option>Super Admin</option><option>Finance Admin</option><option>Operations Admin</option><option>HR Admin</option><option>Read Only</option></select></div><div class=form-group><label class=form-label>Email *</label><input type=email class=form-input></div>','create-staff')">+ Add Staff Account</button>
+      <div style="margin-top:1rem;font-size:.875rem;color:var(--ba-silver);">Current staff: <strong>Super Admin</strong> · <strong>Mubbale Deo (Ops)</strong> · <strong>Ntakiwa Elsa (Finance)</strong> · <strong>Mugala Maria (Safety)</strong></div>
+    </div>
+  </div>
+</div>
+    </div><!-- /da-content -->
+  </div><!-- /da-main -->
+</div><!-- /da-layout -->
+
+<script src="app.js"></script>
+<script>
+// ── Clock ──────────────────────────────────────────────────────
+function tick(){document.getElementById('admClock').textContent=new Date().toLocaleTimeString('en-UG',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+setInterval(tick,1000); tick();
+document.getElementById('admDate').textContent=new Date().toLocaleDateString('en-UG',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+// ── Sidebar ────────────────────────────────────────────────────
+function openSB(){document.getElementById('daSB').classList.add('open');document.getElementById('daOverlay').classList.add('show');document.body.style.overflow='hidden';}
+function closeSB(){document.getElementById('daSB').classList.remove('open');document.getElementById('daOverlay').classList.remove('show');document.body.style.overflow='';}
+
+// ── View switching ─────────────────────────────────────────────
+const vN={dash:'Dashboard',payments_inbox:'Payment Confirmations',inbox:'Requests Inbox',bookings:'All Bookings',trips:'Trip Approvals',charter:'Charter Quotes',parcels:'Parcels',operators:'All Operators',applications:'Operator Applications',modules:'Module Control',fleet:'Fleet Control',drivers:'Driver Management',routes:'Route Management',fuel:'Fuel Management',financials:'Financial Statements',costs:'Cost Management',vendors:'Vendor Management',payments:'Payouts',hr:'HR — Staff & Drivers',jobs:'Job Applications',scenery:'Featured Scenery',audit:'Audit Log',settings:'Platform Settings'};
+function sv(id){
+  document.querySelectorAll('.da-view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.da-nl').forEach(l=>l.classList.remove('active'));
+  const v=document.getElementById('v-'+id); if(v) v.classList.add('active');
+  const l=document.querySelector(`.da-nl[onclick*="'${id}'"]`); if(l) l.classList.add('active');
+  document.getElementById('adminBC').textContent=vN[id]||id;
+  closeSB();
+  if(id==='audit') renderAudit();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── Confirm dialog ─────────────────────────────────────────────
+let _cb=null;
+const iMap={info:'#EFF6FF',warn:'#FFFBEB',danger:'#FEF2F2'};
+const bMap={info:'var(--ba-blue)',warn:'#D97706',danger:'var(--red)'};
+function confirm_(title,body,type,icon,cb){
+  _cb=cb;
+  document.getElementById('cIcon').textContent=icon||'⚠️';
+  document.getElementById('cIcon').style.background=iMap[type]||iMap.warn;
+  document.getElementById('cTitle').textContent=title;
+  document.getElementById('cBody').textContent=body;
+  document.getElementById('cOK').style.background=bMap[type]||bMap.warn;
+  document.getElementById('cOK').textContent=type==='danger'?'Yes, proceed':'Confirm';
+  document.getElementById('confirmDlg').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function cancelConfirm(){document.getElementById('confirmDlg').classList.remove('open');document.body.style.overflow='';_cb=null;}
+function execConfirm(){
+  document.getElementById('confirmDlg').classList.remove('open');document.body.style.overflow='';
+  if(_cb){_cb();logAudit(document.getElementById('cTitle').textContent);}
+  _cb=null;
+}
+
+// ── Modal ──────────────────────────────────────────────────────
+function openModal(title,body,key){
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalBody').innerHTML=body;
+  const foot=document.getElementById('modalFoot'); foot.innerHTML='';
+  if(key&&(key.startsWith('save')||key.startsWith('add')||key.startsWith('edit')||key.startsWith('create')||key.startsWith('log')||key.startsWith('update'))){
+    const btn=document.createElement('button'); btn.className='btn-p'; btn.textContent='Save Changes';
+    btn.onclick=()=>confirm_('Save Changes','Save all changes? This updates the record immediately.','info','💾',()=>{Toast.success('Saved.');closeModal();});
+    foot.appendChild(btn);
+  }
+  if(key==='approve-trip'||key==='upload-scenery'){
+    const btn=document.createElement('button'); btn.className='btn-g'; btn.textContent=key==='approve-trip'?'✅ Approve Trip':'📤 Upload & Feature';
+    btn.onclick=()=>confirm_('Confirm','Confirm this action?','info','✅',()=>{Toast.success('Done!');closeModal();});
+    foot.appendChild(btn);
+  }
+  if(key==='create-invoice'){
+    const btn=document.createElement('button'); btn.className='btn-p'; btn.textContent='Create Invoice';
+    btn.onclick=()=>{Toast.success('Invoice created and sent to vendor.');closeModal();};
+    foot.appendChild(btn);
+  }
+  const close=document.createElement('button'); close.className='btn-s'; close.textContent='Close'; close.onclick=closeModal;
+  foot.appendChild(close);
+  document.getElementById('mainModal').classList.add('open'); document.body.style.overflow='hidden';
+}
+function closeModal(){document.getElementById('mainModal').classList.remove('open');document.body.style.overflow='';}
+document.getElementById('mainModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('confirmDlg').addEventListener('click',function(e){if(e.target===this)cancelConfirm();});
+
+// ── Booking detail ─────────────────────────────────────────────
+function openBkg(ref,name,phone,route,op,date,seat,amount,status){
+  const sc=status==='Confirmed'?'green':status==='Pending'?'amber':'red';
+  openModal('Booking — '+ref,`
+    <div class="grid-2" style="margin-bottom:1rem;">
+      <div class="form-group"><label class="form-label">Booking Ref</label><span style="font-family:var(--font-head);font-weight:700;color:var(--ba-blue);">${ref}</span></div>
+      <div class="form-group"><label class="form-label">Status</label><span class="badge badge-${sc}">${status}</span></div>
+      <div class="form-group"><label class="form-label">Passenger</label><span>${name}</span></div>
+      <div class="form-group"><label class="form-label">Phone</label><span>${phone}</span></div>
+      <div class="form-group"><label class="form-label">Route</label><span>${route}</span></div>
+      <div class="form-group"><label class="form-label">Operator</label><span>${op}</span></div>
+      <div class="form-group"><label class="form-label">Travel Date</label><span>${date}</span></div>
+      <div class="form-group"><label class="form-label">Seat</label><span>${seat}</span></div>
+      <div class="form-group"><label class="form-label">Amount Paid</label><span style="font-family:var(--font-head);font-weight:700;color:var(--green);">${amount}</span></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.5rem;">
+      <button class="btn-s" onclick="Toast.success('SMS sent to ${name}.')">📱 SMS Passenger</button>
+      <button class="btn-s" onclick="Toast.success('Ticket resent via WhatsApp to ${phone}.')">🎫 Resend Ticket</button>
+      ${status!=='Cancelled'?`<button class="btn-d" onclick="confirm_('Cancel Booking','Cancel ${ref} and issue a refund to ${name}?','danger','❌',()=>{Toast.error('Cancelled. Refund initiated.');closeModal();})">❌ Cancel + Refund</button>`:''}
+      <button class="btn-s" onclick="window.print()">📄 Export PDF</button>
+    </div>
+  `,'view-bkg');
+}
+
+// ── Payment filter ─────────────────────────────────────────────
+function fPayFilter(status){
+  document.querySelectorAll('.pay-card').forEach(c=>{
+    c.style.display=(!status||c.dataset.status===status)?'block':'none';
+  });
+}
+
+// ── Tab filter ─────────────────────────────────────────────────
+function fTab(listId,type,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const list=document.getElementById(listId);
+  if(!list) return;
+  list.querySelectorAll('[data-type]').forEach(c=>{
+    c.style.display=(type==='all'||c.dataset.type===type)?'block':'none';
+  });
+}
+
+// ── HR filter ──────────────────────────────────────────────────
+function fHR(role,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#hrGrid .emp-card').forEach(c=>{
+    c.style.display=(role==='all'||c.dataset.role===role)?'block':'none';
+  });
+}
+
+// ── Module toggle ──────────────────────────────────────────────
+function togMod(el,key){
+  const wasOn=el.classList.contains('on');
+  confirm_(`${wasOn?'Deactivate':'Activate'} Module`,
+    `${wasOn?'Deactivate':'Activate'} this module? ${wasOn?'Operator loses access immediately.':'Operator gains access immediately.'}`,
+    wasOn?'danger':'info', wasOn?'🔒':'🔓',
+    ()=>{el.classList.toggle('on');Toast.success(`Module ${wasOn?'deactivated':'activated'}.`);logAudit(`Module ${wasOn?'deactivated':'activated'}: ${key}`);});
+}
+
+// ── Table filter ───────────────────────────────────────────────
+function fTbl(id,q){
+  const t=document.getElementById(id); if(!t) return;
+  t.querySelectorAll('tbody tr').forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none';});
+}
+
+// ── Financial report generator ─────────────────────────────────
+function genFinReport(){
+  const type=document.getElementById('finType').value;
+  const period=document.getElementById('finPeriod').value;
+  const format=document.getElementById('finFormat').value;
+  const btn=event.target; btn.textContent='Generating…'; btn.disabled=true;
+  setTimeout(()=>{
+    btn.textContent='📊 Generate Report'; btn.disabled=false;
+    if(format.includes('View')){
+      Toast.success('Report generated and displayed below.');
+      document.getElementById('finPreview').querySelector('.card-title').firstChild.textContent=`${type.split('(')[0].trim()} — ${period}  `;
+    } else {
+      Toast.success(`${type.split('(')[0].trim()} — ${period} exported as ${format}.`);
+    }
+    logAudit(`Financial report generated: ${type.split('(')[0].trim()} ${period}`);
+  },1800);
+}
+
+// ── Activity feed ──────────────────────────────────────────────
+const feedItems=[
+  {c:'#22C55E',t:'Payment confirmed ✅ · Akello Olivia · RLX-248 · Kla→Gulu · UGX 45,000 · Ticket sent via WhatsApp'},
+  {c:'var(--ba-blue)',t:'Trip approved: Global Coaches · Kampala→Mbale · 22 Apr 09:00'},
+  {c:'#F59E0B',t:'⚠️ Name mismatch on RLX-249 · Reference: J. Mwesige · Booking: John Mwesige — review needed'},
+  {c:'#22C55E',t:'Operator application received: Nile Star Coaches · Pro Plan · 5 vehicles'},
+  {c:'#8B5CF6',t:'Job application: Okello Timothy · Junior Developer · Kyambogo'},
+  {c:'#EF4444',t:'Compliance alert: UBF 002K fitness expires in 45 days — action required'},
+  {c:'#22C55E',t:'Payout released: Link Bus · UGX 3.864M → MoMo ****678 · SMS receipt sent'},
+  {c:'var(--ba-blue)',t:'Premium upgrade request: YY Coaches → Operator Pro — awaiting approval'},
+  {c:'#22C55E',t:'New scenic image uploaded: Sunset over Murchison Falls · Kla→Gulu · Featured this week'},
+];
+let fIdx=0;
+function addFeed(){
+  const feed=document.getElementById('admFeed'); if(!feed) return;
+  const item=feedItems[fIdx%feedItems.length];
+  const el=document.createElement('div'); el.className='feed-item';
+  el.innerHTML=`<div class="feed-dot" style="background:${item.c};"></div><span class="feed-text">${item.t}</span><span class="feed-time">just now</span>`;
+  feed.insertBefore(el,feed.firstChild);
+  if(feed.children.length>7) feed.removeChild(feed.lastChild);
+  fIdx++;
+}
+addFeed();addFeed();addFeed(); setInterval(addFeed,8000);
+
+// ── Audit log ──────────────────────────────────────────────────
+const auditLog=[];
+function logAudit(action){auditLog.unshift({ts:new Date().toLocaleTimeString('en-UG'),admin:'Super Admin',action,entity:'Platform',ip:'41.210.x.x'});}
+function renderAudit(){
+  const pre=[
+    {ts:'12:45:02',admin:'Super Admin',action:'Payment Confirmed — RLX-001',entity:'Akello Olivia · Kla→Gulu · UGX 45,000',ip:'41.210.x.x'},
+    {ts:'12:30:15',admin:'Super Admin',action:'Trip Approved',entity:'Global Coaches · Kla→Mbale 09:00',ip:'41.210.x.x'},
+    {ts:'11:15:33',admin:'Ntakiwa Elsa',action:'Payout Released',entity:'Link Bus · UGX 3.864M',ip:'197.157.x.x'},
+    {ts:'10:55:47',admin:'Super Admin',action:'Vehicle Blocked',entity:'UBF 002K — Compliance',ip:'41.210.x.x'},
+    {ts:'10:00:00',admin:'Super Admin',action:'Module Activated',entity:'Payroll — Global Coaches',ip:'41.210.x.x'},
+    {ts:'09:30:00',admin:'Super Admin',action:'Driver Wages Updated',entity:'James Okello — UGX 800K base',ip:'41.210.x.x'},
+    {ts:'09:00:12',admin:'Mubbale Deo',action:'Operator Application Reviewed',entity:'Nile Star Coaches — Approved',ip:'41.210.x.x'},
+    {ts:'08:45:00',admin:'Super Admin',action:'Scenery Image Uploaded',entity:'Sunset over Murchison Falls · Kla→Gulu',ip:'41.210.x.x'},
+  ];
+  const all=[...auditLog,...pre];
+  document.getElementById('auditBody').innerHTML=all.map(e=>`
+    <tr>
+      <td style="font-family:monospace;font-size:.75rem;color:var(--ba-silver);">${e.ts}</td>
+      <td>${e.admin}</td>
+      <td><strong>${e.action}</strong></td>
+      <td style="font-size:.8125rem;">${e.entity}</td>
+      <td style="font-family:monospace;font-size:.75rem;color:var(--ba-silver);">${e.ip}</td>
+    </tr>`).join('');
+}
+
+
+// ── Financial statement functions ──────────────────────────────
+function setFinPeriod(period, btn){
+  document.querySelectorAll('[id^="fpBtn-"]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const labels = {month:'Monthly',quarter:'Quarterly',semi:'Semi-Annual',annual:'Annual'};
+  Toast.show('Period set to: '+labels[period],'info');
+}
+function updateFinPeriod(){
+  const val = document.getElementById('finMonth').value;
+  if(val) Toast.show('Period updated to: '+val,'info');
+}
+function genStatement(type){
+  const types = {income:'Income Statement',position:'Statement of Financial Position',cashflow:'Statement of Cash Flows',equity:'Statement of Changes in Equity',all:'Full Financial Package'};
+  const btn = event.target; btn.textContent = 'Generating...'; btn.disabled = true;
+  setTimeout(()=>{
+    btn.textContent = types[type] || type;
+    btn.disabled = false;
+    Toast.success(types[type] + ' generated. Ready to download.');
+    logAudit('Financial statement generated: ' + types[type]);
+  }, 1600);
+}
+
+// ── Toast fallback ─────────────────────────────────────────────
+if(typeof Toast==='undefined'){
+  window.Toast={
+    _show(msg,bg){const t=document.createElement('div');t.style.cssText=`position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:${bg};color:white;padding:.75rem 1.5rem;border-radius:var(--r-full);font-size:.875rem;font-weight:600;z-index:9999;font-family:var(--font-body);box-shadow:0 8px 24px rgba(0,0,0,.25);animation:fadeIn .3s ease;`;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3500);},
+    success(m){this._show(m,'#16A34A');},
+    error(m){this._show('❌ '+m,'#DC2626');},
+    warning(m){this._show('⚠️ '+m,'#D97706');},
+    show(m,t){t==='info'?this._show('ℹ️ '+m,'#2563EB'):this.success(m);},
+  };
+}
+
+// Keyframes for toast
+const ks=document.createElement('style');
+ks.textContent='@keyframes fadeIn{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';
+document.head.appendChild(ks);
+</script>
+</body>
+</html>

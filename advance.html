@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#071530">
+<title>Advance Booking — Raylane Express</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+body{background:var(--gray-50);}
+.adv-shell{max-width:760px;margin:0 auto;padding:80px 1.25rem 120px;}
+/* Calendar */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-md);font-family:var(--font-display);font-size:.8125rem;font-weight:600;cursor:pointer;transition:all .2s;border:1.5px solid transparent;}
+.cal-day.empty{cursor:default;}
+.cal-day.past{color:var(--gray-300);cursor:not-allowed;}
+.cal-day.available{background:var(--white);border-color:var(--gray-200);color:var(--gray-700);}
+.cal-day.available:hover{border-color:var(--blue-400);background:var(--blue-50);}
+.cal-day.popular{background:var(--amber-100);border-color:var(--amber-400);color:var(--amber-800);}
+.cal-day.selected{background:var(--gold-500);border-color:var(--gold-600);color:var(--blue-900);}
+.cal-day.today{font-weight:800;}
+.cal-day.has-trips::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--green-500);}
+.cal-day{position:relative;}
+.step-panel{display:none;}
+.step-panel.active{display:block;}
+.pref-btn{padding:.625rem 1.125rem;border-radius:var(--radius-full);background:var(--white);border:1.5px solid var(--gray-200);font-family:var(--font-display);font-size:.8125rem;font-weight:600;cursor:pointer;transition:all .2s;color:var(--gray-600);}
+.pref-btn.on{background:var(--blue-800);border-color:var(--blue-800);color:white;}
+.tc-section{margin-bottom:1.25rem;}
+.tc-section h4{font-family:var(--font-display);font-weight:700;font-size:.9rem;margin-bottom:.5rem;color:var(--blue-900);}
+.tc-section p, .tc-section li{font-size:.8125rem;color:var(--gray-600);line-height:1.7;}
+.tc-section ul{padding-left:1.25rem;}
+.refund-table{width:100%;border-collapse:collapse;font-size:.8125rem;}
+.refund-table th{background:var(--gray-50);padding:.625rem .875rem;text-align:left;font-family:var(--font-display);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-500);border-bottom:1px solid var(--gray-200);}
+.refund-table td{padding:.625rem .875rem;border-bottom:1px solid var(--gray-100);color:var(--gray-700);}
+.refund-table tr:last-child td{border-bottom:none;}
+</style>
+</head>
+<body>
+<nav class="navbar scrolled" style="background:rgba(7,21,48,.97);">
+  <div class="navbar-inner">
+    <a href="index.html" class="navbar-logo" style="display:flex;align-items:center;gap:.625rem;">
+      <img src="Raylane_express.png" alt="" height="36" onerror="this.style.display='none'">
+      <span style="font-family:var(--font-display);font-weight:800;font-size:1.0625rem;color:var(--gold-500);">Raylane<span style="color:white;">Express</span></span>
+    </a>
+    <div style="font-family:var(--font-display);font-size:.9rem;font-weight:600;color:rgba(255,255,255,.8);">Advance Booking</div>
+    <a href="index.html" style="font-size:.8125rem;color:rgba(255,255,255,.6);">← Home</a>
+  </div>
+</nav>
+
+<main class="adv-shell">
+  <div style="text-align:center;margin-bottom:2rem;">
+    <div class="section-label" style="justify-content:center;margin-bottom:.75rem;">📅 Advance Booking</div>
+    <h1 class="display-md" style="margin-bottom:.75rem;">Reserve Your Seat Up to 30 Days Ahead</h1>
+    <p class="body-md text-muted" style="max-width:520px;margin:0 auto;">Lock your price with a 20% commitment deposit now. Pay the remaining 80% no later than 24 hours before departure. Your seat is guaranteed.</p>
+  </div>
+
+  <!-- Benefits strip -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;">
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1rem;text-align:center;">
+      <div style="font-size:1.75rem;margin-bottom:.375rem;">🔒</div>
+      <div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;">Price Locked</div>
+      <div style="font-size:.75rem;color:var(--gray-500);">Today's fare — no price surge</div>
+    </div>
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1rem;text-align:center;">
+      <div style="font-size:1.75rem;margin-bottom:.375rem;">💺</div>
+      <div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;">Seat Guaranteed</div>
+      <div style="font-size:.75rem;color:var(--gray-500);">Vehicle allocated for you</div>
+    </div>
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1rem;text-align:center;">
+      <div style="font-size:1.75rem;margin-bottom:.375rem;">📱</div>
+      <div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;">SMS Reminders</div>
+      <div style="font-size:.75rem;color:var(--gray-500);">7 days, 24 hrs, 2 hrs before</div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-steps" style="margin-bottom:2rem;">
+    <div class="progress-step active" id="avs1"><div class="step-bubble">1</div><div class="step-label">Route &amp; Date</div></div>
+    <div class="step-line" id="avl1"></div>
+    <div class="progress-step" id="avs2"><div class="step-bubble">2</div><div class="step-label">Preferences</div></div>
+    <div class="step-line" id="avl2"></div>
+    <div class="progress-step" id="avs3"><div class="step-bubble">3</div><div class="step-label">Terms</div></div>
+    <div class="step-line" id="avl3"></div>
+    <div class="progress-step" id="avs4"><div class="step-bubble">4</div><div class="step-label">Deposit</div></div>
+    <div class="step-line" id="avl4"></div>
+    <div class="progress-step" id="avs5"><div class="step-bubble">5</div><div class="step-label">Confirmed</div></div>
+  </div>
+
+  <!-- ═══ STEP 1: ROUTE & CALENDAR ═══ -->
+  <div class="step-panel active" id="avtab1">
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1.25rem;">
+      <h2 class="heading-lg" style="margin-bottom:1rem;">Select Route</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;margin-bottom:1.25rem;">
+        <div class="form-group">
+          <label class="form-label">From *</label>
+          <select class="form-input form-select" id="avFrom" required onchange="updatePricePreview()">
+            <option value="">Select city</option>
+            <option value="Kampala">Kampala</option><option value="Entebbe">Entebbe</option>
+            <option value="Jinja">Jinja</option><option value="Mbale">Mbale</option>
+            <option value="Gulu">Gulu</option><option value="Mbarara">Mbarara</option>
+            <option value="Fort Portal">Fort Portal</option><option value="Arua">Arua</option>
+            <option value="Lira">Lira</option><option value="Kabale">Kabale</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">To *</label>
+          <select class="form-input form-select" id="avTo" required onchange="updatePricePreview()">
+            <option value="">Select city</option>
+            <option value="Kampala">Kampala</option><option value="Entebbe">Entebbe</option>
+            <option value="Jinja">Jinja</option><option value="Mbale">Mbale</option>
+            <option value="Gulu">Gulu</option><option value="Mbarara">Mbarara</option>
+            <option value="Fort Portal">Fort Portal</option><option value="Arua">Arua</option>
+            <option value="Lira">Lira</option><option value="Kabale">Kabale</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Number of Passengers *</label>
+          <select class="form-input form-select" id="avPax" onchange="updatePricePreview()">
+            <option value="1">1 Passenger</option><option value="2">2 Passengers</option>
+            <option value="3">3 Passengers</option><option value="4">4 Passengers</option>
+          </select>
+        </div>
+        <div style="background:var(--gold-100);border-radius:var(--radius-lg);padding:1rem;">
+          <div style="font-size:.75rem;color:var(--amber-700);font-family:var(--font-display);font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Estimated Fare</div>
+          <div style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;color:var(--blue-900);" id="farePreview">Select route</div>
+          <div style="font-size:.75rem;color:var(--amber-700);">20% deposit = <span id="depositPreview">—</span></div>
+        </div>
+      </div>
+
+      <!-- Calendar -->
+      <h3 class="heading-md" style="margin-bottom:.875rem;">Select Travel Date</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem;">
+        <button onclick="prevMonth()" style="background:var(--gray-100);border:none;border-radius:var(--radius-md);width:36px;height:36px;cursor:pointer;font-size:1.125rem;">‹</button>
+        <div style="font-family:var(--font-display);font-weight:700;" id="calMonthLabel">April 2026</div>
+        <button onclick="nextMonth()" style="background:var(--gray-100);border:none;border-radius:var(--radius-md);width:36px;height:36px;cursor:pointer;font-size:1.125rem;">›</button>
+      </div>
+      <div class="cal-grid" style="margin-bottom:.5rem;">
+        <div style="text-align:center;font-family:var(--font-display);font-size:.7rem;font-weight:700;color:var(--gray-400);padding:.25rem;">Sun</div>
+        <div style="text-align:center;font-family:var(--font-display);font-size:.7rem;font-weight:700;color:var(--gray-400);padding:.25rem;">Mon</div>
+        <div style="text-align:center;font-family:var(--font-display);font-size:.7rem;font-weight:700;color:var(--gray-400);padding:.25rem;">Tue</div>
+        <div style="text-align:center;font-family:var(--font-display);font-size:.7rem;font-weight:700;color:var(--gray-400);padding:.25rem;">Wed</div>
+        <div style="text-align:center;font-family:var(--font-display);font-size:.7rem;font-weight:700;color:var(--gray-400);padding:.25rem;">Thu</div>
+        <div style="text-align:center;font-family:var(--font-display);font-size:.7rem;font-weight:700;color:var(--gray-400);padding:.25rem;">Fri</div>
+        <div style="text-align:center;font-family:var(--font-display);font-size:.7rem;font-weight:700;color:var(--gray-400);padding:.25rem;">Sat</div>
+      </div>
+      <div class="cal-grid" id="calDays"></div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.875rem;font-size:.75rem;color:var(--gray-500);">
+        <div style="display:flex;align-items:center;gap:.375rem;"><div style="width:12px;height:12px;border-radius:3px;background:var(--amber-100);border:1.5px solid var(--amber-400);"></div>High demand</div>
+        <div style="display:flex;align-items:center;gap:.375rem;"><div style="width:8px;height:8px;border-radius:50%;background:var(--green-500);"></div>Trips available</div>
+        <div style="display:flex;align-items:center;gap:.375rem;"><div style="width:12px;height:12px;border-radius:3px;background:var(--gold-500);"></div>Selected</div>
+      </div>
+      <div id="selectedDateDisplay" style="margin-top:.875rem;padding:.875rem;background:var(--blue-50);border-radius:var(--radius-md);display:none;">
+        <div style="font-family:var(--font-display);font-weight:700;color:var(--blue-800);" id="sDateLabel">—</div>
+        <div style="font-size:.8125rem;color:var(--blue-600);">Price locked at today's fare. 20% deposit required to confirm.</div>
+      </div>
+    </div>
+    <button class="btn btn-gold" style="width:100%;justify-content:center;" id="avStep1Btn" onclick="goAvStep(2)" disabled>Continue — Set Preferences →</button>
+  </div>
+
+  <!-- ═══ STEP 2: PREFERENCES ═══ -->
+  <div class="step-panel" id="avtab2">
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1.25rem;">
+      <h2 class="heading-lg" style="margin-bottom:.375rem;">Passenger Preferences</h2>
+      <p class="body-sm text-muted" style="margin-bottom:1.5rem;">These preferences guide seat allocation. Not all preferences are guaranteed but we do our best to honour them.</p>
+
+      <div style="margin-bottom:1.5rem;">
+        <label class="form-label" style="margin-bottom:.75rem;">Seat Preference</label>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;" id="seatPrefGroup">
+          <button class="pref-btn" onclick="togglePref(this,'seatpref')">🪟 Window Seat</button>
+          <button class="pref-btn" onclick="togglePref(this,'seatpref')">🚶 Aisle Seat</button>
+          <button class="pref-btn" onclick="togglePref(this,'seatpref')">⬆️ Front Section</button>
+          <button class="pref-btn" onclick="togglePref(this,'seatpref')">⬇️ Rear Section</button>
+          <button class="pref-btn" onclick="togglePref(this,'seatpref')">🔀 No Preference</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:1.5rem;">
+        <label class="form-label" style="margin-bottom:.75rem;">Preferred Departure Time</label>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+          <button class="pref-btn" onclick="togglePref(this,'timepref')">🌅 Early Morning (before 7 AM)</button>
+          <button class="pref-btn" onclick="togglePref(this,'timepref')">☀️ Morning (7–10 AM)</button>
+          <button class="pref-btn" onclick="togglePref(this,'timepref')">🌤 Midday (10 AM–1 PM)</button>
+          <button class="pref-btn" onclick="togglePref(this,'timepref')">🌇 Afternoon (after 1 PM)</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:1.5rem;">
+        <label class="form-label" style="margin-bottom:.75rem;">Special Needs or Requirements</label>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+          <button class="pref-btn" onclick="this.classList.toggle('on')">👩 Women-only section</button>
+          <button class="pref-btn" onclick="this.classList.toggle('on')">♿ Accessibility needs</button>
+          <button class="pref-btn" onclick="this.classList.toggle('on')">👶 Travelling with infant</button>
+          <button class="pref-btn" onclick="this.classList.toggle('on')">🧳 Extra luggage</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;">
+        <div class="form-group"><label class="form-label">Full Name *</label><input type="text" class="form-input" id="avName" placeholder="Your full name" required></div>
+        <div class="form-group"><label class="form-label">Phone Number *</label><input type="tel" class="form-input" id="avPhone" placeholder="07XX XXX XXX" required></div>
+        <div class="form-group" style="grid-column:1/-1;"><label class="form-label">Email (for booking confirmation)</label><input type="email" class="form-input" id="avEmail" placeholder="Optional — for PDF receipt"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:.75rem;">
+      <button class="btn btn-outline" onclick="goAvStep(1)">← Back</button>
+      <button class="btn btn-gold" style="flex:1;justify-content:center;" onclick="validatePrefStep()">Continue to Terms →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 3: TERMS & CONDITIONS ═══ -->
+  <div class="step-panel" id="avtab3">
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1.25rem;">
+      <h2 class="heading-lg" style="margin-bottom:.375rem;">Advance Booking Terms &amp; Conditions</h2>
+      <p class="body-sm text-muted" style="margin-bottom:1.5rem;">Please read and consent to the following terms before placing your advance booking deposit.</p>
+
+      <div style="max-height:60vh;overflow-y:auto;border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.25rem;">
+
+        <div class="tc-section">
+          <h4>1. What is Advance Booking?</h4>
+          <p>Advance booking allows you to reserve a seat on a future Raylane Express trip up to 30 days before the departure date. The price you see at the time of booking is locked — you will not be charged a higher fare if prices increase.</p>
+        </div>
+
+        <div class="tc-section">
+          <h4>2. Deposit Requirement</h4>
+          <ul>
+            <li>A <strong>non-refundable commitment deposit of 20%</strong> of the total fare is required at the time of advance booking.</li>
+            <li>The remaining <strong>80% balance must be paid no later than 24 hours before the scheduled departure time</strong> via MTN MoMo, Airtel Money, or at a Raylane terminal.</li>
+            <li>Failure to pay the balance by the 24-hour deadline will result in automatic cancellation of the booking and forfeiture of the 20% deposit.</li>
+            <li>A payment link for the balance will be sent to your registered phone number 48 hours before departure and again at 25 hours before departure.</li>
+          </ul>
+        </div>
+
+        <div class="tc-section">
+          <h4>3. Vehicle and Seat Allocation</h4>
+          <ul>
+            <li>Upon deposit payment, Raylane Express allocates a confirmed vehicle (coach or minivan as applicable) from its fleet or approved third-party operator fleet.</li>
+            <li>Seat preferences are recorded and honoured where possible but are not guaranteed. Specific seat numbers are assigned at the time of balance payment.</li>
+            <li>Raylane reserves the right to substitute a vehicle of equivalent or higher capacity without notice.</li>
+          </ul>
+        </div>
+
+        <div class="tc-section">
+          <h4>4. Refund Policy</h4>
+          <p>The following refund schedule applies to advance bookings:</p>
+          <table class="refund-table" style="margin-top:.75rem;">
+            <thead><tr><th>Cancellation Timing</th><th>Deposit Refund</th><th>Balance Refund</th></tr></thead>
+            <tbody>
+              <tr><td>More than 7 days before departure</td><td style="color:var(--red-600);">0% (forfeited)</td><td style="color:var(--green-700);">100%</td></tr>
+              <tr><td>3–7 days before departure</td><td style="color:var(--red-600);">0% (forfeited)</td><td style="color:var(--green-700);">80%</td></tr>
+              <tr><td>48–72 hours before departure</td><td style="color:var(--red-600);">0% (forfeited)</td><td style="color:var(--amber-700);">50%</td></tr>
+              <tr><td>24–48 hours before departure</td><td style="color:var(--red-600);">0% (forfeited)</td><td style="color:var(--red-600);">25%</td></tr>
+              <tr><td>Less than 24 hours before departure</td><td style="color:var(--red-600);">0% (forfeited)</td><td style="color:var(--red-600);">0%</td></tr>
+              <tr><td>Trip cancelled by Raylane Express</td><td style="color:var(--green-700);">100%</td><td style="color:var(--green-700);">100%</td></tr>
+            </tbody>
+          </table>
+          <p style="margin-top:.75rem;">Refunds are processed within 3–5 business days back to the original payment method.</p>
+        </div>
+
+        <div class="tc-section">
+          <h4>5. Passenger Responsibilities</h4>
+          <ul>
+            <li>Passengers must arrive at the designated boarding point at least <strong>15 minutes before departure</strong>. Raylane is not obligated to hold the bus for late passengers.</li>
+            <li>The advance booking QR code / SMS reference must be presented at boarding. No boarding will be permitted without confirmation.</li>
+            <li>Passengers are responsible for confirming the exact boarding point (bus park, terminal, or designated stop) — this will be specified in your SMS confirmation.</li>
+            <li>One piece of luggage up to 20kg is included. Additional luggage or oversized items incur the standard parcel fee.</li>
+          </ul>
+        </div>
+
+        <div class="tc-section">
+          <h4>6. Changes and Amendments</h4>
+          <ul>
+            <li>Date changes: permitted once, free of charge, if requested more than 48 hours before original departure. Subject to availability on the new date.</li>
+            <li>Route changes: not permitted after deposit is paid. You must cancel and rebook.</li>
+            <li>Name changes: permitted up to 24 hours before departure — contact support via WhatsApp.</li>
+          </ul>
+        </div>
+
+        <div class="tc-section">
+          <h4>7. No-Show Policy</h4>
+          <p>If a passenger does not board and has not cancelled, the booking is treated as a no-show. No refund of any amount (deposit or balance) is made for no-shows.</p>
+        </div>
+
+        <div class="tc-section">
+          <h4>8. Force Majeure</h4>
+          <p>Raylane Express is not liable for delays or cancellations caused by road closures, natural disasters, government action, civil unrest, or other events beyond its reasonable control. In such cases, passengers will be offered a free reschedule or full refund.</p>
+        </div>
+
+      </div>
+
+      <div style="margin-top:1.25rem;display:flex;flex-direction:column;gap:.875rem;">
+        <label style="display:flex;align-items:flex-start;gap:.75rem;cursor:pointer;">
+          <input type="checkbox" id="tcConsent1" style="margin-top:3px;width:18px;height:18px;accent-color:var(--blue-700);flex-shrink:0;">
+          <span style="font-size:.875rem;color:var(--gray-700);">I have read and understood the Advance Booking Terms &amp; Conditions above, including the 20% non-refundable deposit requirement and the refund schedule.</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:.75rem;cursor:pointer;">
+          <input type="checkbox" id="tcConsent2" style="margin-top:3px;width:18px;height:18px;accent-color:var(--blue-700);flex-shrink:0;">
+          <span style="font-size:.875rem;color:var(--gray-700);">I understand that my 20% deposit is <strong>non-refundable</strong> under all circumstances, and that failure to pay the 80% balance within 24 hours of departure will result in loss of my booking and deposit.</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:.75rem;cursor:pointer;">
+          <input type="checkbox" id="tcConsent3" style="margin-top:3px;width:18px;height:18px;accent-color:var(--blue-700);flex-shrink:0;">
+          <span style="font-size:.875rem;color:var(--gray-700);">I consent to Raylane Express sending me SMS reminders for this booking and the balance payment link.</span>
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;gap:.75rem;">
+      <button class="btn btn-outline" onclick="goAvStep(2)">← Back</button>
+      <button class="btn btn-gold" style="flex:1;justify-content:center;" onclick="validateTerms()">Accept &amp; Pay Deposit →</button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 4: PAY DEPOSIT ═══ -->
+  <div class="step-panel" id="avtab4">
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1.25rem;">
+      <h2 class="heading-lg" style="margin-bottom:.375rem;">Pay Your 20% Deposit</h2>
+      <p class="body-sm text-muted" style="margin-bottom:1.25rem;">Your seat will be confirmed immediately after deposit payment.</p>
+
+      <!-- Booking summary card -->
+      <div style="background:var(--blue-50);border:1.5px solid var(--blue-200);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1.25rem;">
+        <div style="font-family:var(--font-display);font-weight:700;color:var(--blue-900);margin-bottom:.875rem;">Booking Summary</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.625rem;font-size:.875rem;">
+          <div><span style="color:var(--gray-500);">Route:</span> <strong id="bsRoute">—</strong></div>
+          <div><span style="color:var(--gray-500);">Date:</span> <strong id="bsDate">—</strong></div>
+          <div><span style="color:var(--gray-500);">Passengers:</span> <strong id="bsPax">—</strong></div>
+          <div><span style="color:var(--gray-500);">Full Fare:</span> <strong id="bsFull">—</strong></div>
+        </div>
+        <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center;background:white;border-radius:var(--radius-md);padding:.875rem;">
+          <div>
+            <div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;">Deposit to Pay Now (20%)</div>
+            <div style="font-size:.75rem;color:var(--gray-500);">Balance of 80% due 24hrs before departure</div>
+          </div>
+          <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;color:var(--blue-900);" id="depositAmount">UGX —</div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:.75rem;margin-bottom:1.25rem;">
+        <div class="payment-option selected" id="dpmtn" onclick="selDep('mtn')">
+          <div style="width:44px;height:44px;background:linear-gradient(135deg,#FFD700,#FF8C00);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">📱</div>
+          <div style="flex:1;"><div style="font-family:var(--font-display);font-weight:700;">MTN MoMo</div><div style="font-size:.8125rem;color:var(--gray-500);">USSD push · ~8 seconds</div></div>
+          <input type="radio" name="dp" value="mtn" checked style="accent-color:var(--gold-500);">
+        </div>
+        <div class="payment-option" id="dpairtel" onclick="selDep('airtel')">
+          <div style="width:44px;height:44px;background:linear-gradient(135deg,#EF4444,#B91C1C);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">📱</div>
+          <div style="flex:1;"><div style="font-family:var(--font-display);font-weight:700;">Airtel Money</div><div style="font-size:.8125rem;color:var(--gray-500);">USSD push</div></div>
+          <input type="radio" name="dp" value="airtel" style="accent-color:var(--gold-500);">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:1.25rem;">
+        <label class="form-label" id="depPhoneLabel">MTN MoMo Number *</label>
+        <input type="tel" class="form-input" id="depPhone" placeholder="07XX XXX XXX" required>
+      </div>
+      <div style="background:var(--amber-100);border-radius:var(--radius-md);padding:.875rem 1rem;margin-bottom:1.25rem;font-size:.8125rem;color:var(--amber-700);">
+        ⚠️ <strong>Non-refundable:</strong> By paying this deposit you confirm acceptance of all Terms &amp; Conditions. The 20% deposit cannot be refunded under any circumstances.
+      </div>
+    </div>
+    <div style="display:flex;gap:.75rem;">
+      <button class="btn btn-outline" onclick="goAvStep(3)">← Back</button>
+      <button class="btn btn-gold btn-lg" style="flex:1;justify-content:center;" id="payDepBtn" onclick="payDeposit()">
+        Pay Deposit — <span id="depBtnAmt">UGX —</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ STEP 5: CONFIRMED ═══ -->
+  <div class="step-panel" id="avtab5">
+    <div style="text-align:center;margin-bottom:2rem;">
+      <div style="font-size:3.5rem;margin-bottom:.875rem;">✅</div>
+      <h1 class="display-md" style="margin-bottom:.75rem;">Seat Reserved!</h1>
+      <p class="body-md text-muted" style="max-width:460px;margin:0 auto;">Your advance booking is confirmed. Your seat is locked. Pay the 80% balance at least 24 hours before departure.</p>
+    </div>
+
+    <div style="background:linear-gradient(135deg,var(--blue-900),var(--blue-700));border-radius:var(--radius-xl);padding:1.75rem;color:white;margin-bottom:1.5rem;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;">
+        <div style="font-family:var(--font-display);font-weight:800;color:var(--gold-500);">ADVANCE BOOKING</div>
+        <span class="badge" style="background:rgba(34,197,94,.2);color:#86EFAC;">✓ CONFIRMED</span>
+      </div>
+      <div style="font-size:.75rem;opacity:.6;font-family:var(--font-display);font-weight:600;text-transform:uppercase;">Booking Reference</div>
+      <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:800;color:var(--gold-500);margin-bottom:1rem;" id="avRef">RLX-ADV-000000</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div><div style="font-size:.7rem;opacity:.55;font-family:var(--font-display);font-weight:600;text-transform:uppercase;">Route</div><div style="font-family:var(--font-display);font-weight:700;" id="avConfRoute">—</div></div>
+        <div><div style="font-size:.7rem;opacity:.55;font-family:var(--font-display);font-weight:600;text-transform:uppercase;">Travel Date</div><div style="font-family:var(--font-display);font-weight:700;" id="avConfDate">—</div></div>
+        <div><div style="font-size:.7rem;opacity:.55;font-family:var(--font-display);font-weight:600;text-transform:uppercase;">Deposit Paid</div><div style="font-family:var(--font-display);font-weight:700;color:var(--gold-400);" id="avConfDeposit">UGX —</div></div>
+        <div><div style="font-size:.7rem;opacity:.55;font-family:var(--font-display);font-weight:600;text-transform:uppercase;">Balance Due</div><div style="font-family:var(--font-display);font-weight:700;color:#FCA5A5;" id="avConfBalance">UGX — (24hrs before)</div></div>
+      </div>
+    </div>
+
+    <!-- Important reminders -->
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-xl);padding:1.25rem;margin-bottom:1.5rem;">
+      <div style="font-family:var(--font-display);font-weight:700;margin-bottom:.875rem;">What Happens Next</div>
+      <div style="display:flex;flex-direction:column;gap:.625rem;font-size:.875rem;color:var(--gray-600);">
+        <div style="display:flex;gap:.75rem;"><span style="color:var(--green-500);font-weight:700;">✓</span><span>SMS confirmation sent to your phone with booking reference.</span></div>
+        <div style="display:flex;gap:.75rem;"><span style="color:var(--blue-500);font-weight:700;">7d</span><span>You'll receive a reminder SMS 7 days before your trip.</span></div>
+        <div style="display:flex;gap:.75rem;"><span style="color:var(--gold-600);font-weight:700;">24h</span><span>A balance payment link is sent 48 hours before departure. <strong>Pay by this deadline to avoid losing your booking.</strong></span></div>
+        <div style="display:flex;gap:.75rem;"><span style="color:var(--blue-500);font-weight:700;">🎫</span><span>Your QR e-ticket is issued upon balance payment and sent via SMS.</span></div>
+        <div style="display:flex;gap:.75rem;"><span style="color:var(--blue-500);font-weight:700;">15m</span><span>Arrive at your boarding point at least 15 minutes before departure.</span></div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:.75rem;">
+      <button class="btn btn-gold btn-lg" onclick="window.print()" style="width:100%;justify-content:center;">🖨️ Save / Print Confirmation</button>
+      <a href="index.html" class="btn btn-blue" style="width:100%;justify-content:center;display:flex;">← Return to Home</a>
+    </div>
+  </div>
+</main>
+
+<nav class="bottom-nav">
+  <a href="index.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Home</a>
+  <a href="book.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>Book</a>
+  <a href="advance.html" class="bottom-nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Advance</a>
+  <a href="parcel.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8"/></svg>Parcels</a>
+  <a href="apply.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17h18M5 17V8a2 2 0 012-2h10a2 2 0 012 2v9"/></svg>Operators</a>
+</nav>
+
+<script src="app.js"></script>
+<script>
+const routePrices = {
+  'Kampala-Gulu':45000,'Kampala-Mbale':30000,'Kampala-Mbarara':35000,'Kampala-Fort Portal':50000,
+  'Kampala-Arua':65000,'Kampala-Kabale':55000,'Kampala-Lira':40000,'Kampala-Jinja':25000,
+  'Kampala-Entebbe':20000,'Kampala-Kasese':50000,'Gulu-Arua':40000,'Mbale-Tororo':15000,
+};
+function getPrice(from,to){
+  return routePrices[`${from}-${to}`]||routePrices[`${to}-${from}`]||45000;
+}
+
+const avState = { selectedDate:null, currentMonth:new Date().getMonth(), currentYear:new Date().getFullYear(), payMethod:'mtn' };
+
+function updatePricePreview(){
+  const from=document.getElementById('avFrom').value, to=document.getElementById('avTo').value, pax=parseInt(document.getElementById('avPax').value)||1;
+  if(from&&to&&from!==to){ const p=getPrice(from,to)*pax; document.getElementById('farePreview').textContent=formatUGX(p); document.getElementById('depositPreview').textContent=formatUGX(Math.round(p*.2)); }
+  else{ document.getElementById('farePreview').textContent='Select route'; document.getElementById('depositPreview').textContent='—'; }
+}
+
+// ── CALENDAR ──────────────────────────────────────────────────
+const popularDays=[5,6,12,13,19,20,26,27]; // weekends
+const tripDays=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30];
+const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function renderCalendar(){
+  const now=new Date(), today=now.getDate(), curM=now.getMonth(), curY=now.getFullYear();
+  const m=avState.currentMonth, y=avState.currentYear;
+  document.getElementById('calMonthLabel').textContent=`${monthNames[m]} ${y}`;
+  const firstDay=new Date(y,m,1).getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  let html='';
+  for(let i=0;i<firstDay;i++) html+=`<div class="cal-day empty"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const isPast=(y<curY)||(y===curY&&m<curM)||(y===curY&&m===curM&&d<today+1);
+    const isTodayDay=(y===curY&&m===curM&&d===today);
+    const isPopular=popularDays.includes(d%7)||popularDays.includes(d);
+    const hasTripDot=tripDays.includes(d)&&!isPast;
+    const isSel=avState.selectedDate&&avState.selectedDate.d===d&&avState.selectedDate.m===m&&avState.selectedDate.y===y;
+    let cls='cal-day';
+    if(isPast) cls+=' past';
+    else if(isSel) cls+=' selected';
+    else if(isPopular&&!isPast) cls+=' popular';
+    else cls+=' available';
+    if(isTodayDay) cls+=' today';
+    if(hasTripDot&&!isSel) cls+=' has-trips';
+    html+=`<div class="${cls}" ${!isPast?`onclick="selectDate(${d},${m},${y})"`:''} title="${isTodayDay?'Today':''}${isPopular&&!isPast?' · High demand':''}">${d}</div>`;
+  }
+  document.getElementById('calDays').innerHTML=html;
+}
+
+function selectDate(d,m,y){
+  avState.selectedDate={d,m,y};
+  renderCalendar();
+  const dateStr=new Date(y,m,d).toLocaleDateString('en-UG',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('sDateLabel').textContent=`Selected: ${dateStr}`;
+  document.getElementById('selectedDateDisplay').style.display='block';
+  document.getElementById('avStep1Btn').removeAttribute('disabled');
+}
+
+function prevMonth(){
+  avState.currentMonth--; if(avState.currentMonth<0){avState.currentMonth=11;avState.currentYear--;} renderCalendar();
+}
+function nextMonth(){
+  avState.currentMonth++; if(avState.currentMonth>11){avState.currentMonth=0;avState.currentYear++;} renderCalendar();
+}
+renderCalendar();
+
+// ── PREFERENCE TOGGLE ─────────────────────────────────────────
+function togglePref(btn, group){
+  document.querySelectorAll(`#${group}Group .pref-btn`).forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+// ── NAV ───────────────────────────────────────────────────────
+function goAvStep(n){
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('avtab'+n).classList.add('active');
+  for(let i=1;i<=5;i++){
+    const si=document.getElementById('avs'+i),b=si.querySelector('.step-bubble');
+    si.classList.remove('active','done');
+    if(i<n){si.classList.add('done');b.innerHTML='✓';}
+    else if(i===n){si.classList.add('active');b.textContent=i;}
+    else b.textContent=i;
+    const ln=document.getElementById('avl'+i);
+    if(ln) ln.classList.toggle('done',i<n);
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(n===4) populateDepositStep();
+  if(n===5) populateConfirmStep();
+}
+
+function validatePrefStep(){
+  const name=document.getElementById('avName').value, phone=document.getElementById('avPhone').value;
+  if(!name||!phone){ Toast.error('Please enter your name and phone number.'); return; }
+  goAvStep(3);
+}
+
+function validateTerms(){
+  if(!document.getElementById('tcConsent1').checked||!document.getElementById('tcConsent2').checked||!document.getElementById('tcConsent3').checked){
+    Toast.error('Please read and accept all terms to continue.'); return;
+  }
+  goAvStep(4);
+}
+
+function populateDepositStep(){
+  const from=document.getElementById('avFrom').value, to=document.getElementById('avTo').value, pax=parseInt(document.getElementById('avPax').value)||1;
+  const full=getPrice(from,to)*pax, dep=Math.round(full*.2);
+  const d=avState.selectedDate;
+  const dateStr=d?new Date(d.y,d.m,d.d).toLocaleDateString('en-UG',{weekday:'short',day:'numeric',month:'short',year:'numeric'}):'—';
+  document.getElementById('bsRoute').textContent=`${from} → ${to}`;
+  document.getElementById('bsDate').textContent=dateStr;
+  document.getElementById('bsPax').textContent=pax;
+  document.getElementById('bsFull').textContent=formatUGX(full);
+  document.getElementById('depositAmount').textContent=formatUGX(dep);
+  document.getElementById('depBtnAmt').textContent=formatUGX(dep);
+}
+
+function selDep(m){
+  avState.payMethod=m;
+  ['dpmtn','dpairtel'].forEach(id=>document.getElementById(id).classList.remove('selected'));
+  document.getElementById('dp'+m).classList.add('selected');
+  document.querySelectorAll('input[name="dp"]').forEach(r=>r.checked=r.value===m);
+  document.getElementById('depPhoneLabel').textContent=m==='mtn'?'MTN MoMo Number *':'Airtel Money Number *';
+}
+
+function payDeposit(){
+  if(!document.getElementById('depPhone').value){ Toast.error('Please enter your phone number.'); return; }
+  const btn=document.getElementById('payDepBtn');
+  btn.innerHTML='<svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="15"/></svg> Processing...';
+  btn.disabled=true;
+  Toast.show('📱 USSD push sent — enter your MoMo PIN.','success',5000);
+  setTimeout(()=>{ goAvStep(5); },3500);
+}
+
+function populateConfirmStep(){
+  const from=document.getElementById('avFrom').value, to=document.getElementById('avTo').value, pax=parseInt(document.getElementById('avPax').value)||1;
+  const full=getPrice(from,to)*pax, dep=Math.round(full*.2), bal=full-dep;
+  const d=avState.selectedDate;
+  const dateStr=d?new Date(d.y,d.m,d.d).toLocaleDateString('en-UG',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'—';
+  document.getElementById('avRef').textContent='RLX-ADV-'+Math.random().toString(36).substr(2,6).toUpperCase();
+  document.getElementById('avConfRoute').textContent=`${from} → ${to}`;
+  document.getElementById('avConfDate').textContent=dateStr;
+  document.getElementById('avConfDeposit').textContent=formatUGX(dep);
+  document.getElementById('avConfBalance').textContent=`${formatUGX(bal)} (24hrs before departure)`;
+}
+// Style for spin
+const s=document.createElement('style');s.textContent='@keyframes spin{to{transform:rotate(360deg)}}.spin{animation:spin 1s linear infinite}';document.head.appendChild(s);
+</script>
+</body>
+</html>

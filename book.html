@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#071530">
+<title>Book a Trip — Raylane Express</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+body { background: var(--gray-50); }
+.booking-shell { max-width: 700px; margin: 0 auto; padding: 80px 1.25rem 120px; }
+@media (min-width:768px){ .booking-shell { padding: 80px 1.5rem 60px; } }
+.step-pane { display: none; }
+.step-pane.active { display: block; }
+.trip-result { background:var(--white); border:1.5px solid var(--gray-200); border-radius:var(--radius-lg); padding:1.25rem; cursor:pointer; transition:all .2s ease; margin-bottom:.75rem; }
+.trip-result:hover { border-color:var(--blue-400); box-shadow:var(--shadow-md); transform:translateY(-1px); }
+.trip-result.selected { border-color:var(--gold-500); background:#FFFDF5; }
+.trip-result.raylane-own { border-left:3px solid var(--gold-500); }
+.bus-visual { background:var(--white); border:1.5px solid var(--gray-200); border-radius:var(--radius-xl); padding:1.5rem; overflow-x:auto; }
+.bus-front { background:var(--blue-800); border-radius:var(--radius-md) var(--radius-md) 0 0; padding:.625rem 1rem; text-align:center; color:rgba(255,255,255,.7); font-family:var(--font-display); font-size:.75rem; font-weight:700; letter-spacing:.06em; margin-bottom:1rem; display:flex; align-items:center; justify-content:space-between; }
+.seat-legend { display:flex; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem; }
+.legend-item { display:flex; align-items:center; gap:.375rem; font-size:.75rem; color:var(--gray-600); font-family:var(--font-display); font-weight:600; }
+.legend-swatch { width:20px; height:20px; border-radius:4px; }
+.momo-input-group { background:var(--gray-50); border:1.5px solid var(--gray-200); border-radius:var(--radius-lg); padding:1.25rem; margin-top:.75rem; display:none; }
+.momo-input-group.visible { display:block; }
+.qr-placeholder { width:140px; height:140px; background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:3.5rem; margin:0 auto; }
+.filter-chip { padding:.5rem 1.125rem; border-radius:var(--radius-full); background:var(--white); border:1.5px solid var(--gray-200); font-family:var(--font-display); font-size:.8125rem; font-weight:600; cursor:pointer; transition:all .2s ease; color:var(--gray-600); white-space:nowrap; }
+.filter-chip.active { background:var(--blue-800); border-color:var(--blue-800); color:var(--white); }
+.filter-chip:hover:not(.active) { border-color:var(--blue-400); color:var(--blue-600); }
+.payment-timer { background:var(--amber-100); border:1px solid var(--amber-500); border-radius:var(--radius-md); padding:.75rem 1rem; display:flex; align-items:center; justify-content:space-between; font-family:var(--font-display); font-size:.875rem; font-weight:600; color:var(--amber-700); }
+#countdown { font-size:1.25rem; font-weight:800; color:var(--red-700); }
+@keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 100%{transform:translateY(400px) rotate(720deg);opacity:0} }
+.confetti-piece { position:fixed; width:10px; height:10px; pointer-events:none; z-index:9999; animation:confettiFall 2s ease-out forwards; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.spin { animation:spin 1s linear infinite }
+</style>
+</head>
+<body>
+
+<nav class="navbar scrolled" style="background:rgba(7,21,48,.97);">
+  <div class="navbar-inner">
+    <a href="index.html" class="navbar-logo"><img src="Raylane_express.png" alt="Raylane Express" height="36"></a>
+    <div style="font-family:var(--font-display);font-size:.9rem;font-weight:600;color:rgba(255,255,255,.8);">Secure Booking</div>
+    <div style="display:flex;align-items:center;gap:.5rem;font-size:.8125rem;color:rgba(255,255,255,.6);">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+      Secure &amp; Encrypted
+    </div>
+  </div>
+</nav>
+
+<main class="booking-shell">
+  <!-- Progress -->
+  <div class="progress-steps" id="progressSteps" role="navigation" aria-label="Booking progress">
+    <div class="progress-step active" id="si-1"><div class="step-bubble">1</div><div class="step-label">Results</div></div>
+    <div class="step-line" id="ln-1"></div>
+    <div class="progress-step" id="si-2"><div class="step-bubble">2</div><div class="step-label">Seat</div></div>
+    <div class="step-line" id="ln-2"></div>
+    <div class="progress-step" id="si-3"><div class="step-bubble">3</div><div class="step-label">Details</div></div>
+    <div class="step-line" id="ln-3"></div>
+    <div class="progress-step" id="si-4"><div class="step-bubble">4</div><div class="step-label">Pay</div></div>
+    <div class="step-line" id="ln-4"></div>
+    <div class="progress-step" id="si-5"><div class="step-bubble">5</div><div class="step-label">Ticket</div></div>
+  </div>
+
+  <!-- STEP 1: RESULTS -->
+  <div class="step-pane active" id="step1">
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:var(--font-display);font-weight:800;font-size:1rem;" id="searchSummary">Kampala → Gulu</div>
+        <div style="font-size:.8125rem;color:var(--gray-500);" id="searchDate">Today · 1 Passenger</div>
+      </div>
+      <a href="index.html" class="btn btn-outline btn-sm">Edit Search</a>
+    </div>
+
+    <div style="display:flex;gap:.5rem;overflow-x:auto;scrollbar-width:none;padding-bottom:.5rem;margin-bottom:1.25rem;">
+      <button class="filter-chip active" onclick="setFilter(this,'all')">All Trips</button>
+      <button class="filter-chip" onclick="setFilter(this,'raylane')">Raylane Fleet</button>
+      <button class="filter-chip" onclick="setFilter(this,'coach')">67-Seater</button>
+      <button class="filter-chip" onclick="setFilter(this,'taxi')">14-Seater</button>
+      <button class="filter-chip" onclick="setFilter(this,'morning')">Morning</button>
+      <button class="filter-chip" onclick="setFilter(this,'afternoon')">Afternoon</button>
+    </div>
+
+    <div id="tripResults"></div>
+    
+    
+    <div id="noTripsCard" style="display:none;background:var(--blue-50);border:1.5px solid var(--blue-200);border-radius:var(--radius-xl);padding:2rem;text-align:center;margin-top:2rem;">
+      <div style="font-size:2.5rem;margin-bottom:.75rem;">🔔</div>
+      <h3 class="heading-md" style="margin-bottom:.5rem;">No trips available on this route today</h3>
+      <p class="body-sm text-muted" style="margin-bottom:1.5rem;">Join the waitlist — we'll SMS you when a trip is added and auto-reserve your seat.</p>
+      <input type="tel" class="form-input" placeholder="Your phone number" style="max-width:280px;margin:0 auto 1rem;display:block;">
+      <button class="btn btn-blue" onclick="joinWaitlist()">Join Waitlist — Free</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: SEAT MAP -->
+  <div class="step-pane" id="step2">
+    <h2 class="display-md" style="margin-bottom:.375rem;">Choose Your Seat</h2>
+    <p class="body-sm text-muted" id="busLabel" style="margin-bottom:1.5rem;">67-Seater Coach · Departs 08:00 AM</p>
+    <div class="seat-legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:var(--blue-50);border:1.5px solid var(--blue-200);"></div>Available</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:var(--gold-500);border:1.5px solid var(--gold-600);"></div>Selected</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:var(--gray-100);border:1.5px solid var(--gray-200);"></div>Booked</div>
+    </div>
+    <div class="bus-visual">
+      <div class="bus-front" style="justify-content:space-between;"><span style="opacity:.6;font-size:.65rem;">← FRONT</span><span id="busRouteLabel">Kampala → Gulu</span><span style="background:#040E2A;color:rgba(255,255,255,.85);padding:.2rem .6rem;border-radius:6px;font-size:.65rem;">DRVR →</span></div>
+      <div id="seatMap" style="display:flex;flex-direction:column;align-items:center;gap:5px;min-width:220px;"></div>
+    </div>
+    <div style="margin-top:1.25rem;background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);padding:1rem;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-family:var(--font-display);font-weight:700;" id="selectedSeatsLabel">No seat selected</div>
+        <div style="font-size:.8125rem;color:var(--gray-500);">Up to 4 seats · 5-min lock while paying</div>
+      </div>
+      <div style="font-family:var(--font-display);font-size:1.125rem;font-weight:800;color:var(--blue-900);" id="seatTotal">—</div>
+    </div>
+    <div style="display:flex;gap:.75rem;margin-top:1.25rem;">
+      <button class="btn btn-outline" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-gold" style="flex:1;justify-content:center;" id="continueBtn" onclick="goStep(3)" disabled>Continue →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: PASSENGER DETAILS -->
+  <div class="step-pane" id="step3">
+    <h2 class="display-md" style="margin-bottom:.375rem;">Passenger Details</h2>
+    <p class="body-sm text-muted" style="margin-bottom:1.5rem;">Ticket will be sent via SMS to each phone number.</p>
+    <div id="passengerForms"></div>
+    <div style="background:var(--gold-100);border-radius:var(--radius-lg);padding:1.25rem;margin-top:1rem;display:flex;align-items:center;gap:.75rem;">
+      <input type="checkbox" id="createAccount" style="width:18px;height:18px;accent-color:var(--gold-600);flex-shrink:0;">
+      <label for="createAccount" style="font-size:.875rem;color:var(--gray-700);cursor:pointer;">Create a free account to earn <strong>loyalty points</strong> on this trip</label>
+    </div>
+    <div style="display:flex;gap:.75rem;margin-top:1.5rem;">
+      <button class="btn btn-outline" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-gold" style="flex:1;justify-content:center;" onclick="proceedToPayment()">Continue to Payment →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: PAYMENT -->
+  <div class="step-pane" id="step4">
+    <h2 class="display-md" style="margin-bottom:.375rem;">Secure Payment</h2>
+    <p class="body-sm text-muted" style="margin-bottom:1rem;">Select your payment method and follow the instructions carefully.</p>
+
+    <!-- Seat lock countdown -->
+    <div class="payment-timer" style="margin-bottom:1.25rem;">
+      <span>⏱ Seats reserved for:</span><span id="countdown">10:00</span>
+    </div>
+
+    <!-- Order summary -->
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1.25rem;">
+      <div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;margin-bottom:.875rem;">Order Summary</div>
+      <div id="orderLines" style="display:flex;flex-direction:column;gap:.5rem;font-size:.875rem;color:var(--gray-600);"></div>
+      <div style="border-top:1px solid var(--gray-100);margin-top:.875rem;padding-top:.875rem;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-family:var(--font-display);font-weight:700;">Total</span>
+        <span style="font-family:var(--font-display);font-size:1.25rem;font-weight:800;color:var(--blue-900);" id="grandTotal">UGX 45,000</span>
+      </div>
+    </div>
+
+    <!-- IMPORTANT NAME WARNING -->
+    <div style="background:#FEF3C7;border:2px solid #F59E0B;border-radius:var(--radius-lg);padding:1rem;margin-bottom:1.25rem;display:flex;gap:.75rem;align-items:flex-start;">
+      <div style="font-size:1.5rem;flex-shrink:0;">⚠️</div>
+      <div>
+        <div style="font-family:var(--font-display);font-weight:800;color:#92400E;margin-bottom:.25rem;">CRITICAL: Use Your Full Name as Payment Reference</div>
+        <div style="font-size:.875rem;color:#78350F;line-height:1.65;">When making payment, enter your <strong>exact booking name</strong> as the payment reference. A name mismatch will delay your ticket. Your booking name: <strong id="payBookingName">—</strong></div>
+      </div>
+    </div>
+
+    <!-- Payment method selector -->
+    <div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;margin-bottom:.75rem;">Select Payment Method</div>
+    <div style="display:flex;flex-direction:column;gap:.75rem;margin-bottom:1.25rem;">
+      <div class="payment-option selected" id="pmtn" onclick="selectPayMethod('mtn')">
+        <div style="width:44px;height:44px;background:linear-gradient(135deg,#FFD700,#FF8C00);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">📱</div>
+        <div style="flex:1;"><div style="font-family:var(--font-display);font-weight:700;">MTN MoMo</div><div style="font-size:.8125rem;color:var(--gray-500);">Dial *165*3# · Works on all phones · 2G compatible</div></div>
+        <input type="radio" name="payMethod" value="mtn" checked style="accent-color:var(--gold-500);">
+      </div>
+      <div class="payment-option" id="pairtel" onclick="selectPayMethod('airtel')">
+        <div style="width:44px;height:44px;background:linear-gradient(135deg,#EF4444,#B91C1C);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">📱</div>
+        <div style="flex:1;"><div style="font-family:var(--font-display);font-weight:700;">Airtel Money</div><div style="font-size:.8125rem;color:var(--gray-500);">Dial *185*9# · Works on all phones · 2G compatible</div></div>
+        <input type="radio" name="payMethod" value="airtel" style="accent-color:var(--gold-500);">
+      </div>
+      <div class="payment-option" id="pqr" onclick="selectPayMethod('qr')">
+        <div style="width:44px;height:44px;background:linear-gradient(135deg,#0B1D45,#2553C7);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">🔳</div>
+        <div style="flex:1;"><div style="font-family:var(--font-display);font-weight:700;">QR Code Scan</div><div style="font-size:.8125rem;color:var(--gray-500);">Scan with MTN or Airtel Money app · Pre-filled details</div></div>
+        <input type="radio" name="payMethod" value="qr" style="accent-color:var(--gold-500);">
+      </div>
+    </div>
+
+    <!-- MTN INSTRUCTIONS -->
+    <div id="instMTN" style="background:linear-gradient(135deg,#FEF9C3,#FFFBEB);border:1.5px solid #FCD34D;border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1.25rem;">
+      <div style="display:flex;align-items:center;gap:.625rem;margin-bottom:1rem;">
+        <div style="width:36px;height:36px;background:#F59E0B;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.125rem;">📱</div>
+        <div style="font-family:var(--font-display);font-weight:800;color:#78350F;">How to Pay Using MTN MoMo</div>
+      </div>
+      <ol style="display:flex;flex-direction:column;gap:.625rem;font-size:.875rem;color:#78350F;padding-left:1.25rem;line-height:1.65;">
+        <li>Dial <strong>*165*3#</strong> on your phone</li>
+        <li>Select <strong>Option 1</strong> — Merchant Payment</li>
+        <li>Enter Merchant Code: <strong style="background:#FCD34D;padding:.1rem .4rem;border-radius:4px;">RAYLANE</strong></li>
+        <li>Enter the amount: <strong id="mtnAmount">UGX —</strong></li>
+        <li>Enter your <strong style="text-decoration:underline;">FULL NAME</strong> as the payment reference — must match your booking name</li>
+        <li>Enter your <strong>MoMo PIN</strong> to confirm</li>
+      </ol>
+      <div style="background:#FDE68A;border-radius:8px;padding:.75rem;margin-top:.875rem;font-size:.8125rem;color:#78350F;font-weight:600;">
+        ✅ You will receive an SMS confirmation from MTN. Then tap "I Have Paid" below.
+      </div>
+    </div>
+
+    <!-- AIRTEL INSTRUCTIONS -->
+    <div id="instAirtel" style="display:none;background:linear-gradient(135deg,#FEF2F2,#FFF5F5);border:1.5px solid #FECACA;border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1.25rem;">
+      <div style="display:flex;align-items:center;gap:.625rem;margin-bottom:1rem;">
+        <div style="width:36px;height:36px;background:#EF4444;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.125rem;">📱</div>
+        <div style="font-family:var(--font-display);font-weight:800;color:#991B1B;">How to Pay Using Airtel Money</div>
+      </div>
+      <ol style="display:flex;flex-direction:column;gap:.625rem;font-size:.875rem;color:#991B1B;padding-left:1.25rem;line-height:1.65;">
+        <li>Dial <strong>*185*9#</strong> on your phone</li>
+        <li>Select <strong>Pay Goods &amp; Services</strong></li>
+        <li>Enter Merchant Code: <strong style="background:#FECACA;padding:.1rem .4rem;border-radius:4px;">RAYLANE</strong></li>
+        <li>Enter the amount: <strong id="airtelAmount">UGX —</strong></li>
+        <li>Enter your <strong style="text-decoration:underline;">FULL NAME</strong> as the payment reference — must match your booking name</li>
+        <li>Enter your <strong>Airtel Money PIN</strong> to confirm</li>
+      </ol>
+      <div style="background:#FECACA;border-radius:8px;padding:.75rem;margin-top:.875rem;font-size:.8125rem;color:#991B1B;font-weight:600;">
+        ✅ You will receive an SMS confirmation from Airtel. Then tap "I Have Paid" below.
+      </div>
+    </div>
+
+    <!-- QR CODE -->
+    <div id="instQR" style="display:none;background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1.25rem;text-align:center;">
+      <div style="font-family:var(--font-display);font-weight:800;font-size:.9375rem;margin-bottom:.75rem;color:var(--blue-900);">Scan to Pay</div>
+      <div style="background:#F5F5F5;border-radius:12px;padding:1.5rem;display:inline-block;margin-bottom:.875rem;">
+        <!-- QR Code visual (SVG) -->
+        <svg width="160" height="160" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+          <rect width="160" height="160" fill="white"/>
+          <!-- QR pattern simulation -->
+          <rect x="10" y="10" width="50" height="50" fill="none" stroke="#0B1D45" stroke-width="5"/>
+          <rect x="20" y="20" width="30" height="30" fill="#0B1D45"/>
+          <rect x="100" y="10" width="50" height="50" fill="none" stroke="#0B1D45" stroke-width="5"/>
+          <rect x="110" y="20" width="30" height="30" fill="#0B1D45"/>
+          <rect x="10" y="100" width="50" height="50" fill="none" stroke="#0B1D45" stroke-width="5"/>
+          <rect x="20" y="110" width="30" height="30" fill="#0B1D45"/>
+          <rect x="72" y="10" width="8" height="8" fill="#0B1D45"/>
+          <rect x="82" y="10" width="8" height="8" fill="#0B1D45"/>
+          <rect x="72" y="20" width="8" height="8" fill="#0B1D45"/>
+          <rect x="82" y="22" width="8" height="8" fill="#0B1D45"/>
+          <rect x="72" y="32" width="8" height="8" fill="#0B1D45"/>
+          <rect x="72" y="42" width="16" height="8" fill="#0B1D45"/>
+          <rect x="100" y="72" width="8" height="8" fill="#0B1D45"/>
+          <rect x="112" y="72" width="8" height="8" fill="#0B1D45"/>
+          <rect x="124" y="72" width="8" height="8" fill="#0B1D45"/>
+          <rect x="136" y="72" width="8" height="8" fill="#0B1D45"/>
+          <rect x="100" y="82" width="16" height="8" fill="#0B1D45"/>
+          <rect x="120" y="82" width="8" height="8" fill="#0B1D45"/>
+          <rect x="100" y="92" width="8" height="8" fill="#0B1D45"/>
+          <rect x="115" y="92" width="8" height="8" fill="#0B1D45"/>
+          <rect x="130" y="92" width="8" height="8" fill="#0B1D45"/>
+          <rect x="10" y="72" width="8" height="8" fill="#0B1D45"/>
+          <rect x="20" y="72" width="8" height="8" fill="#0B1D45"/>
+          <rect x="30" y="72" width="8" height="8" fill="#0B1D45"/>
+          <rect x="44" y="72" width="8" height="8" fill="#0B1D45"/>
+          <rect x="60" y="72" width="8" height="8" fill="#0B1D45"/>
+          <rect x="10" y="84" width="16" height="8" fill="#0B1D45"/>
+          <rect x="34" y="84" width="8" height="8" fill="#0B1D45"/>
+          <rect x="62" y="84" width="6" height="8" fill="#0B1D45"/>
+          <rect x="72" y="72" width="8" height="8" fill="#FFC72C"/>
+          <rect x="72" y="82" width="8" height="8" fill="#FFC72C"/>
+          <rect x="82" y="72" width="8" height="8" fill="#FFC72C"/>
+          <rect x="82" y="82" width="8" height="8" fill="#FFC72C"/>
+        </svg>
+      </div>
+      <div style="font-size:.8125rem;color:var(--gray-500);margin-bottom:.5rem;">Pre-filled: Merchant · Amount · Reference</div>
+      <div style="font-family:var(--font-display);font-weight:700;font-size:1rem;color:var(--blue-900);" id="qrAmount">UGX —</div>
+      <div style="font-size:.75rem;color:var(--gray-400);margin-top:.375rem;">Scan with MTN MoMo or Airtel Money app</div>
+    </div>
+
+    <!-- Phone number confirmation -->
+    <div style="background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1.25rem;">
+      <div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;margin-bottom:.875rem;">Confirm Your Paying Number</div>
+      <div class="form-group">
+        <label class="form-label">Phone Number Used for Payment *</label>
+        <input type="tel" class="form-input" id="payingPhone" placeholder="e.g. 0771 234 567" required style="font-size:1rem;">
+        <div style="font-size:.75rem;color:var(--gray-400);margin-top:.375rem;">Your QR ticket and confirmation will be sent to this number via WhatsApp</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:.75rem;margin-bottom:1rem;">
+      <button class="btn btn-outline" onclick="goStep(3)">← Back</button>
+      <button class="btn btn-gold btn-lg" id="payBtn" onclick="submitPayment()" style="flex:1;justify-content:center;">
+        ✅ I Have Paid — Confirm Booking
+      </button>
+    </div>
+    <div style="text-align:center;font-size:.75rem;color:var(--gray-400);">
+      Your ticket will be sent via WhatsApp once our team verifies your payment (usually under 5 minutes)
+    </div>
+  </div>
+    <div class="step-pane" id="step5">
+    <div style="text-align:center;margin-bottom:1.5rem;">
+      <div style="font-size:3rem;margin-bottom:.5rem;">🎉</div>
+      <h2 class="display-md" style="margin-bottom:.375rem;">You're All Set!</h2>
+      <p class="body-sm text-muted">Your booking is confirmed. Show this QR code at boarding.</p>
+    </div>
+
+    <div class="e-ticket" style="background:var(--white);border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-lg);">
+      <div style="background:linear-gradient(135deg,var(--blue-900),var(--blue-700));padding:1.5rem;color:var(--white);">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;">
+          <img src="Raylane_express.png" alt="Raylane Express" style="height:30px;">
+          <span class="badge" style="background:rgba(34,197,94,.2);color:#86EFAC;">✓ CONFIRMED</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.875rem;">
+          <div style="flex:1;"><div style="font-size:.7rem;opacity:.6;font-family:var(--font-display);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">From</div><div style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;" id="tFrom">Kampala</div></div>
+          <div style="color:var(--gold-500);font-size:1.5rem;">→</div>
+          <div style="flex:1;text-align:right;"><div style="font-size:.7rem;opacity:.6;font-family:var(--font-display);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">To</div><div style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;" id="tTo">Gulu</div></div>
+        </div>
+        <div style="display:flex;gap:1.5rem;flex-wrap:wrap;">
+          <div><div style="font-size:.7rem;opacity:.55;font-family:var(--font-display);font-weight:600;text-transform:uppercase;">Date</div><div style="font-family:var(--font-display);font-weight:700;" id="tDate">Mon 21 Apr</div></div>
+          <div><div style="font-size:.7rem;opacity:.55;font-family:var(--font-display);font-weight:600;text-transform:uppercase;">Departs</div><div style="font-family:var(--font-display);font-weight:700;" id="tTime">08:00 AM</div></div>
+          <div><div style="font-size:.7rem;opacity:.55;font-family:var(--font-display);font-weight:600;text-transform:uppercase;">Seat</div><div style="font-family:var(--font-display);font-weight:700;color:var(--gold-500);" id="tSeat">14B</div></div>
+        </div>
+      </div>
+      <!-- Tear line -->
+      <div style="display:flex;align-items:center;margin:0 -0px;">
+        <div style="width:24px;height:24px;background:var(--gray-50);border-radius:50%;margin-left:-12px;flex-shrink:0;"></div>
+        <div style="flex:1;border-top:2px dashed var(--gray-200);"></div>
+        <div style="width:24px;height:24px;background:var(--gray-50);border-radius:50%;margin-right:-12px;flex-shrink:0;"></div>
+      </div>
+      <div style="padding:1.5rem;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;">
+          <div>
+            <div style="margin-bottom:.75rem;"><div class="form-label" style="margin-bottom:.2rem;">Passenger</div><div style="font-family:var(--font-display);font-weight:700;" id="tPax">Valued Passenger</div></div>
+            <div style="margin-bottom:.75rem;"><div class="form-label" style="margin-bottom:.2rem;">Operator</div><div style="font-size:.875rem;color:var(--gray-600);" id="tOp">Raylane Express</div></div>
+            <div><div class="form-label" style="margin-bottom:.2rem;">Booking Ref</div><div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;color:var(--blue-800);" id="tRef">RLX-...</div></div>
+          </div>
+          <!-- QR Code SVG -->
+          <div style="width:120px;height:120px;background:white;border:1px solid var(--gray-200);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <rect width="100" height="100" fill="white"/>
+              <rect x="5" y="5" width="35" height="35" fill="none" stroke="#0B1D45" stroke-width="4"/>
+              <rect x="13" y="13" width="19" height="19" fill="#0B1D45"/>
+              <rect x="60" y="5" width="35" height="35" fill="none" stroke="#0B1D45" stroke-width="4"/>
+              <rect x="68" y="13" width="19" height="19" fill="#0B1D45"/>
+              <rect x="5" y="60" width="35" height="35" fill="none" stroke="#0B1D45" stroke-width="4"/>
+              <rect x="13" y="68" width="19" height="19" fill="#0B1D45"/>
+              <rect x="60" y="60" width="8" height="8" fill="#0B1D45"/>
+              <rect x="72" y="60" width="8" height="8" fill="#0B1D45"/>
+              <rect x="84" y="60" width="11" height="8" fill="#0B1D45"/>
+              <rect x="60" y="72" width="8" height="8" fill="#0B1D45"/>
+              <rect x="76" y="72" width="19" height="8" fill="#0B1D45"/>
+              <rect x="60" y="84" width="35" height="11" fill="#0B1D45"/>
+              <rect x="45" y="5" width="8" height="8" fill="#0B1D45"/>
+              <rect x="45" y="17" width="8" height="8" fill="#0B1D45"/>
+              <rect x="45" y="29" width="8" height="8" fill="#0B1D45"/>
+              <rect x="45" y="45" width="8" height="8" fill="#0B1D45"/>
+              <rect x="5" y="45" width="8" height="8" fill="#0B1D45"/>
+              <rect x="17" y="45" width="8" height="8" fill="#0B1D45"/>
+              <rect x="29" y="45" width="8" height="8" fill="#0B1D45"/>
+            </svg>
+          </div>
+        </div>
+        <div style="margin-top:1.25rem;background:var(--gold-100);border-radius:var(--radius-md);padding:.875rem;display:flex;align-items:center;gap:.75rem;">
+          <span style="font-size:1.25rem;">⭐</span>
+          <div>
+            <div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;color:var(--gold-700);" id="tPoints">You earned 450 loyalty points!</div>
+            <div style="font-size:.75rem;color:var(--amber-700);">Create a free account to collect your points.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:.75rem;margin-top:1.5rem;">
+      <button class="btn btn-gold btn-lg" onclick="window.print()" style="width:100%;justify-content:center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Save / Print Ticket
+      </button>
+      <button class="btn btn-outline" onclick="shareWA()" style="width:100%;justify-content:center;">💬 Share on WhatsApp</button>
+      <a href="index.html" class="btn btn-blue" style="width:100%;justify-content:center;">Book Another Trip</a>
+    </div>
+    <div style="text-align:center;margin-top:1rem;padding:1rem;background:var(--blue-50);border-radius:var(--radius-lg);">
+      <div style="font-family:var(--font-display);font-weight:700;color:var(--blue-800);margin-bottom:.25rem;">Ticket sent via SMS ✓</div>
+      <div style="font-size:.8125rem;color:var(--gray-500);">Show QR code at boarding. Safe travels!</div>
+    </div>
+  </div>
+</main>
+
+<nav class="bottom-nav">
+  <a href="index.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Home</a>
+  <a href="book.html" class="bottom-nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>Book</a>
+  <a href="parcel.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8"/></svg>Parcel</a>
+  <a href="index.html#routes" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/></svg>Routes</a>
+  <a href="apply.html" class="bottom-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17h18M5 17V8a2 2 0 012-2h10a2 2 0 012 2v9"/></svg>Operators</a>
+</nav>
+
+<script src="app.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const fromCity = params.get('from') || 'Kampala';
+const toCity   = params.get('to')   || 'Gulu';
+const todayStr = new Date().toLocaleDateString('en-UG',{weekday:'short',day:'numeric',month:'short'});
+
+document.getElementById('searchSummary').textContent = `${fromCity} → ${toCity}`;
+document.getElementById('searchDate').textContent    = `${todayStr} · 1 Passenger`;
+document.getElementById('tFrom').textContent = fromCity;
+document.getElementById('tTo').textContent   = toCity;
+document.getElementById('tDate').textContent = todayStr;
+document.getElementById('busRouteLabel').textContent = `${fromCity} → ${toCity}`;
+
+const state = { step:1, trip:null, seats:[], passengers:[], payMethod:'mtn',
+  ref:'RLX-'+ Date.now().toString(36).toUpperCase().slice(-6) };
+document.getElementById('tRef').textContent = state.ref;
+
+function goStep(n){
+  if(n===2 && !state.trip){ Toast.error('Please select a trip first.'); return; }
+  if(n===3 && !state.seats.length){ Toast.error('Please select at least one seat to continue.'); return; }
+  document.querySelector('.step-pane.active').classList.remove('active');
+  document.getElementById('step'+n).classList.add('active');
+  for(let i=1;i<=5;i++){
+    const si=document.getElementById('si-'+i), b=si.querySelector('.step-bubble');
+    si.classList.remove('active','done');
+    if(i<n){si.classList.add('done');b.innerHTML='✓';}
+    else if(i===n){si.classList.add('active');b.textContent=i;}
+    else b.textContent=i;
+    const ln=document.getElementById('ln-'+i);
+    if(ln) ln.classList.toggle('done',i<n);
+  }
+  state.step=n;
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(n===2 && state.trip) renderMap(state.trip);
+  if(n===3) renderPaxForms();
+  if(n===4) renderOrder();
+  if(n===5) renderTicket();
+}
+
+// ── TRIPS ─────────────────────────────────────────────────────
+const trips=[
+  {id:1,type:'raylane',bus:'coach',time:'07:00 AM',op:'Raylane Express Fleet',seats:14,total:67,price:45000,rating:4.9,rc:312,amenities:['AC','USB','WiFi'],period:'morning'},
+  {id:2,type:'3rd',bus:'coach',time:'07:30 AM',op:'Link Bus',seats:5,total:67,price:35000,rating:4.7,rc:180,amenities:['AC','USB'],period:'morning'},
+  {id:3,type:'3rd',bus:'taxi',time:'08:00 AM',op:'YY Coaches',seats:8,total:14,price:30000,rating:4.5,rc:95,amenities:['AC'],period:'morning'},
+  {id:4,type:'raylane',bus:'coach',time:'10:00 AM',op:'Raylane Express Fleet',seats:32,total:67,price:45000,rating:4.9,rc:312,amenities:['AC','USB','WiFi'],period:'morning'},
+  {id:5,type:'3rd',bus:'coach',time:'01:00 PM',op:'Fast Coaches',seats:18,total:67,price:32000,rating:4.3,rc:60,amenities:['AC'],period:'afternoon'},
+  {id:6,type:'3rd',bus:'taxi',time:'03:00 PM',op:'Global Coaches',seats:11,total:14,price:28000,rating:4.6,rc:140,amenities:['AC','USB'],period:'afternoon'},
+];
+let activeFilter='all';
+function setFilter(el,f){ document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); activeFilter=f; renderTrips(); }
+
+// Auto-render trips on page load
+renderTrips();
+
+function renderTrips(){
+  const c=document.getElementById('tripResults');
+  let list=trips;
+  if(activeFilter==='raylane') list=list.filter(t=>t.type==='raylane');
+  if(activeFilter==='coach')   list=list.filter(t=>t.bus==='coach');
+  if(activeFilter==='taxi')    list=list.filter(t=>t.bus==='taxi');
+  if(activeFilter==='morning') list=list.filter(t=>t.period==='morning');
+  if(activeFilter==='afternoon') list=list.filter(t=>t.period==='afternoon');
+  if(!list.length){ c.innerHTML=''; document.getElementById('noTripsCard').style.display='block'; return; }
+  document.getElementById('noTripsCard').style.display='none';
+  list.sort((a,b)=>{ if(a.type==='raylane'&&b.type!=='raylane') return -1; if(b.type==='raylane'&&a.type!=='raylane') return 1; return b.rating-a.rating; });
+  const urgLabel=t=>t.seats<=5?'🔴 Almost Full':t.seats<=15?'🟡 Filling Fast':'🟢 Available';
+  const pct=t=>Math.round((1-t.seats/t.total)*100);
+  const urg=t=>t.seats<=5?'high':t.seats<=15?'med':'low';
+  c.innerHTML=list.map(t=>`
+    <div class="trip-result${t.type==='raylane'?' raylane-own':''}" id="tr-${t.id}" tabindex="0" role="listitem">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.75rem;">
+        <div>
+          ${t.type==='raylane'?'<span class="badge badge-gold" style="margin-bottom:.5rem;display:inline-flex;">⭐ Raylane Fleet</span><br>':''}
+          <div style="font-family:var(--font-display);font-weight:800;font-size:1.125rem;color:var(--blue-900);">${t.time}</div>
+          <div style="font-size:.8125rem;color:var(--gray-500);margin-top:.125rem;">${t.op} · ${t.bus==='coach'?'67-Seater Coach':'14-Seater Minivan'}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:var(--font-display);font-size:1.375rem;font-weight:800;color:var(--blue-900);">${formatUGX(t.price)}</div>
+          <div style="font-size:.75rem;color:var(--gray-400);">per seat</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;">
+        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+          <span style="color:var(--gold-500);font-size:.875rem;">★</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:.875rem;">${t.rating}</span>
+          <span style="font-size:.75rem;color:var(--gray-400);">(${t.rc})</span>
+          <span style="color:var(--gray-200);">·</span>
+          <span style="font-size:.8125rem;color:var(--gray-600);">${t.seats} seats left</span>
+          <span style="color:var(--gray-200);">·</span>
+          <span style="font-size:.8125rem;">${urgLabel(t)}</span>
+        </div>
+        <div style="display:flex;gap:.375rem;">${t.amenities.map(a=>`<span class="badge badge-gray" style="font-size:.7rem;">${a}</span>`).join('')}</div>
+      </div>
+      <div class="urgency-bar urgency-${urg(t)}" style="margin-bottom:.875rem;"><div class="urgency-fill" style="width:${pct(t)}%"></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding-top:.875rem;border-top:1.5px solid var(--gray-100);">
+        <div style="font-size:.75rem;color:var(--gray-500);">Earn <strong style="color:var(--gold-600);">${Math.floor(t.price/100)} pts</strong></div>
+        <button
+          class="btn btn-gold btn-sm"
+          style="flex-shrink:0;padding:.6875rem 1.5rem;font-size:.875rem;font-weight:700;"
+          onclick="selectAndProceed(${t.id})"
+          aria-label="Select seats for ${t.op}">
+          Select Seats →
+        </button>
+      </div>
+    </div>`).join('');
+}
+renderTrips();
+
+// selectAndProceed — called directly by the "Select Seats →" button on each trip card
+function selectAndProceed(id){
+  state.trip=trips.find(t=>t.id===id);
+  const t=state.trip;
+  // Highlight selected card
+  document.querySelectorAll('.trip-result').forEach(e=>e.classList.remove('selected'));
+  const card=document.getElementById('tr-'+id);
+  if(card) card.classList.add('selected');
+  // Pre-fill downstream step labels
+  const busDesc=t.bus==='coach'?'67-Seater Coach':'14-Seater Minivan';
+  const busLbl=document.getElementById('busLabel');
+  const busTimeLbl=document.getElementById('busTimeLabel');
+  const busRouteLbl=document.getElementById('busRouteLabel');
+  if(busLbl) busLbl.textContent=`${busDesc} · ${t.op} · Departs ${t.time}`;
+  if(busTimeLbl) busTimeLbl.textContent=t.time;
+  if(busRouteLbl) busRouteLbl.textContent=`${fromCity} → ${toCity}`;
+  const grandTotal=document.getElementById('grandTotal');
+  const payAmt=document.getElementById('payAmt');
+  if(grandTotal) grandTotal.textContent=formatUGX(t.price);
+  if(payAmt) payAmt.textContent=formatUGX(t.price);
+  // Navigate immediately to seat map (step 2)
+  goStep(2);
+}
+// Legacy alias
+function pickTrip(id){ selectAndProceed(id); }
+
+// ── SEAT MAP ──────────────────────────────────────────────────
+let bookedSet=new Set();
+function renderMap(t){
+  const tot=t.bus==='coach'?67:14, avail=t.seats, booked=tot-avail;
+  bookedSet=new Set(); state.seats=[];
+  while(bookedSet.size<booked) bookedSet.add(Math.floor(Math.random()*tot)+1);
+  updateSeatUI();
+  const c=document.getElementById('seatMap'); c.innerHTML='';
+  if(t.bus==='coach') buildCoach(c);
+  else buildTaxi(c);
+}
+/* 
+ * UGANDA BUS SEAT LAYOUTS — RIGHT-HAND DRIVE (RHD)
+ * Driver sits on the RIGHT side. Columns from left: A B [aisle] C D E
+ * Row 1: Seat 1 (left of driver) + GDE (conductor/guide) near driver on right
+ * Rows 2-13: 2 seats left (A,B) + aisle + 3 seats right (C,D,E) = 5/row
+ * Back row: 6 seats across full width
+ * Total: 1 + 12×5 + 6 = 67 seats
+ */
+function buildCoach(c){
+  /* 67-SEATER: Per actual Uganda coach layout (image reference)
+   * Row 0: Seat 1 (front-left) | FRONT | DRVR (front-right)  
+   * Row 1: GDE (conductor, below seat 1)
+   * Column labels: A B | aisle | C D E
+   * Rows: seats 2-55 in pattern of 5 per row (A,B,aisle,C,D,E)
+   * Final rear row: 5 empty seats
+   */
+  const mkDiv=(css)=>{const d=document.createElement('div');d.style.cssText=css;return d;};
+  
+  // Row 0: Seat 1 + FRONT label + DRVR box
+  const r0=mkDiv('display:flex;gap:4px;align-items:center;width:100%;margin-bottom:2px;');
+  r0.appendChild(makeSeat(1));
+  const fl=mkDiv('flex:1;text-align:center;font-family:var(--font-display);font-size:.58rem;font-weight:700;color:var(--gray-400);letter-spacing:.1em;');
+  fl.textContent='Front';
+  r0.appendChild(fl);
+  const drv=mkDiv('width:30px;height:30px;border-radius:5px;background:#0B1D45;color:rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;font-size:.42rem;font-weight:700;writing-mode:vertical-rl;flex-shrink:0;');
+  drv.textContent='DRVR';
+  r0.appendChild(drv);
+  c.appendChild(r0);
+  
+  // Row 1: GDE conductor
+  const r1=mkDiv('display:flex;gap:4px;align-items:center;margin-bottom:6px;');
+  const gde=mkDiv('width:30px;height:30px;border-radius:5px;background:#374151;color:rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;font-size:.48rem;font-weight:700;flex-shrink:0;');
+  gde.textContent='GDE';
+  const gdeLbl=mkDiv('font-size:.65rem;color:var(--gray-500);');
+  gdeLbl.textContent='Conductor';
+  r1.appendChild(gde); r1.appendChild(gdeLbl);
+  c.appendChild(r1);
+  
+  // Column header row: A B [space] C D E
+  const hdr=mkDiv('display:flex;gap:4px;margin-bottom:3px;');
+  ['A','B','','C','D','E'].forEach(l=>{
+    const d=mkDiv(`width:${l===''?'14px':'30px'};text-align:center;font-family:var(--font-display);font-size:.6rem;font-weight:700;color:var(--gray-400);`);
+    d.textContent=l; hdr.appendChild(d);
+  });
+  c.appendChild(hdr);
+  
+  // Dashed divider
+  const dl=mkDiv('border-top:1.5px dashed var(--gray-200);margin-bottom:4px;');
+  c.appendChild(dl);
+  
+  // Main seat rows: seats 2-55 (rows of A,B | aisle | C,D,E)
+  // Numbering per screenshot: 2,3,4,5,6 | 7,8,9,10,11 | 12,13,14,15,16...
+  const rows=[
+    [2,3,4,5,6],[7,8,9,10,11],[12,13,14,15,16],[17,18,19,20,21],
+    [22,23,24,25,26],[27,28,29,30,31],[32,33,34,35,36],[37,38,39,40,41],
+    [42,43,44,45,46],[47,48,49,50,51],[52,53,54,55,null],[null,null,null,null,null]
+  ];
+  rows.forEach(row=>{
+    const rowEl=mkDiv('display:flex;gap:4px;margin-bottom:3px;');
+    rowEl.appendChild(row[0]?makeSeat(row[0]):mkEmpty());
+    rowEl.appendChild(row[1]?makeSeat(row[1]):mkEmpty());
+    rowEl.appendChild(mkDiv('width:14px;'));
+    rowEl.appendChild(row[2]?makeSeat(row[2]):mkEmpty());
+    rowEl.appendChild(row[3]?makeSeat(row[3]):mkEmpty());
+    rowEl.appendChild(row[4]?makeSeat(row[4]):mkEmpty());
+    c.appendChild(rowEl);
+  });
+  
+  // Rear row label
+  const rl=mkDiv('display:flex;align-items:center;gap:.375rem;margin:3px 0;');
+  const rline=()=>{const d=mkDiv('flex:1;border-top:1.5px dashed var(--gray-200);');return d;};
+  const rtxt=mkDiv('font-size:.52rem;font-weight:700;color:var(--gray-400);letter-spacing:.08em;white-space:nowrap;');
+  rtxt.textContent='REAR ROW';
+  rl.appendChild(rline()); rl.appendChild(rtxt); rl.appendChild(rline());
+  c.appendChild(rl);
+  
+  // Rear row: 5 empty seats
+  const rear=mkDiv('display:flex;gap:4px;margin-bottom:3px;');
+  for(let i=0;i<5;i++) rear.appendChild(mkEmpty());
+  c.appendChild(rear);
+  
+  // Footer
+  const foot=mkDiv('display:flex;justify-content:space-between;margin-top:4px;font-size:.55rem;color:var(--gray-400);font-weight:700;');
+  foot.innerHTML='<span>DOOR (LEFT)</span><span style="color:var(--blue-900);font-size:.6rem;">67-SEATER COACH</span><span>DRIVER (RIGHT)</span>';
+  c.appendChild(foot);
+}
+
+function buildTaxi(c){
+  /* 14-SEATER MATATU: Uganda right-hand drive
+   * Row 0: 2 passengers front-left (seats 1,2) + DRVR far right
+   * Rows 1-4: 3 passengers each (seats 3-14)
+   */
+  const mkDiv=(css)=>{const d=document.createElement('div');d.style.cssText=css;return d;};
+  
+  // Row 0: 2 front seats + DRVR
+  const r0=mkDiv('display:flex;gap:5px;align-items:center;width:100%;margin-bottom:4px;');
+  r0.appendChild(makeSeat(1));
+  r0.appendChild(makeSeat(2));
+  r0.appendChild(mkDiv('flex:1;'));
+  const drv=mkDiv('width:38px;height:38px;border-radius:6px;background:#0B1D45;color:rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;font-size:.5rem;font-weight:700;flex-shrink:0;');
+  drv.textContent='DRVR';
+  r0.appendChild(drv);
+  c.appendChild(r0);
+  
+  // Dashed divider
+  const dl=mkDiv('border-top:1.5px dashed var(--gray-200);margin-bottom:4px;');
+  c.appendChild(dl);
+  
+  // 4 rows of 3 seats (seats 3-14)
+  let n=3;
+  for(let row=0;row<4;row++){
+    const rowEl=mkDiv('display:flex;gap:5px;margin-bottom:4px;');
+    for(let col=0;col<3;col++){ rowEl.appendChild(makeSeat(n++)); }
+    c.appendChild(rowEl);
+  }
+  
+  // Footer
+  const foot=mkDiv('display:flex;justify-content:space-between;margin-top:4px;font-size:.55rem;color:var(--gray-400);font-weight:700;');
+  foot.innerHTML='<span>DOOR (LEFT)</span><span style="color:var(--blue-900);font-size:.6rem;">14-SEATER MATATU</span><span>DRIVER (RIGHT)</span>';
+  c.appendChild(foot);
+}
+
+function mkEmpty(){
+  const d=document.createElement('div');
+  d.style.cssText='width:30px;height:30px;border-radius:5px;background:var(--gray-100);border:1.5px solid var(--gray-200);flex-shrink:0;';
+  return d;
+}
+
+function makeSeat(n, size=32){
+  const isBooked=bookedSet.has(n), isSel=state.seats.includes(n);
+  const s=document.createElement('div');
+  s.className=`seat ${isBooked?'booked':isSel?'selected':'available'}`;
+  s.textContent=n;
+  s.style.width=size+'px'; s.style.height=size+'px'; s.style.fontSize=size>36?'.7rem':'.6rem';
+  s.setAttribute('aria-label',`Seat ${n} ${isBooked?'(booked)':'(available)'}`);
+  if(!isBooked){ s.onclick=()=>toggleSeat(n); s.setAttribute('tabindex','0'); s.setAttribute('role','button'); }
+  return s;
+}
+function addRow(c,nums){ /* legacy compat */ }
+function toggleSeat(n){
+  const idx=state.seats.indexOf(n);
+  if(idx>-1) state.seats.splice(idx,1);
+  else{ if(state.seats.length>=4){ Toast.warning('Max 4 seats. Use group booking for 5+.'); return; } state.seats.push(n); }
+  document.querySelectorAll('.seat').forEach(el=>{
+    const num=parseInt(el.textContent);
+    if(!bookedSet.has(num)) el.className=`seat ${state.seats.includes(num)?'selected':'available'}`;
+  });
+  updateSeatUI();
+}
+function updateSeatUI(){
+  const price=state.trip?.price||45000, cnt=state.seats.length;
+  document.getElementById('selectedSeatsLabel').textContent=cnt?`Seats: ${state.seats.join(', ')}`:'No seat selected';
+  document.getElementById('seatTotal').textContent=cnt?formatUGX(price*cnt):'—';
+  const btn=document.getElementById('continueBtn');
+  if(cnt>0) btn.removeAttribute('disabled'); else btn.setAttribute('disabled','');
+}
+
+// ── PAX FORMS ─────────────────────────────────────────────────
+function renderPaxForms(){
+  document.getElementById('passengerForms').innerHTML=state.seats.map((seat,i)=>`
+    <div style="background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:.875rem;">
+      <div style="font-family:var(--font-display);font-weight:700;font-size:.875rem;color:var(--blue-800);margin-bottom:.875rem;">Passenger ${i+1} — Seat ${seat}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem;">
+        <div class="form-group"><label class="form-label">First Name *</label><input type="text" class="form-input" id="fn${i}" placeholder="First name" required></div>
+        <div class="form-group"><label class="form-label">Surname *</label><input type="text" class="form-input" id="ln${i}" placeholder="Surname" required></div>
+      </div>
+      <div class="form-group"><label class="form-label">Phone Number *</label><input type="tel" class="form-input" id="ph${i}" placeholder="07XX XXX XXX" required></div>
+    </div>`).join('');
+}
+function proceedToPayment(){
+  let ok=true;
+  state.seats.forEach((_,i)=>{
+    ['fn','ln','ph'].forEach(p=>{ const el=document.getElementById(p+i); if(el&&!el.value.trim()){el.classList.add('error');ok=false;el.addEventListener('input',()=>el.classList.remove('error'),{once:true});} });
+  });
+  if(!ok){ Toast.error('Please complete all required fields.'); return; }
+  state.passengers=state.seats.map((_,i)=>({ name:`${document.getElementById('fn'+i)?.value||''} ${document.getElementById('ln'+i)?.value||''}`.trim(), phone:document.getElementById('ph'+i)?.value||'' }));
+  goStep(4); startCD();
+}
+
+// ── ORDER ─────────────────────────────────────────────────────
+function renderOrder(){
+  const t=state.trip, am=t?t.price*state.seats.length:0;
+  const amStr=formatUGX(am);
+  const el=document.getElementById('mtnAmount'); if(el) el.textContent=amStr;
+  const el2=document.getElementById('airtelAmount'); if(el2) el2.textContent=amStr;
+  const el3=document.getElementById('qrAmount'); if(el3) el3.textContent=amStr;
+  const el4=document.getElementById('grandTotal'); if(el4) el4.textContent=amStr;
+  const el5=document.getElementById('payAmt'); if(el5) el5.textContent=amStr;
+  // Set booking name in warning
+  const pn=document.getElementById('payBookingName');
+  if(pn){const fn=document.getElementById('pax0fname'),ln=document.getElementById('pax0lname');if(fn&&ln)pn.textContent=(fn.value||'Your Name')+' '+(ln.value||'');}
+  const ol=document.getElementById('orderLines'); if(!ol) return; ol.innerHTML='';
+  const t=state.trip||{price:45000,op:'Raylane Express',time:'08:00 AM'};
+  document.getElementById('orderLines').innerHTML=`
+    <div style="display:flex;justify-content:space-between;"><span>${fromCity} → ${toCity}</span><span>${todayStr}</span></div>
+    <div style="display:flex;justify-content:space-between;"><span>Seats: ${state.seats.join(', ')}</span><span>${state.seats.length} × ${formatUGX(t.price)}</span></div>`;
+  const total=formatUGX(t.price*state.seats.length);
+  document.getElementById('grandTotal').textContent=total;
+  document.getElementById('payAmt').textContent=total;
+  document.getElementById('tOp').textContent=t.op;
+  document.getElementById('tTime').textContent=t.time;
+  document.getElementById('tSeat').textContent=state.seats[0]||'—';
+}
+
+// ── COUNTDOWN ─────────────────────────────────────────────────
+let cdTimer;
+function startCD(){
+  let s=600; clearInterval(cdTimer);
+  cdTimer=setInterval(()=>{
+    s--;
+    document.getElementById('countdown').textContent=`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+    if(s<=0){ clearInterval(cdTimer); Toast.error('Time expired — seats released.'); setTimeout(()=>goStep(1),2000); }
+  },1000);
+}
+
+// ── PAYMENT ───────────────────────────────────────────────────
+
+function selectPayMethod(method){
+  document.querySelectorAll('.payment-option').forEach(o=>o.classList.remove('selected'));
+  document.getElementById('p'+method).classList.add('selected');
+  document.querySelector('#p'+method+' input[type=radio]').checked=true;
+  document.getElementById('instMTN').style.display=method==='mtn'?'block':'none';
+  document.getElementById('instAirtel').style.display=method==='airtel'?'block':'none';
+  document.getElementById('instQR').style.display=method==='qr'?'block':'none';
+}
+// Legacy alias
+function selectPay(m, el){
+  state.payMethod=m;
+  document.querySelectorAll('.payment-option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.querySelectorAll('input[name="pay"]').forEach(r=>r.checked=r.value===m);
+  document.getElementById('momoGroup').classList.toggle('visible',m==='mtn'||m==='airtel');
+  document.getElementById('cardGroup').classList.toggle('visible',m==='card');
+  if(m==='airtel') document.getElementById('momoLabel').textContent='Airtel Money Number';
+  if(m==='mtn') document.getElementById('momoLabel').textContent='MTN MoMo Number';
+}
+function formatCard(el){ el.value=el.value.replace(/\D/g,'').replace(/(.{4})/g,'$1 ').trim(); }
+function formatExpiry(el){ let v=el.value.replace(/\D/g,''); if(v.length>=2) v=v.slice(0,2)+' / '+v.slice(2,4); el.value=v; }
+
+function initiatePayment(){
+  if((state.payMethod==='mtn'||state.payMethod==='airtel')&&!document.getElementById('momoPhone').value){ Toast.error('Please enter your phone number.'); return; }
+  const btn=document.getElementById('payBtn');
+  btn.innerHTML='<svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="15"/></svg> Processing...';
+  btn.disabled=true;
+  Toast.show('📱 USSD push sent — enter your MoMo PIN to confirm.','success',6000);
+  setTimeout(()=>{ clearInterval(cdTimer); btn.innerHTML='✓ Confirmed!'; btn.style.background='var(--green-500)'; confetti(); setTimeout(()=>goStep(5),1200); },4500);
+}
+function confetti(){
+  const colors=['#FFC72C','#0B1D45','#22C55E','#EF4444','#8B5CF6'];
+  for(let i=0;i<60;i++){
+    const c=document.createElement('div'); c.className='confetti-piece';
+    c.style.cssText=`left:${Math.random()*100}vw;top:-20px;background:${colors[~~(Math.random()*5)]};border-radius:${Math.random()>.5?'50%':'2px'};animation-delay:${Math.random()*.8}s;animation-duration:${1.5+Math.random()}s;`;
+    document.body.appendChild(c); setTimeout(()=>c.remove(),2500);
+  }
+}
+function renderTicket(){
+  if(state.passengers[0]) document.getElementById('tPax').textContent=state.passengers[0].name||'Valued Passenger';
+  document.getElementById('tSeat').textContent=state.seats[0]||'—';
+  document.getElementById('tPoints').textContent=`You earned ${Math.floor((state.trip?.price||45000)/100*10)*state.seats.length} loyalty points!`;
+  document.getElementById('tRef').textContent=state.ref;
+}
+function joinWaitlist(){ Toast.success('You\'re on the waitlist! We\'ll SMS you when a trip is available.'); }
+function shareWA(){
+  const msg=encodeURIComponent(`🎫 Raylane Express — Booking Confirmed!\n\nRoute: ${fromCity} → ${toCity}\nRef: ${state.ref}\n\nBook at raylaneexpress.com`);
+  window.open(`https://wa.me/?text=${msg}`,'_blank');
+}
+</script>
+</body>
+</html>
