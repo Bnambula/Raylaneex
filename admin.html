@@ -51,6 +51,14 @@
 .route-badge{display:inline-flex;align-items:center;gap:.375rem;background:var(--ba-midnight);color:white;padding:.25rem .75rem;border-radius:var(--r-full);font-size:.75rem;font-weight:700;}
 .fuel-bar{height:8px;background:#E2E8F0;border-radius:4px;overflow:hidden;margin-top:.375rem;}
 .fuel-fill{height:100%;border-radius:4px;transition:width .5s ease;}
+
+/* ── Iron-clad view switching ── */
+.da-view { display: none !important; overflow: hidden; }
+.da-view.active { display: block !important; }
+
+/* ── Prevent kpi-grid from escaping hidden views ── */
+/* Hidden view children are not interactable */
+.da-view:not(.active) { pointer-events: none; height: 0; overflow: hidden; }
 </style>
 </head>
 <body>
@@ -542,7 +550,7 @@
       <tr><td><strong>Global Coaches Ltd.</strong></td><td><span class="badge badge-gold">⭐ Pro</span></td><td>8</td><td>12</td><td>UGX 12.4M</td><td>UGX 992K</td><td><span class="badge badge-green">Active</span></td>
         <td style="display:flex;gap:.375rem;flex-wrap:wrap;">
           <button class="btn-s btn-xs" onclick="sv('modules')">Modules</button>
-          <button class="btn-p btn-xs" onclick="openModal('Edit Operator','<div class=grid-2><div class=form-group><label class=form-label>Business Name</label><input type=text class=form-input value=\'Global Coaches Ltd.\'></div><div class=form-group><label class=form-label>Plan</label><select class=form-input><option>Starter</option><option selected>Pro</option></select></div><div class=form-group><label class=form-label>Commission %</label><input type=number class=form-input value=8></div></div>','save-op')">Edit</button>
+          <button class="btn-p btn-xs" onclick="openEditOperatorModal('Global Coaches Ltd.','Pro',8)">Edit</button>
           <button class="btn-d btn-xs" onclick="confirm_('Suspend Operator','Suspend Global Coaches? No new trips can be submitted.','danger','⚠️',()=>Toast.error('Operator suspended.'))">Suspend</button>
         </td>
       </tr>
@@ -638,7 +646,7 @@
     <tbody>
       <tr><td><strong>UBF 001K</strong></td><td>67-Seater</td><td>Raylane Fleet</td><td>James Okello</td><td><span class="badge badge-green">Sep 2026 ✓</span></td><td><span class="badge badge-green">Jun 2026 ✓</span></td><td>48,200 km</td><td><span class="badge badge-green">Active</span></td>
         <td style="display:flex;gap:.375rem;flex-wrap:wrap;">
-          <button class="btn-s btn-xs" onclick="openModal('Edit Vehicle — UBF 001K','<div class=grid-2><div class=form-group><label class=form-label>Registration</label><input type=text class=form-input value=\'UBF 001K\'></div><div class=form-group><label class=form-label>Insurance Expiry</label><input type=date class=form-input value=2026-09-15></div><div class=form-group><label class=form-label>Fitness Expiry</label><input type=date class=form-input value=2026-06-20></div><div class=form-group><label class=form-label>Status</label><select class=form-input><option selected>Active</option><option>Maintenance</option><option>Inactive</option></select></div></div>','save-ubf001')">Edit</button>
+          <button class="btn-s btn-xs" onclick="openEditVehicleModal()">Edit</button>
           <button class="btn-s btn-xs" onclick="Toast.success('Maintenance scheduled for UBF 001K.')">Schedule Service</button>
         </td>
       </tr>
@@ -865,7 +873,7 @@
 <div class="da-view" id="v-costs">
   <div class="pg-header">
     <div><div class="pg-title">Cost Management</div><div class="pg-sub">Log and track all operational expenses — each cost feeds automatically into financial statements</div></div>
-    <button class="btn-p" onclick="openModal('Add Expense','<div class=grid-2><div class=form-group><label class=form-label>Date *</label><input type=date class=form-input required></div><div class=form-group><label class=form-label>Category *</label><select class=form-input required><option>Fuel</option><option>Vehicle Repairs</option><option>Driver Wages</option><option>Staff Salaries</option><option>Rent</option><option>Electricity</option><option>Water</option><option>Internet</option><option>Software Subscriptions</option><option>ChatGPT / Claude</option><option>YouTube Premium</option><option>Twitter / X</option><option>Insurance</option><option>NSSF</option><option>PAYE</option><option>Bank Charges</option><option>Marketing</option><option>Other</option></select></div><div class=form-group><label class=form-label>Amount (UGX) *</label><input type=number class=form-input required></div><div class=form-group><label class=form-label>Vendor</label><input type=text class=form-input placeholder=e.g. Total Energies></div><div class=form-group><label class=form-label>Link to Vehicle</label><select class=form-input><option value="">Not applicable</option><option>UBF 001K</option><option>UBF 002K</option><option>UBG 100K</option></select></div><div class=form-group><label class=form-label>Link to Route</label><select class=form-input><option value="">Not applicable</option><option>Kampala - Gulu</option><option>Kampala - Mbale</option></select></div><div class=form-group><label class=form-label>Receipt / Invoice No.</label><input type=text class=form-input></div><div class=form-group><label class=form-label>Notes</label><textarea class=form-input rows=2></textarea></div></div>','add-expense')">+ Add Expense</button>
+    <button class="btn-p" onclick="openAddExpenseModal()">+ Add Expense</button>
   </div>
   <div class="kpi-grid">
     <div class="kpi red"><div class="kpi-lbl">Total Costs (Apr)</div><div class="kpi-val">UGX 4.2M</div></div>
@@ -990,7 +998,7 @@
         <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
           <button class="btn-p btn-xs" onclick="openModal('Edit Wages — Mubbale Deo','<div class=grid-2><div class=form-group><label class=form-label>Basic Salary (UGX)</label><input type=number class=form-input value=2500000></div><div class=form-group><label class=form-label>Transport Allowance</label><input type=number class=form-input value=150000></div><div class=form-group><label class=form-label>Housing Allowance</label><input type=number class=form-input value=200000></div><div class=form-group><label class=form-label>Effective Date</label><input type=date class=form-input></div><div class=form-group><label class=form-label>Reason</label><select class=form-input><option>Annual Review</option><option>Promotion</option><option>Cost of Living</option><option>Performance Bonus</option></select></div></div>','edit-wages-deo')">Edit Wages</button>
           <button class="btn-s btn-xs" onclick="openModal('Payslip — Mubbale Deo — Apr 2026','<div class=fin-section><div class=fin-section-title>MUBBALE DEO — APR 2026 PAYSLIP</div><div class=fin-row><span>Basic Salary</span><span>UGX 2,500,000</span></div><div class=fin-row><span>Transport Allowance</span><span>UGX 150,000</span></div><div class=fin-row><span>Housing Allowance</span><span>UGX 200,000</span></div><div class=fin-row total><span>Gross Pay</span><span>UGX 2,850,000</span></div><div class=fin-row><span>NSSF Employee 5%</span><span>-UGX 142,500</span></div><div class=fin-row><span>PAYE</span><span>-UGX 229,500</span></div><div class=fin-row total style=color:var(--green);><span>Net Pay</span><span>UGX 2,478,000</span></div></div>','view-payslip')">Payslip</button>
-          <button class="btn-s btn-xs" onclick="openModal('Edit Profile — Mubbale Deo','<div class=grid-2><div class=form-group><label class=form-label>Full Name</label><input type=text class=form-input value=\'Mubbale Deo\'></div><div class=form-group><label class=form-label>Phone</label><input type=tel class=form-input value=0772100001></div><div class=form-group><label class=form-label>Email</label><input type=email class=form-input value=deo@raylane.ug></div><div class=form-group><label class=form-label>Role</label><input type=text class=form-input value=\'Operations Manager\'></div><div class=form-group><label class=form-label>Emergency Contact</label><input type=text class=form-input></div></div>','edit-profile-deo')">Edit Profile</button>
+          <button class="btn-s btn-xs" onclick="openEditProfileModal('Mubbale Deo','deo@raylane.ug','0772 100 001','Operations Manager','Operations')">Edit Profile</button>
           <button class="btn-s btn-xs" onclick="confirm_('Process Advance','Process advance salary payment for Mubbale Deo via MoMo?','info','💰',()=>Toast.success('Advance processed via MTN MoMo.'))">Pay Advance</button>
         </div>
       </div>
@@ -1078,7 +1086,7 @@
           <button class="btn-p btn-xs" onclick="openModal('Edit Driver Wages — James Okello','<div class=grid-2><div class=form-group><label class=form-label>Basic Monthly Salary (UGX)</label><input type=number class=form-input value=800000></div><div class=form-group><label class=form-label>Trip Bonus per Trip (UGX)</label><input type=number class=form-input value=5000></div><div class=form-group><label class=form-label>Overtime Rate per Hour (UGX)</label><input type=number class=form-input value=8000></div><div class=form-group><label class=form-label>Daily Allowance (UGX)</label><input type=number class=form-input value=0></div><div class=form-group><label class=form-label>Payment Method</label><select class=form-input><option>MTN MoMo B2C</option><option>Airtel Money</option><option>Bank Transfer</option></select></div><div class=form-group><label class=form-label>Pay Day</label><select class=form-input><option>Last Friday</option><option>25th of month</option></select></div></div>','edit-wages-james')">Edit Wages</button>
           <button class="btn-s btn-xs" onclick="confirm_('Daily Pay','Pay James Okello today trip earnings of UGX 24,000 via MoMo?','info','💰',()=>Toast.success('Daily pay sent: UGX 24,000 to James Okello.'))">Daily Pay</button>
           <button class="btn-s btn-xs" onclick="openModal('Driver Payslip — James Okello','<div class=fin-section><div class=fin-section-title>JAMES OKELLO — APR 2026</div><div class=fin-row><span>Basic Salary</span><span>UGX 800,000</span></div><div class=fin-row><span>Trip Bonus 24 × UGX 5,000</span><span>UGX 120,000</span></div><div class=fin-row><span>Overtime 6 hrs × UGX 8,000</span><span>UGX 48,000</span></div><div class=fin-row total><span>Gross Pay</span><span>UGX 968,000</span></div><div class=fin-row><span>NSSF Employee 5%</span><span>-UGX 48,400</span></div><div class=fin-row><span>PAYE</span><span>-UGX 45,600</span></div><div class=fin-row total style=color:var(--green);><span>Net Pay</span><span>UGX 874,000</span></div></div>','payslip-james')">Payslip</button>
-          <button class="btn-s btn-xs" onclick="openModal('Edit Profile — James Okello','<div class=grid-2><div class=form-group><label class=form-label>Full Name</label><input type=text class=form-input value=\'James Okello\'></div><div class=form-group><label class=form-label>Phone</label><input type=tel class=form-input value=0782001001></div><div class=form-group><label class=form-label>NID</label><input type=text class=form-input value=CM9200XXXXX></div><div class=form-group><label class=form-label>Licence Expiry</label><input type=date class=form-input value=2027-12-31></div><div class=form-group><label class=form-label>Emergency Contact</label><input type=text class=form-input></div><div class=form-group><label class=form-label>Blood Group</label><select class=form-input><option>A+</option><option>O+</option><option>B+</option></select></div></div>','edit-profile-james')">Edit Profile</button>
+          <button class="btn-s btn-xs" onclick="openEditProfileModal('James Okello','','0782 001 001','PSV Driver','Operations')">Edit Profile</button>
           <button class="btn-d btn-xs" onclick="confirm_('Deactivate Driver','Deactivate James Okello? Removed from all trip assignments.','danger','⚠️',()=>Toast.error('Driver deactivated.'))">Deactivate</button>
         </div>
       </div>
@@ -1475,6 +1483,85 @@ function renderAudit(){
     </tr>`).join('');
 }
 
+
+
+
+function openEditOperatorModal(name, plan, commission){
+  const body =
+    '<div class="grid-2">' +
+    '<div class="form-group"><label class="form-label">Business Name</label>' +
+    '<input type="text" class="form-input" value="' + (name||'') + '"></div>' +
+    '<div class="form-group"><label class="form-label">Plan</label>' +
+    '<select class="form-input"><option' + (plan==='Starter'?' selected':'') + '>Starter</option>' +
+    '<option' + (plan==='Pro'?' selected':'') + '>Pro</option><option' + (plan==='Enterprise'?' selected':'') + '>Enterprise</option></select></div>' +
+    '<div class="form-group"><label class="form-label">Commission %</label>' +
+    '<input type="number" class="form-input" value="' + (commission||8) + '"></div>' +
+    '<div class="form-group"><label class="form-label">Status</label>' +
+    '<select class="form-input"><option>Active</option><option>Suspended</option></select></div>' +
+    '</div>';
+  openModal('Edit Operator', body, 'save-op');
+}
+
+function openEditVehicleModal(plate, insurance, fitness){
+  const body =
+    '<div class="grid-2">' +
+    '<div class="form-group"><label class="form-label">Registration Plate</label>' +
+    '<input type="text" class="form-input" value="' + (plate||'UBF 001K') + '"></div>' +
+    '<div class="form-group"><label class="form-label">Insurance Expiry</label>' +
+    '<input type="date" class="form-input" value="' + (insurance||'2026-09-15') + '"></div>' +
+    '<div class="form-group"><label class="form-label">Fitness Expiry</label>' +
+    '<input type="date" class="form-input" value="' + (fitness||'2026-06-20') + '"></div>' +
+    '<div class="form-group"><label class="form-label">Status</label>' +
+    '<select class="form-input"><option>Active</option><option>Maintenance</option><option>Inactive</option></select></div>' +
+    '</div>';
+  openModal('Edit Vehicle', body, 'save-vehicle');
+}
+
+function openEditProfileModal(name, email, phone, role, dept){
+  const body =
+    '<div class="grid-2">' +
+    '<div class="form-group"><label class="form-label">Full Name</label>' +
+    '<input type="text" class="form-input" value="' + (name||'') + '"></div>' +
+    '<div class="form-group"><label class="form-label">Phone</label>' +
+    '<input type="tel" class="form-input" value="' + (phone||'') + '"></div>' +
+    '<div class="form-group"><label class="form-label">Email</label>' +
+    '<input type="email" class="form-input" value="' + (email||'') + '"></div>' +
+    '<div class="form-group"><label class="form-label">Role / Title</label>' +
+    '<input type="text" class="form-input" value="' + (role||'') + '"></div>' +
+    '<div class="form-group"><label class="form-label">Department</label>' +
+    '<select class="form-input"><option>Operations</option><option>Finance</option>' +
+    '<option>HR</option><option>Tech</option><option>Safety</option></select></div>' +
+    '<div class="form-group"><label class="form-label">Emergency Contact</label>' +
+    '<input type="text" class="form-input" placeholder="Name and phone number"></div>' +
+    '</div>';
+  openModal('Edit Profile — ' + name, body, 'edit-profile');
+}
+
+function openAddExpenseModal(){
+  const body =
+    '<div class="grid-2">' +
+    '<div class="form-group"><label class="form-label">Date *</label><input type="date" class="form-input" required></div>' +
+    '<div class="form-group"><label class="form-label">Category *</label><select class="form-input">' +
+    '<option value="">Select category</option>' +
+    '<option>Fuel</option><option>Vehicle Repairs</option><option>Driver Wages</option><option>Staff Salaries</option>' +
+    '<option>Rent</option><option>Electricity</option><option>Water</option><option>Internet</option>' +
+    '<option>Software Subscriptions (ChatGPT / Claude / X / YouTube)</option>' +
+    '<option>Insurance</option><option>NSSF</option><option>PAYE</option>' +
+    '<option>Bank Charges</option><option>Marketing</option><option>Other</option>' +
+    '</select></div>' +
+    '<div class="form-group"><label class="form-label">Amount (UGX) *</label><input type="number" class="form-input" required placeholder="0"></div>' +
+    '<div class="form-group"><label class="form-label">Vendor</label><input type="text" class="form-input" placeholder="e.g. Total Energies"></div>' +
+    '<div class="form-group"><label class="form-label">Link to Vehicle</label><select class="form-input">' +
+    '<option value="">Not applicable</option><option>UBF 001K</option><option>UBF 002K</option><option>UBG 100K</option>' +
+    '</select></div>' +
+    '<div class="form-group"><label class="form-label">Link to Route</label><select class="form-input">' +
+    '<option value="">Not applicable</option><option>Kampala - Gulu</option><option>Kampala - Mbale</option>' +
+    '</select></div>' +
+    '<div class="form-group"><label class="form-label">Receipt No.</label><input type="text" class="form-input"></div>' +
+    '<div class="form-group"><label class="form-label">Notes</label><textarea class="form-input" rows="2"></textarea></div>' +
+    '</div>';
+  openModal('Add Expense', body, 'add-expense');
+}
 
 // ── Financial statement functions ──────────────────────────────
 function setFinPeriod(period, btn){
